@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regional Preference Media Queries polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  .h23, .celsius, .km { display: none; }
+  .month { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; max-width: 24rem; }
+  .month span { padding: 0.25rem; border-bottom: 1px solid #ddd; }
+  .month .sun { order: 0; } .month .mon { order: 1; } .month .tue { order: 2; } .month .wed { order: 3; }
+  .month .thu { order: 4; } .month .fri { order: 5; } .month .sat { order: 6; }
+
+  @media (hour-cycle: h23) { .h12 { display: none; } .h23 { display: inline; } }
+  @media (temperature-unit: celsius) { .fahrenheit { display: none; } .celsius { display: inline; } }
+  @media (measurement-system: metric) { .miles { display: none; } .km { display: inline; } }
+  @media (first-day-of-week: monday) { .month .sun { order: 7; } }
+  @media (first-day-of-week: saturday) { .month .sat { order: -1; } }
+</style>
+
+<h1>Regional Preference Media Queries</h1>
+<p>The page contains both forms of each value. CSS shows the one for your locale, or for the one you pick.</p>
+
+<p><label>Pretend the locale is
+  <select id="locale">
+    <option value="">This browser's</option>
+    <option>en-US</option><option>en-GB</option><option>de-DE</option><option>fr-CA</option>
+    <option>ar-EG</option><option>ja-JP</option><option>en-US-u-hc-h23</option>
+  </select>
+</label> <code id="values"></code></p>
+
+<p>Opens at <span class="h12">9:00 AM</span><span class="h23">09:00</span>.
+  It's <span class="fahrenheit">72°F</span><span class="celsius">22°C</span>,
+  <span class="miles">3 miles</span><span class="km">5 km</span> from the station.</p>
+
+<div class="month">
+  <span class="sun">Su</span><span class="mon">Mo</span><span class="tue">Tu</span><span class="wed">We</span>
+  <span class="thu">Th</span><span class="fri">Fr</span><span class="sat">Sa</span>
+</div>
+
+<script src="regional-preference-media-queries.js"></script>
+<script>
+  'use strict';
+  const locale = document.getElementById('locale');
+  const values = document.getElementById('values');
+  const show = () => {
+    const tag = locale.value;
+    RegionalPreferenceMediaQueries.pretend(tag || null);
+    const current = tag ? RegionalPreferenceMediaQueries.valuesFor(tag) : RegionalPreferenceMediaQueries.values;
+    values.textContent = Object.entries(current).map(([name, value]) => `(${name}: ${value})`).join(' ');
+  };
+  locale.addEventListener('change', show);
+  show();
+</script>

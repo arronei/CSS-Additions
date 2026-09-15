@@ -1,0 +1,518 @@
+<pre class=metadata>
+Title: Accessibility Preference Media Queries
+Shortname: accessibility-preference-media-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/accessibility-preferences/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds media features for five accessibility settings that operating systems
+    offer and web pages can't see: '@media/prefers-bold-text', '@media/prefers-button-shapes',
+    '@media/prefers-differentiate-without-color', '@media/prefers-on-off-labels', and
+    '@media/prefers-reduced-caret-blink'. Because these settings can reveal a disability, they are protected
+    media features: unless the user chooses to share a setting, pages adapt their colors, outlines,
+    underlines, and patterns to it without being able to find out that it is on. Where the user shares a
+    setting, pages can also change their layout, and changes are delivered late so they can't link visits.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:dfn; text:allowed to use
+spec:fill-stroke-3; type:property; text:stroke-dasharray
+spec:fill-stroke-3; type:property; text:fill
+spec:css-backgrounds-3; type:property; text:box-shadow
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: protected media feature; url: #protected-media-feature
+        text: observable value; url: #observable-value
+        text: full evaluation; url: #full-evaluation
+        text: protected evaluation; url: #protected-evaluation
+        text: paint-only properties; url: #paint-only-properties
+        text: delayed change delivery; url: #delayed-change-delivery
+        text: maximum delay; url: #maximum-delay
+        text: minimum interval; url: #minimum-interval
+        text: frame-scoped exposure; url: #frame-scoped-exposure
+        text: reduced-exposure context; url: #reduced-exposure-context
+        text: under user control; url: #under-user-control
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "GDPR": {
+        "title": "Regulation (EU) 2016/679 (General Data Protection Regulation), Article 9",
+        "href": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+        "publisher": "European Union"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Operating systems let users adjust how apps look in ways that web pages can't follow. On iOS and iPadOS, users
+can ask for bold text, for buttons to be drawn with shapes instead of plain colored text, for information to be
+shown without relying on color, and for switches to show on and off labels. On Windows, macOS, and Linux
+desktops, users can stop the text cursor from blinking. Native apps follow these settings. A web app that draws
+its own switches, links, charts, and editor caret can't.
+
+[[MEDIAQUERIES-5]] already has features for some accessibility settings, such as
+'@media/prefers-reduced-motion' and '@media/prefers-contrast'. This specification adds five more:
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    @media (prefers-button-shapes: show) {
+      a, .link-button { text-decoration-line: underline; }
+      .icon-button { outline: 1px solid currentColor; outline-offset: 2px; }
+    }
+
+    @media (prefers-differentiate-without-color: differentiate) {
+      .field-error { text-decoration: wavy underline; }
+      .chart .series-2 { stroke-dasharray: 6 3; }
+    }
+
+    @media (prefers-on-off-labels: show) {
+      .switch .state-glyph { color: inherit; } /* transparent otherwise */
+    }
+
+    @media (prefers-reduced-caret-blink: reduce) {
+      .code-editor { caret-animation: manual; }
+    }
+
+    @media (prefers-bold-text: bold) {
+      .display-heading { -webkit-text-stroke: 0.03em currentColor; }
+    }
+    </pre>
+</div>
+
+These settings are used by many people, and they are also used by people with low vision, color vision
+deficiency, dyslexia, epilepsy, and cognitive disabilities. A page that could read them could guess at those
+conditions. So each feature is a protected media feature [[!MEDIA-FEATURE-PRIVACY]]: by default, rules that depend
+on it can change only [=paint-only properties=], like the ones above, and nothing the page can measure changes.
+The user can choose to share a setting with sites, and then pages can change their layout as well.
+
+
+<h2 id=features>Media features</h2>
+
+Each feature in this section is a [=protected media feature=] whose [=observable value=] is
+''no-preference''. In each, ''no-preference'' evaluates to false in a [=boolean context=], and the other value
+evaluates to true.
+
+The user agent must derive each feature's [=actual value=] only from the setting it describes, whether that
+setting is in the operating system or in the user agent. It must not derive any of them from whether assistive
+technology is running, or from any other setting.
+
+<div class=note>
+    User agents should also follow these settings in what they draw themselves, such as native form controls
+    and the text caret, as native apps do. The features are for what pages draw.
+</div>
+
+<h3 id=bold-text>The '@media/prefers-bold-text' feature</h3>
+
+<pre class='descdef mq'>
+Name: prefers-bold-text
+Value: no-preference | bold
+For: @media
+Type: discrete
+</pre>
+
+: <dfn value for=@media/prefers-bold-text>bold</dfn>
+:: The user has asked for text to be drawn with heavier weights, such as with the Bold Text setting on iOS,
+    iPadOS, and Android.
+: <dfn value for=@media/prefers-bold-text>no-preference</dfn>
+:: Otherwise.
+
+<h3 id=button-shapes>The '@media/prefers-button-shapes' feature</h3>
+
+<pre class='descdef mq'>
+Name: prefers-button-shapes
+Value: no-preference | show
+For: @media
+Type: discrete
+</pre>
+
+: <dfn value for=@media/prefers-button-shapes>show</dfn>
+:: The user has asked for links and buttons to be identified by a visible shape, such as an underline, outline,
+    or background, rather than by color or position alone. Examples are the Button Shapes setting on iOS and
+    iPadOS, the setting that shows toolbar button shapes on macOS, and user agent settings that always underline
+    links.
+: <dfn value for=@media/prefers-button-shapes>no-preference</dfn>
+:: Otherwise.
+
+<h3 id=differentiate-without-color>The '@media/prefers-differentiate-without-color' feature</h3>
+
+<pre class='descdef mq'>
+Name: prefers-differentiate-without-color
+Value: no-preference | differentiate
+For: @media
+Type: discrete
+</pre>
+
+: <dfn value for=@media/prefers-differentiate-without-color>differentiate</dfn>
+:: The user has asked for information shown with color to be shown in another way as well, such as with a
+    shape, pattern, or text, as with the Differentiate Without Color setting on iOS, iPadOS, and macOS.
+: <dfn value for=@media/prefers-differentiate-without-color>no-preference</dfn>
+:: Otherwise.
+
+<h3 id=on-off-labels>The '@media/prefers-on-off-labels' feature</h3>
+
+<pre class='descdef mq'>
+Name: prefers-on-off-labels
+Value: no-preference | show
+For: @media
+Type: discrete
+</pre>
+
+: <dfn value for=@media/prefers-on-off-labels>show</dfn>
+:: The user has asked for switches to show a label or symbol for their state, as with the On/Off Labels setting
+    on iOS and iPadOS.
+: <dfn value for=@media/prefers-on-off-labels>no-preference</dfn>
+:: Otherwise.
+
+<h3 id=reduced-caret-blink>The '@media/prefers-reduced-caret-blink' feature</h3>
+
+<pre class='descdef mq'>
+Name: prefers-reduced-caret-blink
+Value: no-preference | reduce
+For: @media
+Type: discrete
+</pre>
+
+: <dfn value for=@media/prefers-reduced-caret-blink>reduce</dfn>
+:: The user has turned off blinking of the text caret, such as with the cursor blink rate setting on Windows,
+    the setting for a non-blinking text insertion pointer on macOS, or the cursor blinking setting in GNOME.
+: <dfn value for=@media/prefers-reduced-caret-blink>no-preference</dfn>
+:: Otherwise, including when the caret blinks at any rate.
+
+
+<h2 id=evaluation>Evaluation</h2>
+
+<h3 id=sharing>Sharing a setting</h3>
+
+For each of the features, the user agent keeps a <dfn>sharing choice</dfn>, which is <dfn>shared</dfn> or
+<dfn>private</dfn>. The user agent must let the user change it. It may offer one choice for all five features, or
+one for each.
+
+<div class=note>
+    For example, a user agent's accessibility settings could say: "Websites adapt to your accessibility
+    settings. Let websites detect them, so they can also change their layout?"
+</div>
+
+A user agent should set the sharing choice for a feature to [=private=] by default. It may set it to [=shared=] by
+default for a feature that it has good reason to believe is turned on by at least one in sixteen of its users on
+that kind of device.
+
+<div class=note>
+    At one in sixteen, a user with the setting on reveals 4 bits by sharing it. Settings that fewer people use
+    reveal more, and are more likely to reveal a disability. See [[#privacy-fingerprinting]].
+</div>
+
+<h3 id=which-evaluation>Full and protected evaluation</h3>
+
+A [=document=] uses [=full evaluation=] for a feature when all of these are true:
+
+* The feature's [=sharing choice=] is [=shared=].
+* The document is [=allowed to use=] "<dfn export>accessibility-preferences</dfn>", a policy-controlled
+    feature whose default allowlist is <code>&#39;self&#39;</code>.
+* The document isn't in a [=reduced-exposure context=].
+* Scripting is enabled for the document.
+
+Otherwise, the document uses [=protected evaluation=] for the feature.
+
+<div class=note>
+    This is [=frame-scoped exposure=], with protected evaluation instead of a fixed value for frames that aren't
+    allowed. Cross-origin frames, documents without script, and private browsing modes still adapt their
+    appearance to the user's settings. They just can't find out what the settings are.
+</div>
+
+<h3 id=changes>Changes</h3>
+
+In documents that use full evaluation, the features use [=delayed change delivery=], with a [=maximum delay=] of
+60 seconds and a [=minimum interval=] of 10 minutes. In documents that use protected evaluation, a change is
+painted immediately, because it isn't observable.
+
+<h3 id=user-control>Turning features off</h3>
+
+The features are [=under user control=]. The user agent must let the user turn a feature off for the web
+without changing the setting it describes. When a feature is off, its [=actual value=] is ''no-preference'' in
+every document.
+
+
+<h2 id=authoring>Authoring guidance</h2>
+
+*This section is non-normative.*
+
+Most users will have the [=private=] sharing choice, so authors should first adapt with the
+[=paint-only properties=], which work everywhere, and use layout changes only as an addition for users who share
+their settings.
+
+<table class=data>
+    <thead><tr><th>Feature<th>Works with paint-only properties<th>Needs the setting to be shared
+    <tbody>
+        <tr><td>'@media/prefers-bold-text'
+            <td>A heavier stroke with '-webkit-text-stroke-width'; stronger 'color' contrast
+            <td>A heavier 'font-weight', which changes line lengths
+        <tr><td>'@media/prefers-button-shapes'
+            <td>Underlines, 'outline', 'box-shadow', 'background-color'
+            <td>Borders and padding
+        <tr><td>'@media/prefers-differentiate-without-color'
+            <td>Underline styles, 'outline-style', 'stroke-dasharray', 'fill' patterns defined in the document,
+                repeating gradients
+            <td>Added icons or text
+        <tr><td>'@media/prefers-on-off-labels'
+            <td>Showing a label that is always present, by changing its 'color' from ''transparent''
+            <td>Inserting a label with 'content' or 'display'
+        <tr><td>'@media/prefers-reduced-caret-blink'
+            <td>'caret-animation', 'caret-color', 'caret-shape'
+            <td>Stopping a caret drawn by the page with 'animation'
+</table>
+
+<div class=example id=example-switch>
+    A switch whose state glyphs are always in the markup, marked <code>aria-hidden</code> because the switch's
+    state is already exposed through its role, and are revealed only by color:
+
+    <pre highlight=html>
+    &lt;button role="switch" aria-checked="true" class="switch">
+      &lt;span class="state-glyph" aria-hidden="true">I&lt;/span>
+    &lt;/button>
+    </pre>
+
+    <pre highlight=css>
+    .switch .state-glyph { color: transparent; }
+    @media (prefers-on-off-labels: show) {
+      .switch .state-glyph { color: inherit; }
+    }
+    </pre>
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-sensitive>What the settings reveal</h3>
+
+Each setting is used by people without disabilities, and each is used disproportionately by people with them:
+
+<table class=data>
+    <thead><tr><th>Setting<th>Commonly used by people with
+    <tbody>
+        <tr><td>Bold text<td>Low vision, age-related difficulty focusing on near objects, dyslexia
+        <tr><td>Button shapes<td>Low vision, cognitive and learning disabilities
+        <tr><td>Differentiate without color<td>Color vision deficiency, which is inherited, and is far more
+            common in men than in women
+        <tr><td>On/off labels<td>Color vision deficiency, cognitive disabilities
+        <tr><td>Reduced caret blink<td>Photosensitive epilepsy, migraine, attention disorders, vestibular
+            disorders
+</table>
+
+A site that could read these settings could infer health information, which data protection law often treats as
+a special category [[GDPR]]; could infer age and sex; and could use either to exclude, target, or charge users
+differently.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+Each setting is uncommon, and uncommon values identify users. A setting that 2% of users turn on reveals 5.6 bits
+about each of them, and one that 0.5% turn on reveals 7.6 bits. Settings used by the same people tend to be turned
+on together, which reduces the sum, but a user with three of the five settings on may still reveal well over 10
+bits. The users who reveal the most are the users with disabilities.
+
+<h3 id=privacy-design>How the features are protected</h3>
+
+<table class=data>
+    <thead><tr><th>Channel<th>Private (default)<th>Shared
+    <tbody>
+        <tr><td>Script: <code>matchMedia()</code>, computed style
+            <td>Always ''no-preference''
+            <td>The setting
+        <tr><td>Layout
+            <td>No change
+            <td>Changes
+        <tr><td>Network
+            <td>No difference in what is fetched
+            <td>Resources can be fetched only under one value
+        <tr><td>Timing of changes
+            <td>Not observable
+            <td>Delayed change delivery
+        <tr><td>Cross-origin frames
+            <td>Protected evaluation
+            <td>Protected evaluation, unless the embedding page allows "accessibility-preferences"
+        <tr><td>Documents without script; private browsing
+            <td>Protected evaluation
+            <td>Protected evaluation
+</table>
+
+With the [=private=] sharing choice, the only ways for a page to learn the settings are the ones described in
+[[#privacy-residual]]. Even with the [=shared=] choice, cross-origin frames, documents without script, and private
+browsing modes can't learn them.
+
+<h3 id=privacy-why-not-always-private>Why sharing is possible at all</h3>
+
+Some adaptations need layout: text drawn at a heavier weight takes more room and has to wrap differently, and a
+label that isn't in the page already has to be inserted. Protected evaluation can't allow those without revealing
+the setting. A user who wants the full adaptation, and accepts that sites can learn the setting, can choose to
+share it.
+
+<h3 id=privacy-why-not-always-shared>Why sharing isn't the default</h3>
+
+Existing accessibility media features, such as '@media/prefers-reduced-motion', are revealed to every page, and some
+browsers turn them off in private browsing modes to protect users from fingerprinting, which also takes away the
+adaptation. Protected evaluation keeps the adaptation and removes the fingerprint. For settings that few people
+use, and that reveal disability, the default should be the one that doesn't make the users who need them easier
+to identify.
+
+<h3 id=privacy-at>Assistive technology</h3>
+
+These are settings, not assistive technology, and [[#features]] forbids deriving them from whether assistive
+technology is running. A user of a screen reader who also has Button Shapes turned on reveals, at most, that
+setting.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+Cross-origin frames use protected evaluation unless the page that embeds them allows "accessibility-preferences".
+Embedded content therefore still adapts its colors, outlines, and caret to the user, and a tracker embedded in many
+sites can't read the settings. An embedding page should allow the feature only for frames that need layout
+adaptations, such as an embedded editor.
+
+<h3 id=privacy-without-script>Reading the features without script</h3>
+
+A style sheet in an email or a page with script blocked could report the settings to a server by loading a
+resource under the query. Documents without script always use protected evaluation, in which no resource is
+fetched differently, so this isn't possible.
+
+<h3 id=privacy-correlation>Linking visits by when a setting changes</h3>
+
+Users rarely change these settings. When they do, documents that use protected evaluation can't observe it, and
+documents that use full evaluation learn of it through [[#changes|delayed change delivery]].
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* **Interaction.** A page could paint something only for users with a setting, and learn the setting if the user
+    reacts. This requires tricking the user, and works one user at a time.
+* **Users who share.** A user who shares a setting reveals it to top-level documents and to frames their
+    embedders allow, including first-party scripts from trackers.
+* **Captures the user shares.** A page that the user lets capture its own tab can see what was painted.
+* **Native controls.** User agents that follow a setting in native controls should make sure a page can't measure
+    the difference, for example if an on/off label changes a native switch's size.
+
+
+<h2 id=security>Security considerations</h2>
+
+* **Targeting.** A page could show different content to users with a setting that suggests age or disability,
+    such as a scam shown only to users with bold text. With protected evaluation, such content can only differ in
+    color, outlines, and decoration, and the server can't select it. With a shared setting, it could differ more.
+    Services that check pages for fraud should check them with these settings on.
+* **Hiding content.** A page could use a paint-only property to hide content from users with a setting. A page
+    can already hide anything it wants.
+* **No new capabilities.** None of the features fetch anything, run script, or change what the user can do.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-bundle>One feature for all explicit cues</h3>
+
+A single feature, such as <code>(prefers-explicit-cues)</code>, could cover button shapes, differentiate without
+color, and on/off labels. It would reveal one bit instead of up to three. It was not chosen because the settings
+are independent, and a single feature would make authors apply all three adaptations for any one of them. With
+protected evaluation as the default, the number of bits matters less.
+
+<h3 id=alt-always-private>Never allowing full evaluation</h3>
+
+The features could always use protected evaluation. That would protect every user, and would make adaptations
+that need layout impossible. See [[#privacy-why-not-always-private]] and the open issues.
+
+<h3 id=alt-client-hints>Client hints</h3>
+
+Client hints such as those proposed for other user preference features would let servers send adapted pages. They
+were not chosen because they reveal the settings to servers, which is what protected evaluation prevents.
+
+<h3 id=alt-not-included>Settings not included</h3>
+
+* **Captions.** Operating systems have a setting to show captions. Turning captions on for a video is done in
+    script, not CSS, so a media feature wouldn't help.
+* **Whether a screen reader is running.** This would reveal the use of assistive technology directly, and is
+    deliberately not proposed.
+* **Text size.** Other proposals, such as an environment variable for the user's preferred text scale, cover it.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should full evaluation be removed, so the features are always protected? Accessibility reviewers
+and privacy reviewers may weigh the layout adaptations differently.
+
+<p class=issue>Is one in sixteen the right threshold for a default of [=shared=], and how should a user agent
+estimate how many of its users have a setting on without collecting that data?
+
+<p class=issue>Should the protections in this specification also apply to '@media/prefers-reduced-motion',
+'@media/prefers-contrast', and '@media/prefers-reduced-transparency'? Many of the adaptations for them, such as
+stopping animations, aren't paint-only.
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: With the default private choice, none: pages adapt their appearance without observing the settings. With the
+    shared choice, five accessibility settings, so pages can also adapt their layout.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. Adaptations that don't need the value don't get it.
+: Do the features expose personal information, PII, or information derived from either?
+:: When shared, the settings can suggest health conditions, age, and sex. See [[#privacy-sensitive]].
+: How do the features deal with sensitive information?
+:: Protected evaluation by default, and always in frames, documents without script, and private modes.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Yes, disability and age. The sharing choice should say so.
+: Do the features introduce state that persists across browsing sessions?
+:: No. The sharing choice is a user agent setting, not visible to pages.
+: Do the features expose information about the underlying platform to origins?
+:: The state of operating system accessibility settings, when shared.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: None. Changes are either unobservable or delayed.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: Cross-origin frames use protected evaluation unless allowed "accessibility-preferences".
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: Modes that protect against fingerprinting are reduced-exposure contexts, which use protected evaluation. Pages
+    still adapt their appearance.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: In full evaluation, it gets any change when it becomes visible. In protected evaluation, it is painted with the
+    current settings.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No. The settings must not be derived from assistive technology, and aren't observable unless the user shares
+    them.
+: What should this questionnaire have asked?
+:: Whether a feature that helps people with disabilities makes those people easier to identify than other users,
+    and whether it still works for them when privacy protections are on.

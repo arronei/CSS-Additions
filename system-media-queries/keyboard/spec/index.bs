@@ -1,0 +1,399 @@
+<pre class=metadata>
+Title: Keyboard Media Queries
+Shortname: keyboard-media-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/keyboard/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds two media features about keyboards. '@media/keyboard' reports whether
+    a hardware keyboard is available, so pages can show keyboard shortcuts only to people who can use them,
+    which '@media/pointer' and '@media/hover' can't tell. '@media/virtual-keyboard' reports whether an
+    on-screen keyboard is covering part of the page, so pages can hide toolbars and footers that would
+    otherwise sit on top of it. Neither reveals the keyboard's layout, language, or size. Keyboards used by
+    assistive technology don't count, embedded content learns only about its own input, and attaching a
+    keyboard can't be used to link visits to different sites.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:dfn; text:node navigable
+spec:html; type:dfn; for:navigable; text:top-level traversable
+spec:html; type:dfn; text:allowed to use
+spec:html; type:dfn; text:editing host
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: delayed change delivery; url: #delayed-change-delivery
+        text: maximum delay; url: #maximum-delay
+        text: minimum interval; url: #minimum-interval
+        text: frame-scoped exposure; url: #frame-scoped-exposure
+        text: restricted value; url: #restricted-value
+        text: reduced-exposure context; url: #reduced-exposure-context
+        text: under user control; url: #under-user-control
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "VIRTUAL-KEYBOARD": {
+        "title": "VirtualKeyboard API",
+        "href": "https://w3c.github.io/virtual-keyboard/",
+        "publisher": "W3C"
+    },
+    "KEYBOARD-MAP": {
+        "title": "Keyboard Map",
+        "href": "https://wicg.github.io/keyboard-map/",
+        "publisher": "WICG"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Web apps show keyboard shortcuts: "Press / to search", "Ctrl+Enter to send". On a phone or a tablet
+without a keyboard, those hints are clutter. '@media/pointer' and '@media/hover' say whether there is a mouse,
+but a tablet with a keyboard case and no trackpad has a keyboard and no mouse, and a phone never does.
+
+<div class=example id=example-shortcuts>
+    <pre highlight=css>
+    kbd.hint { display: none; }
+    @media (keyboard: physical) {
+      kbd.hint { display: inline; }
+    }
+    </pre>
+</div>
+
+Pages also struggle with on-screen keyboards. A bottom navigation bar or a "Chat with us" button that stays
+fixed at the bottom of the viewport ends up on top of the keyboard, or squeezed between the keyboard and the
+text the user is typing.
+
+<div class=example id=example-footer>
+    <pre highlight=css>
+    @media (virtual-keyboard: visible) {
+      .bottom-nav, .chat-launcher { display: none; }
+      .composer { padding-block-end: 0; }
+    }
+    </pre>
+</div>
+
+
+<h2 id=keyboard-feature>The '@media/keyboard' feature</h2>
+
+<pre class='descdef mq'>
+Name: keyboard
+Value: none | physical
+For: @media
+Type: discrete
+</pre>
+
+The '@media/keyboard' media feature is a [=system media feature=]. Its [=actual value=] is:
+
+: <dfn value for=@media/keyboard>physical</dfn>
+:: The user agent believes that a [=hardware keyboard=] is connected and can be used.
+: <dfn value for=@media/keyboard>none</dfn>
+:: Otherwise. The user may still type with an on-screen keyboard, handwriting, or dictation. This value
+    evaluates to false in a [=boolean context=].
+
+A <dfn>hardware keyboard</dfn> is a physical device that can type text and key combinations, such as a
+keyboard built into a laptop, a keyboard cover attached to a tablet, or a keyboard connected over USB or
+Bluetooth. These are not hardware keyboards for this feature, even when they send key events:
+
+* Input devices used by assistive technology, such as switch devices, braille displays, and devices for
+    augmentative and alternative communication.
+* Game controllers and remote controls.
+* Devices that send key events for other purposes, such as barcode scanners, when the user agent can tell.
+* A keyboard that the operating system has turned off, such as the keyboard of a laptop folded into a tablet
+    shape.
+
+On a desktop or laptop computer, where the operating system doesn't report whether a keyboard is connected,
+the user agent reports ''keyboard/physical''.
+
+The <dfn>platform default</dfn> is the value the user agent would report on the device with nothing attached
+and nothing folded: ''keyboard/physical'' on desktop and laptop computers, and ''keyboard/none'' on phones,
+tablets, and other devices whose primary input is not a keyboard.
+
+<h3 id=keyboard-rare>Devices where keyboards are rare</h3>
+
+On a kind of device where fewer than one in a hundred users have a hardware keyboard connected, such as a
+phone, the user agent should report the [=platform default=] unless the user has chosen to let sites know
+when a keyboard is connected.
+
+<div class=note>
+    A user whose phone has a keyboard connected is rare enough to reveal more than 6.6 bits of information.
+    See [[#privacy-fingerprinting]].
+</div>
+
+<h3 id=keyboard-changes>Changes</h3>
+
+The '@media/keyboard' feature uses [=delayed change delivery=] [[!MEDIA-FEATURE-PRIVACY]], with a
+[=maximum delay=] of 10 seconds and a [=minimum interval=] of 60 seconds.
+
+<h3 id=keyboard-frames>Frames</h3>
+
+The '@media/keyboard' feature uses [=frame-scoped exposure=]. Its policy-controlled feature is
+"<dfn export>keyboard-state</dfn>", whose default allowlist is <code>&#39;self&#39;</code>. In a document
+that isn't [=allowed to use=] it, the feature takes its [=restricted value=], the [=platform default=].
+
+<h3 id=keyboard-reduced-exposure>Reduced exposure</h3>
+
+The '@media/keyboard' feature is [=under user control=]. In a [=reduced-exposure context=], it is the
+[=platform default=].
+
+
+<h2 id=virtual-keyboard-feature>The '@media/virtual-keyboard' feature</h2>
+
+<pre class='descdef mq'>
+Name: virtual-keyboard
+Value: hidden | visible
+For: @media
+Type: discrete
+</pre>
+
+The '@media/virtual-keyboard' media feature is a [=system media feature=]. In a [=document=] |d|, its
+[=actual value=] is:
+
+: <dfn value for=@media/virtual-keyboard>visible</dfn>
+:: An on-screen keyboard provided by the operating system or the user agent is shown, it is typing into an
+    [=editing host=] or text control in a document whose [=node navigable=]'s
+    [=navigable/top-level traversable=] is the same as |d|'s, and it covers part of that top-level
+    traversable's viewport, either by overlapping it or by making it smaller.
+: <dfn value for=@media/virtual-keyboard>hidden</dfn>
+:: Otherwise. This value evaluates to false in a [=boolean context=].
+
+An on-screen keyboard that is typing into anything else doesn't make the feature ''virtual-keyboard/visible''.
+That includes the user agent's own interface, such as its address bar, its find-in-page box, and its password
+and autofill prompts; other apps, including an app sharing the screen in a split view; and the operating
+system's own dialogs.
+
+The value changes in the same rendering update in which the user agent resizes the viewport or the visual
+viewport because of the keyboard, or, if neither is resized, in which it would fire the
+<code>geometrychange</code> event of the VirtualKeyboard API [[VIRTUAL-KEYBOARD]].
+
+<div class=note>
+    The feature says only that the keyboard is there. Pages that need its size can use the
+    <code>keyboard-inset-*</code> environment variables of the VirtualKeyboard API.
+</div>
+
+<h3 id=virtual-keyboard-frames>Frames</h3>
+
+The '@media/virtual-keyboard' feature uses [=frame-scoped exposure=]. Its policy-controlled feature is
+"<dfn export>virtual-keyboard-state</dfn>", whose default allowlist is <code>&#39;self&#39;</code>. In a
+document |d| that isn't [=allowed to use=] it, the feature takes its [=restricted value=]:
+''virtual-keyboard/visible'' if the feature is ''virtual-keyboard/visible'' and the keyboard is typing into an
+editing host or text control in |d| itself, and ''virtual-keyboard/hidden'' otherwise.
+
+<div class=note>
+    A chat widget in a cross-origin frame learns that the keyboard is showing when the user is typing into
+    the widget, which it knows anyway, because it has focus. It doesn't learn when the user types into the page
+    around it.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-keyboard-exposed>What '@media/keyboard' reveals</h3>
+
+On desktop and laptop computers, the feature is ''keyboard/physical'', and reveals nothing. On phones and
+tablets, it reveals:
+
+* **An accessory.** The user owns a keyboard case, or a Bluetooth keyboard. That can suggest the model of
+    the device, and on a phone it is rare.
+* **How the device is being used.** A tablet with its keyboard attached is probably being used for work;
+    one without is probably being used to read or watch.
+* **When the keyboard is attached or detached**, which is the same moment in every open document.
+
+The feature doesn't reveal the keyboard's layout, language, manufacturer, or connection, or how many keyboards
+there are.
+
+<h3 id=privacy-keyboard-at>Assistive technology</h3>
+
+Many people with disabilities use input devices that behave like keyboards: switch devices, braille displays
+with keys, and communication devices. Some blind people use hardware keyboards with their phones. If those
+devices counted, the feature would help identify people with disabilities, and would reveal their use of
+assistive technology. They don't count, and the rule for [[#keyboard-rare]] means that a hardware keyboard on a
+phone isn't reported unless the user chooses.
+
+<h3 id=privacy-keyboard-existing>What is already exposed</h3>
+
+* Once the user types, keyboard events reveal a hardware keyboard, for example through the physical key
+    codes of <code>KeyboardEvent.code</code>. The feature reveals it before the user types.
+* The Keyboard Map API [[KEYBOARD-MAP]], where supported, reveals the keyboard layout, which is much more
+    identifying than whether a keyboard is present.
+* '@media/any-pointer' and '@media/any-hover' already reveal when a trackpad or mouse is attached, which
+    many tablet keyboard cases include.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+Where most devices of a kind have the same value, the uncommon value is what identifies users. If 1% of phones
+have a keyboard connected at a given moment, a phone that reports ''keyboard/physical'' reveals 6.6 bits.
+On tablets, where keyboard cases are common, the same value reveals much less.
+
+Mitigations:
+
+* On desktop and laptop computers, the value is almost always the same.
+* On kinds of devices where keyboards are rare, the platform default is reported unless the user chooses
+    otherwise. See [[#keyboard-rare]].
+* Cross-origin frames get the platform default unless the embedding page allows more.
+* The platform default in [=reduced-exposure contexts=]. The platform default reveals only the kind of device,
+    which the user-agent string already reveals.
+
+<h3 id=privacy-keyboard-correlation>Linking visits by when the value changes</h3>
+
+Attaching a keyboard changes the value in every open document at once. The feature uses
+[=delayed change delivery=], so hidden documents learn of the change only when they become visible, and visible
+documents learn of it after a random delay of up to 10 seconds, at most once a minute. Tablets, where attaching
+keyboards is common, usually show one document at a time. Frame-scoped exposure keeps third-party frames, which
+are the usual way trackers link visits, from seeing changes at all.
+
+A 10-second delay is short, and [[MEDIA-FEATURE-PRIVACY]] explains that a short delay protects less. The delay is
+short because the hints the feature shows should follow the keyboard promptly; the protection here comes mostly
+from visibility and frame-scoped exposure.
+
+<h3 id=privacy-virtual-exposed>What '@media/virtual-keyboard' reveals</h3>
+
+The feature reveals that the user is typing into the page, or into a frame in it, with an on-screen keyboard,
+and when the user closes the keyboard without leaving the field.
+
+Script in the top-level document can already tell. Focus events say which field the user is in, and on most
+phones the visual viewport shrinks when the keyboard appears, which <code>visualViewport</code> reports. The
+feature changes in the same rendering update as that resize.
+
+The feature doesn't reveal the keyboard's size, which would reveal the keyboard app and its language, or whether
+the keyboard is the system's or a third-party app's. It doesn't reveal typing into the user agent's interface,
+such as the address bar, which would reveal that the user was about to leave the page, or typing into other
+apps.
+
+<h3 id=privacy-virtual-third-party>Embedded content</h3>
+
+A cross-origin frame learns only about the keyboard typing into its own document, which it knows from focus. It
+doesn't learn when the user types into the page that embeds it.
+
+<h3 id=privacy-without-script>Reading the features without script</h3>
+
+A style sheet can report the value of either feature to a server by loading a resource. For '@media/keyboard',
+this reveals the same thing as script would, at page load or after a delay; documents where script is disabled
+for privacy reasons are [=reduced-exposure contexts=], where it is the platform default. For
+'@media/virtual-keyboard', a style sheet can already tell that the user is typing, with ':focus'.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* On tablets, where both values are common, '@media/keyboard' reveals whether a keyboard is attached, and
+    documents visible when it changes can be linked with more effort than frames.
+* A user who chooses to reveal a keyboard on their phone reveals a rare value.
+
+
+<h2 id=security>Security considerations</h2>
+
+* Neither feature can type, read keystrokes, or open or close a keyboard.
+* **Instructions that need a keyboard.** Some attacks tell users to press key combinations that run commands,
+    such as opening a system dialog and pasting a command into it. A page could show those instructions only to
+    users with a hardware keyboard, and keep them from phones and from scanners that don't emulate one. The
+    user-agent string already reveals the operating system, which is what those attacks target, and desktop
+    computers always report ''keyboard/physical''. Security scanners should check pages with both values.
+* **Fake keyboards.** A page could draw its own keyboard to capture what the user types, and use the feature to
+    do so only when the real keyboard is hidden. Pages can already draw anything. The operating system draws the
+    real keyboard above the page, and the page can't hide it.
+* **Moving targets.** A page that moves its controls when the keyboard appears could move a button under the
+    user's finger. Pages can already do this when the viewport resizes. Security-sensitive controls, such as
+    payment confirmation, shouldn't move when the keyboard appears.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-layout>Keyboard layout or language</h3>
+
+A feature for the layout, such as <code>(keyboard-layout: azerty)</code>, would let pages show the right keys
+in hints. It was not chosen because the layout identifies users far more than the presence of a keyboard, and
+the Keyboard Map API already provides it to script where it is supported.
+
+<h3 id=alt-env>Only the environment variables</h3>
+
+The <code>keyboard-inset-*</code> environment variables can already describe the keyboard's area, but only when
+the page opts into having the keyboard overlay its content, and they don't work in media queries or
+<code>&lt;source media></code>. '@media/virtual-keyboard' works with the page's normal layout.
+
+<h3 id=alt-any-keyboard>''any-keyboard'' and ''keyboard'' like ''any-pointer'' and ''pointer''</h3>
+
+A pair of features could describe the primary keyboard and any keyboard. Devices rarely have more than one kind,
+and a second feature would reveal more for little benefit.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Is one in a hundred the right threshold for [[#keyboard-rare]], and how should user agents
+estimate it without collecting data about their users' keyboards?
+
+<p class=issue>Should '@media/keyboard' be ''keyboard/none'' on a laptop whose built-in keyboard is covered or
+disconnected, when the operating system doesn't report it?
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Whether a hardware keyboard is available, so pages can show shortcuts, and whether an on-screen keyboard is
+    covering the page, so pages can move content out of its way.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. Two values each, and no layout, language, size, or device.
+: Do the features expose personal information, PII, or information derived from either?
+:: No. Assistive technology devices are excluded so that disability isn't revealed.
+: How do the features deal with sensitive information?
+:: See [[#privacy-keyboard-at]].
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: On phones and tablets, that the user owns a keyboard, and how they are using the device.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Whether a keyboard is connected, and whether the on-screen keyboard is shown for the page.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No. It learns whether a keyboard is connected, and nothing else about it.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: The moment a keyboard is attached or detached. See [[#privacy-keyboard-correlation]].
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: Cross-origin frames get the platform default for '@media/keyboard', and only learn about their own input
+    for '@media/virtual-keyboard', unless the embedding page allows more.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: In modes that protect against fingerprinting, '@media/keyboard' is the platform default.
+    '@media/virtual-keyboard' is unchanged, because script sees the viewport resize.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: When restored, it gets the current value of '@media/keyboard' as it becomes visible. The on-screen keyboard
+    isn't typing into a cached document, so '@media/virtual-keyboard' is ''virtual-keyboard/hidden''.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No. Devices used by assistive technology aren't hardware keyboards for this feature.
+: What should this questionnaire have asked?
+:: Whether a value that is common on one kind of device is rare, and therefore identifying, on another.

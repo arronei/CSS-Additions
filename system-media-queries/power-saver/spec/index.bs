@@ -1,0 +1,347 @@
+<pre class=metadata>
+Title: Reduced Power Preference Media Query
+Shortname: prefers-reduced-power
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds the '@media/prefers-reduced-power' media feature, which reports that
+    the user's device is saving power, as it does when Low Power Mode, Battery Saver, or Energy Saver is
+    on, so that pages can turn off video backgrounds, heavy animation, and background work. It reports
+    whether a power-saving mode is on, never a battery level, and it uses delayed change delivery so that
+    a change can't link the user's visits to different sites.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: delayed change delivery; url: #delayed-change-delivery
+        text: maximum delay; url: #maximum-delay
+        text: minimum interval; url: #minimum-interval
+        text: reduced-exposure context; url: #reduced-exposure-context
+        text: under user control; url: #under-user-control
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "LEAKING-BATTERY": {
+        "title": "The leaking battery: A privacy analysis of the HTML5 Battery Status API",
+        "authors": ["Łukasz Olejnik", "Gunes Acar", "Claude Castelluccia", "Claudia Diaz"],
+        "href": "https://eprint.iacr.org/2015/616",
+        "date": "2015"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Phones, tablets, and laptops have modes that save power when the battery is low or when the user asks:
+Low Power Mode on iOS, iPadOS, and macOS, Battery Saver on Android and ChromeOS, and Energy Saver on
+Windows. Browsers have their own, such as the energy saving modes in Chrome and Edge. These modes slow
+down native apps and background work, but a web page can't tell that one is on. It keeps playing its
+video background, running its WebGL animation, and polling its server.
+
+This specification lets a page find out, so it can do less.
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    @media (prefers-reduced-power: reduce) {
+      .hero video { display: none; }
+      .hero { background-image: url(hero-still.jpg); }
+      .spinner, .confetti { animation: none; }
+      .glass { backdrop-filter: none; background-color: rgb(255 255 255 / 0.9); }
+    }
+    </pre>
+
+    <pre highlight=html>
+    &lt;picture>
+      &lt;source media="(prefers-reduced-power: reduce)" srcset="logo-still.png">
+      &lt;img src="logo-animated.avif" alt="Example Inc.">
+    &lt;/picture>
+    </pre>
+
+    <pre highlight=js>
+    const saving = matchMedia("(prefers-reduced-power: reduce)");
+    const poll = () => setTimeout(refresh, saving.matches ? 60_000 : 5_000);
+    </pre>
+</div>
+
+The feature reports that a power-saving mode is on, and nothing more: not the battery level, not whether
+the device is charging, and not which mode. Its value can reveal something about the user's battery, and a
+change in its value can link visits to different sites, so [[#privacy]] describes how the feature limits
+both.
+
+
+<h2 id=feature>The '@media/prefers-reduced-power' feature</h2>
+
+<pre class='descdef mq'>
+Name: prefers-reduced-power
+Value: no-preference | reduce
+For: @media
+Type: discrete
+</pre>
+
+The '@media/prefers-reduced-power' media feature is a [=system media feature=]. Its [=actual value=] is
+one of:
+
+: <dfn value for=@media/prefers-reduced-power>no-preference</dfn>
+:: No power-saving mode is on, or the user agent doesn't know. This value evaluates to false in a
+    [=boolean context=].
+: <dfn value for=@media/prefers-reduced-power>reduce</dfn>
+:: A power-saving mode is on.
+
+A <dfn export>power-saving mode</dfn> is a mode that the user, or the device on the user's behalf, has
+turned on to use less energy at the cost of performance or features. The user agent reports
+''prefers-reduced-power/reduce'' when any of these is on:
+
+* A power-saving mode of the operating system. A mode that the operating system turns on by itself when
+    the battery reaches a level the user has chosen, or has agreed to, counts.
+* A power-saving mode of the user agent.
+* A setting in the user agent that asks pages to use less power.
+
+The user agent must not report ''prefers-reduced-power/reduce'' because the device is running on battery,
+because of the battery level, or because of the device's temperature or load, unless a power-saving mode
+is on because of it.
+
+<div class=note>
+    The feature doesn't change what the user agent does itself. A user agent can slow down timers or
+    lower frame rates in a power-saving mode whether or not pages use this feature. The feature is
+    independent of '@media/prefers-reduced-motion' and '@media/prefers-reduced-data': saving power
+    doesn't mean the user wants less motion, and it doesn't mean the network is expensive.
+</div>
+
+<h3 id=changes>Changes</h3>
+
+The feature uses [=delayed change delivery=] [[!MEDIA-FEATURE-PRIVACY]], with a [=maximum delay=] of
+60 seconds and a [=minimum interval=] of 10 minutes.
+
+<div class=note>
+    A power-saving mode saves energy over minutes and hours, so a page that adapts up to a minute late
+    loses little. [[#privacy-correlation]] explains the values.
+</div>
+
+<h3 id=reduced-exposure>Reduced exposure</h3>
+
+The feature is [=under user control=]. In a [=reduced-exposure context=], the feature is
+''prefers-reduced-power/no-preference''.
+
+The user agent may also let the user choose to report ''prefers-reduced-power/reduce'' at all times,
+which saves power on every page and reveals nothing, because the value never changes.
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-exposed>What the feature reveals</h3>
+
+Directly, the feature reveals whether a power-saving mode is on. Less obviously, it can also reveal:
+
+* **That the battery is low.** Most power-saving modes turn on, or offer to, when the battery reaches a
+    level such as 20%. A change to ''prefers-reduced-power/reduce'' on a device where the user usually
+    doesn't turn the mode on by hand suggests that the battery just reached that level.
+* **That the device started charging.** Some modes turn off when the device is plugged in, or when it
+    has charged past a level such as 80%.
+* **That the device has a battery.** This distinguishes laptops from desktop computers, which the
+    user-agent string doesn't.
+* **Habits.** Over days, the times at which the mode turns on show when the user is away from a charger.
+
+The feature doesn't reveal the battery level, whether the device is charging, how long the battery will
+last, or which mode is on, and the user agent never reports ''prefers-reduced-power/reduce'' because of
+the battery level alone.
+
+<h3 id=privacy-existing>What is already exposed</h3>
+
+In browsers that support it, the Battery Status API reveals the battery level and charging state to
+script. Firefox and Safari removed that API because of the linking attack described in
+[[#privacy-correlation]].
+
+Some browsers lower the rate of <code>requestAnimationFrame()</code> callbacks in a power-saving mode, and
+script can measure that rate. Where they do, script can often already tell that a mode is on. What this
+feature adds is that style sheets can tell without script, and that browsers that don't throttle reveal
+it too.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+The feature has two values, and a device's value changes, often daily. It is a poor stable identifier,
+but while the mode is on it adds −log<sub>2</sub>(|p|) bits to a fingerprint, where |p| is the fraction of
+users whose mode is on at that moment. If 10% of users have a power-saving mode on at a given time, a
+user whose mode is on reveals 3.3 bits, and a user whose mode is off reveals 0.15 bits.
+
+Mitigations:
+
+* Two values only; no levels or mode names.
+* ''prefers-reduced-power/no-preference'' in [=reduced-exposure contexts=].
+* The option to report ''prefers-reduced-power/reduce'' at all times, which makes the value constant.
+
+<h3 id=privacy-correlation>Linking visits by when the value changes</h3>
+
+When the mode turns on, every open document could learn of it at the same moment. A tracker present on two
+sites the user has open would see the change at the same moment in both and conclude that the two visits
+belong to one user. This is how the battery level was used to link visits [[LEAKING-BATTERY]], and a
+power-saving mode that turns on at a battery level has the same weakness.
+
+The feature uses [=delayed change delivery=], so:
+
+* A document that is hidden when the mode changes learns of the change only when it becomes visible.
+    That moment is already revealed by the <code>visibilitychange</code> event, so the document learns
+    nothing about when the mode changed. On phones, where power-saving modes matter most, usually only
+    one document is visible at a time.
+* A document that is visible learns of the change after a random delay of up to 60 seconds, chosen for
+    each document. Two visible documents learn of the same change up to a minute apart.
+* A document learns of at most one change every 10 minutes, so a mode that keeps turning on and off,
+    such as while a laptop is plugged in and unplugged, reveals fewer moments.
+
+Together these mean that a tracker needs two of its documents to be visible when the mode changes, on
+several separate occasions, to link visits with confidence. [[MEDIA-FEATURE-PRIVACY]] works through the
+numbers. This is a real cost to a tracker but not a guarantee, which is why the feature also reveals so
+little: a mode, not a level.
+
+<h3 id=privacy-without-script>Reading the feature without script</h3>
+
+A style sheet can report the value to a server by loading a resource under the query, including in HTML
+email and on pages with script blocked, and a rule that loads a resource only after the value changes
+reports roughly when it changed. The value is one bit, and documents where script is disabled for privacy
+reasons are [=reduced-exposure contexts=], where the feature is always
+''prefers-reduced-power/no-preference''.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+The feature has the same value in cross-origin frames as in the top-level document. Advertisements and
+embedded video account for much of the energy that pages use, and they are the content that most needs to
+do less, so restricting the feature in frames would defeat its purpose. The feature is not restricted in
+frames; the delays above apply there too.
+
+<h3 id=privacy-inference>Sensitive inferences</h3>
+
+A low battery can be exploited. Businesses have observed that people whose battery is about to run out are
+more willing to accept a higher price or a worse offer, because they can't shop around. A page could use
+''prefers-reduced-power/reduce'' as a sign of a low battery and change its offers.
+
+Mitigations: the value is not a battery level, many users turn the mode on by hand, and changes arrive late.
+Users who are concerned can turn the feature off, or report ''prefers-reduced-power/reduce'' at all times.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* A tracker that sees the same user's documents visible during several changes can still link them.
+* Where a user rarely turns the mode on by hand, a change to ''prefers-reduced-power/reduce'' still
+    suggests a battery level of about 20%.
+
+
+<h2 id=security>Security considerations</h2>
+
+* The feature can't change whether a power-saving mode is on.
+* A page can do more work when no power-saving mode is on, for example to run a cryptocurrency miner
+    only when the user is less likely to notice. Pages can already do this with the Battery Status API or
+    by measuring frame rates. The user agent's own limits on background work are the protection against it.
+* The feature is a hint for efficiency. Pages must not use it to decide anything that matters for security.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-name>''(power-saver: active)''</h3>
+
+A feature named for the mode rather than the preference reads naturally. It was not chosen because
+[[MEDIAQUERIES-5]] names features that reflect a user's choice with <code>prefers-</code>, such as
+'@media/prefers-reduced-data', and a power-saving mode is a choice even when the device makes it for the
+user at a level they picked.
+
+<h3 id=alt-battery>Battery level and charging features</h3>
+
+Features such as <code>(battery-level < 20%)</code> and <code>(power-source: battery)</code> would let
+pages make finer decisions. They were not chosen because the battery level is exactly the value that was
+used to link visits [[LEAKING-BATTERY]], and because a page that is asked to save power doesn't need to
+know why.
+
+<h3 id=alt-frames>Restricting the feature in frames</h3>
+
+Cross-origin frames could get ''prefers-reduced-power/no-preference'' unless the embedding page allowed
+more. This was not chosen because embedded advertisements and video are the content that uses the most
+energy, and embedding pages rarely change their defaults.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Is 60 seconds the right maximum delay? A longer delay makes linking harder and adapts
+more slowly.
+
+<p class=issue>Should there be a <code>Sec-CH-Prefers-Reduced-Power</code> client hint, like the hints
+for other user preference media features, so that servers can send lighter pages? A hint would reveal the
+value to servers, in every request that asks for it, without any of the delays.
+
+<p class=issue>Should a user agent that reports ''prefers-reduced-power/reduce'' also match
+'@media/prefers-reduced-motion'? Saving power often means less animation, but the two are different
+preferences.
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Whether a power-saving mode is on, so that pages can use less energy.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. One of two values, with no battery level, charging state, or mode name.
+: Do the features expose personal information, PII, or information derived from either?
+:: No, although changes observed over days reveal charging habits.
+: How do the features deal with sensitive information?
+:: A low battery can be exploited in pricing. See [[#privacy-inference]].
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Yes: that the battery is at a level such as 20%, that the device started charging, and that it has a
+    battery. See [[#privacy-exposed]].
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Yes, the state of a power-saving mode.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No. As with any media query, a page can load different resources depending on the value.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: The moment the value changes could act as one. Delayed change delivery limits this; see
+    [[#privacy-correlation]].
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: It doesn't, because embedded content uses much of the energy. See [[#privacy-third-party]].
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: Private modes that protect against fingerprinting are reduced-exposure contexts, where the value is
+    ''prefers-reduced-power/no-preference''.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: When the document is restored, it becomes visible, and it gets the current value at that moment.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept. A document that isn't fully active gets no updates.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No. An unknown value makes the query unknown, as for any media feature.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a feature can be read without script, for example by a style sheet in an email, and whether a
+    change in its value can link contexts by timing.

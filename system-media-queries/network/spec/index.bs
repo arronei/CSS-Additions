@@ -1,0 +1,365 @@
+<pre class=metadata>
+Title: Network Media Queries
+Shortname: network-media-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/network/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds two media features about the user's network. '@media/network' reports
+    whether the user agent is online, exactly as <code>navigator.onLine</code> does, so a style sheet can
+    dim controls that need a connection. '@media/connection' reports whether the network the user is on is
+    metered, as operating systems report for cellular data, hotspots, and Low Data Mode, so pages can avoid
+    large downloads. Neither reveals the kind of network, its speed, or its name, and changes to
+    '@media/connection' are delivered late so that they can't link the user's visits to different sites.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:attribute; text:onLine
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: delayed change delivery; url: #delayed-change-delivery
+        text: maximum delay; url: #maximum-delay
+        text: minimum interval; url: #minimum-interval
+        text: reduced-exposure context; url: #reduced-exposure-context
+        text: under user control; url: #under-user-control
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "NETINFO": {
+        "title": "Network Information API",
+        "href": "https://wicg.github.io/netinfo/",
+        "publisher": "WICG"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Web apps that work offline need to show which of their controls still work. Today that takes script that
+listens for <code>online</code> and <code>offline</code> events and toggles a class.
+
+<div class=example id=example-offline>
+    <pre highlight=css>
+    @media (network: offline) {
+      .needs-network { opacity: 0.5; pointer-events: none; }
+      .offline-banner { display: block; }
+    }
+    </pre>
+</div>
+
+Pages also download more than they need to on connections that cost the user money. Operating systems know
+when a connection is metered: cellular data, a phone's hotspot, a network the user has marked as metered,
+or Low Data Mode. '@media/prefers-reduced-data' covers users who have asked for less data; many users on a
+metered connection haven't, and still pay for every megabyte.
+
+<div class=example id=example-metered>
+    <pre highlight=css>
+    @media (connection: metered), (prefers-reduced-data: reduce) {
+      .hero video { display: none; }
+      .hero { background-image: url(hero-still.jpg); }
+    }
+    </pre>
+
+    <pre highlight=html>
+    &lt;picture>
+      &lt;source media="(connection: metered)" srcset="photo-800.jpg">
+      &lt;img src="photo-2400.jpg" alt="">
+    &lt;/picture>
+    </pre>
+</div>
+
+
+<h2 id=network-feature>The '@media/network' feature</h2>
+
+<pre class='descdef mq'>
+Name: network
+Value: online | offline
+For: @media
+Type: discrete
+</pre>
+
+The '@media/network' media feature is a [=system media feature=]. In a [=document=] |d|:
+
+: <dfn value for=@media/network>online</dfn>
+:: <code>navigator.onLine</code> would return true in |d|'s relevant global object.
+: <dfn value for=@media/network>offline</dfn>
+:: <code>navigator.onLine</code> would return false. This value evaluates to false in a
+    [=boolean context=], so <code>(network)</code> means online.
+
+The value changes when, and only when, the user agent fires the <code>online</code> or
+<code>offline</code> event at |d|'s relevant global object, in the same task.
+
+<div class=note>
+    The feature has the same value, at the same moments, as <code>navigator.onLine</code>, which every
+    browser supports in every document, including cross-origin frames. It has the same weakness: "online"
+    means the user agent believes it can reach the network, which can be true on a network with no route
+    to the internet.
+</div>
+
+
+<h2 id=connection-feature>The '@media/connection' feature</h2>
+
+<pre class='descdef mq'>
+Name: connection
+Value: unmetered | metered
+For: @media
+Type: discrete
+</pre>
+
+The '@media/connection' media feature is a [=system media feature=]. Its [=actual value=] is:
+
+: <dfn value for=@media/connection>metered</dfn>
+:: The operating system reports that the network the user agent uses for the document's requests is
+    metered or constrained: it has a cost per amount of data, a data limit, or a mode that asks apps to
+    use less data.
+: <dfn value for=@media/connection>unmetered</dfn>
+:: Otherwise, including when the user agent doesn't know, or the user agent is offline.
+
+<div class=note>
+    For example: Android reports a network without the "not metered" capability; Apple platforms report a
+    path as expensive, which includes cellular and personal hotspots, or as constrained, which is Low
+    Data Mode; Windows reports a connection cost other than unrestricted, which includes networks the user
+    has set as metered.
+</div>
+
+The user agent must derive the value only from these reports of the operating system, and from a setting
+in the user agent that marks the current network as metered. It must not derive it from the type of
+network, such as cellular, except where the operating system itself treats that type as metered, and must
+not derive it from the network's speed, name, or address.
+
+The user agent must not reveal anything else about the network through this feature.
+
+<h3 id=connection-changes>Changes</h3>
+
+The '@media/connection' feature uses [=delayed change delivery=] [[!MEDIA-FEATURE-PRIVACY]], with a
+[=maximum delay=] of 60 seconds and a [=minimum interval=] of 10 minutes.
+
+<div class=note>
+    A page that notices a minute late that the user has left their Wi-Fi uses a little more data, once.
+    [[#privacy-correlation]] explains why the delay is there.
+</div>
+
+<h3 id=connection-reduced-exposure>Reduced exposure</h3>
+
+The '@media/connection' feature is [=under user control=]. In a [=reduced-exposure context=], it is
+''connection/unmetered''.
+
+<div class=note>
+    The '@media/network' feature has no reduced exposure: it reveals nothing that
+    <code>navigator.onLine</code> doesn't, and offline apps need it to work.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-network>The '@media/network' feature</h3>
+
+The '@media/network' feature reveals exactly what <code>navigator.onLine</code> and the
+<code>online</code> and <code>offline</code> events reveal, to the same documents, at the same moments.
+It adds no information to script, and no timing.
+
+Without script, a style sheet can't report ''network/offline'' when it happens, because the user agent
+can't send the request. When the user agent comes back online, a rule under ''network/online'' can load a
+resource, which tells the server when the connection returned. Any request the page makes after reconnecting
+tells the server the same thing.
+
+A user is online when a page loads, so the feature adds no fingerprinting information.
+
+<h3 id=privacy-exposed>What '@media/connection' reveals</h3>
+
+Directly, the feature reveals whether the operating system considers the current network metered. Less
+obviously, it can reveal:
+
+* **Whether the user is on cellular data.** Phones treat cellular data as metered and most Wi-Fi as not,
+    so on a phone the value is close to "cellular or Wi-Fi".
+* **Where the user is.** A change from ''connection/unmetered'' to ''connection/metered'' usually means
+    the user has left home or work, and over days the times of those changes show the user's routine.
+* **A limited data plan.** A user who marks their home network as metered, or turns on Low Data Mode, may
+    have a capped or expensive plan, which can suggest their income.
+
+The feature doesn't reveal the network's type, speed, name, or carrier, or the user's IP address.
+
+<h3 id=privacy-existing>What is already exposed</h3>
+
+Servers see the user's IP address, and IP address ranges usually reveal whether a request came from a
+cellular carrier or a fixed-line provider. In most contexts, therefore, the value is close to what the server
+can already work out. The Network Information API [[NETINFO]] reveals the connection type to script in the
+browsers that support it; Firefox and Safari don't.
+
+This changes when the user agent hides the IP address, as a proxy, relay, or anonymity network does. Then
+the feature would reveal what the IP address no longer does, and a change in its value would link visits that
+the hidden address no longer links. Those contexts are [=reduced-exposure contexts=], where the feature is
+always ''connection/unmetered''.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+The value changes as the user moves, so it is a poor stable identifier. At a moment when a fraction |p| of
+users are on metered connections, a user on one reveals −log<sub>2</sub>(|p|) bits. On phones, |p| is large,
+because cellular data is common. On desktop computers it is small, so a desktop user on a metered connection
+reveals more.
+
+Mitigations:
+
+* Two values only.
+* ''connection/unmetered'' in [=reduced-exposure contexts=], including when the IP address is hidden.
+* The user can turn the feature off.
+
+<h3 id=privacy-correlation>Linking visits by when the value changes</h3>
+
+When the user walks out of range of their Wi-Fi, every open document could learn that the connection became
+metered at the same moment, and a tracker present in two of them could link them. The feature uses
+[=delayed change delivery=]:
+
+* Hidden documents learn of the change only when they become visible, which reveals no timing.
+* Visible documents learn of it after a random delay of up to 60 seconds, chosen for each document.
+* A document learns of at most one change every 10 minutes, so a user at the edge of Wi-Fi range, whose
+    connection keeps switching, reveals few moments.
+
+When the network changes, the IP address usually changes too, and a tracker can link the two documents by
+their new, shared address when they next make requests. The delay matters most when that doesn't work: when
+the IP address is hidden. Those are reduced-exposure contexts, so there the feature reveals no change at all.
+
+<h3 id=privacy-without-script>Reading the feature without script</h3>
+
+A style sheet can report the value to a server by loading a resource under the query. The request itself
+comes from the user's IP address, which usually reveals the same thing. Documents where script is disabled
+for privacy reasons are reduced-exposure contexts.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+Both features have the same value in cross-origin frames as in the top-level document. Embedded video and
+advertisements download the most data, and a frame already receives the user's IP address with every request,
+and <code>navigator.onLine</code> in its script.
+
+<h3 id=privacy-inference>Sensitive inferences</h3>
+
+A page could treat ''connection/metered'' as a sign that the user is away from home, or can't afford much
+data, and change its offers or prices. The value alone is weak evidence of either, because many users on
+metered connections are simply using their phones. Users who are concerned can turn the feature off.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* A tracker that sees the same user's documents visible during several network changes, while it can't use
+    the IP address, can still link them.
+* On desktop computers, where metered connections are uncommon, ''connection/metered'' reveals more.
+
+
+<h2 id=security>Security considerations</h2>
+
+* Neither feature changes the network or reveals anything about it that a request doesn't.
+* Pages must not use '@media/connection' for billing, or to decide whether a user can afford something. The
+    operating system can be wrong: many hotspots aren't marked as metered.
+* A page could use more of the user's bandwidth when the connection is unmetered, for example by sharing
+    uploads between users. Pages can already do this. The feature doesn't give a page permission to use the
+    user's connection for anyone else.
+* An offline message in a page is part of the page. It isn't a message from the user agent, and users
+    shouldn't be asked to enter credentials because of it.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-type>Connection type and speed</h3>
+
+Features like <code>(connection-type: cellular)</code> and <code>(downlink < 1mbps)</code> would give
+pages more to work with. They were not chosen because the type reveals more about where the user is than
+whether they pay for data, and speeds change often enough to link visits by timing. A page that knows the
+connection is metered knows what it needs to.
+
+<h3 id=alt-reduced-data>Folding metered connections into '@media/prefers-reduced-data'</h3>
+
+User agents could match '@media/prefers-reduced-data' on metered connections. That would give no new
+information to pages, but the feature is defined as the user's preference, and a user on a metered
+connection may still want full-quality media. Authors can combine the two, as the example in the
+introduction does.
+
+<h3 id=alt-network-name>''(online)'' as its own feature</h3>
+
+A feature named <code>online</code> would read naturally in a boolean context. '@media/network' was chosen
+so the offline state has a name of its own, and <code>(network)</code> already means online.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should ''connection/metered'' be split into ''connection/metered'' and a value for Low Data
+Mode, which is closer to a preference?
+
+<p class=issue>Should '@media/network' have a value for "captive portal", which operating systems can
+detect and pages often break under? It would reveal something <code>navigator.onLine</code> doesn't.
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Whether the user agent is online, for offline interfaces, and whether the network is metered, so pages
+    can download less.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. '@media/network' exposes no more than <code>navigator.onLine</code>. '@media/connection' exposes
+    one bit and no network type, speed, or name.
+: Do the features expose personal information, PII, or information derived from either?
+:: Changes to '@media/connection' observed over time can suggest the user's routine. See
+    [[#privacy-exposed]].
+: How do the features deal with sensitive information?
+:: A metered connection can suggest a limited data plan. See [[#privacy-inference]].
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Yes: on phones, whether the user is on cellular data, and when they leave home or work.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Yes: the operating system's report of whether the network is metered.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: The moment '@media/connection' changes. Delayed change delivery limits this, and contexts where the IP
+    address is hidden get no changes. See [[#privacy-correlation]].
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: It doesn't. See [[#privacy-third-party]].
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: In a mode that protects against fingerprinting or hides the IP address, '@media/connection' is
+    ''connection/unmetered''. '@media/network' is unchanged, like <code>navigator.onLine</code>.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: '@media/network' is updated when the document is restored, as <code>navigator.onLine</code> is.
+    '@media/connection' is delivered when it becomes visible.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a value becomes more revealing when other protections, such as hiding the IP address, are on.

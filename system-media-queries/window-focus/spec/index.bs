@@ -1,0 +1,312 @@
+<pre class=metadata>
+Title: Window Focus Media Query
+Shortname: window-focus-media-query
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/window-focus/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds the '@media/window-focus' media feature, which reports whether the
+    window showing the document is the one the user is using, so web apps can dim their title bars and
+    selections when the window is in the background, as native apps do. Top-level documents already learn
+    this from <code>focus</code> and <code>blur</code> events, and the feature reveals no more to them.
+    Cross-origin frames learn only whether they themselves have focus, unless the embedding page allows
+    more, and documents without script always see an active window.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:dfn; for:top-level traversable; text:system focus
+spec:html; type:dfn; text:has focus steps
+spec:html; type:dfn; text:node navigable
+spec:html; type:dfn; for:navigable; text:top-level traversable
+spec:html; type:dfn; text:allowed to use
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: frame-scoped exposure; url: #frame-scoped-exposure
+        text: restricted value; url: #restricted-value
+        text: reduced-exposure context; url: #reduced-exposure-context
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "WINDOW-CONTROLS-OVERLAY": {
+        "title": "Window Controls Overlay",
+        "href": "https://wicg.github.io/window-controls-overlay/",
+        "publisher": "WICG"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Native apps change their appearance when their window isn't the one the user is using: title bars fade,
+selected text turns gray, and toolbar icons lose their color. It tells the user where their typing will
+go. Installed web apps that draw their own title bar, using Window Controls Overlay
+[[WINDOW-CONTROLS-OVERLAY]], can only do the same with script that listens for <code>focus</code> and
+<code>blur</code> events.
+
+<div class=example id=example-title-bar>
+    <pre highlight=css>
+    .title-bar { background-color: #1e3a8a; color: white; }
+
+    @media (window-focus: inactive) {
+      .title-bar { background-color: #e5e7eb; color: #6b7280; }
+      ::selection { background-color: #d1d5db; }
+      .toolbar img { filter: grayscale(1); }
+    }
+    </pre>
+</div>
+
+<div class=example id=example-game>
+    A game pauses when its window loses focus, because it no longer receives key presses, and says so:
+
+    <pre highlight=css>
+    @media (window-focus: inactive) {
+      .paused-overlay { display: grid; }
+    }
+    </pre>
+</div>
+
+
+<h2 id=feature>The '@media/window-focus' feature</h2>
+
+<pre class='descdef mq'>
+Name: window-focus
+Value: active | inactive
+For: @media
+Type: discrete
+</pre>
+
+The '@media/window-focus' media feature is a [=system media feature=]. In a [=document=] |d|, its
+[=actual value=] is:
+
+: <dfn value for=@media/window-focus>active</dfn>
+:: |d|'s [=node navigable=]'s [=navigable/top-level traversable=] has [=top-level traversable/system focus=].
+: <dfn value for=@media/window-focus>inactive</dfn>
+:: Otherwise. This value evaluates to false in a [=boolean context=], so <code>(window-focus)</code>
+    means active.
+
+A top-level traversable whose document is hidden, such as a background tab, doesn't have system focus, so
+its documents are ''window-focus/inactive''.
+
+The value changes in the same task in which the user agent fires the <code>focus</code> or
+<code>blur</code> event at the top-level traversable's active window because its system focus changed.
+The user agent must not change it earlier.
+
+<h3 id=frames>Frames</h3>
+
+The feature uses [=frame-scoped exposure=] [[!MEDIA-FEATURE-PRIVACY]]. Its policy-controlled feature is
+"<dfn export>window-focus-state</dfn>", whose default allowlist is <code>&#39;self&#39;</code>.
+
+In a document |d| that isn't [=allowed to use=] "window-focus-state", the feature takes its
+[=restricted value=]: ''window-focus/active'' if the [=has focus steps=] return true for |d|, and
+''window-focus/inactive'' otherwise.
+
+<div class=note>
+    The restricted value is what <code>document.hasFocus()</code> returns in that document: whether the
+    window is active and the user's focus is inside the frame. A cross-origin frame learns nothing it
+    couldn't learn before. A chat widget or title bar in a cross-origin frame that should follow the
+    window needs <code>allow="window-focus-state"</code>.
+</div>
+
+<h3 id=no-script>Documents without script</h3>
+
+In a document for which <a href="https://html.spec.whatwg.org/multipage/webappapis.html#concept-n-noscript">scripting is disabled</a>, the feature is always ''window-focus/active''.
+
+<h3 id=reduced-exposure>Reduced exposure</h3>
+
+In a [=reduced-exposure context=] in which scripting is enabled, the feature behaves as described above.
+
+<div class=note>
+    The feature reveals nothing that script in the same document can't already learn, so hiding it where
+    script runs would protect nothing. The exception is documents without script, which the section above
+    covers.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-exposed>What the feature reveals</h3>
+
+The feature reveals whether the user is using the window that shows the document, and, as the value changes,
+when they switch to another window or app and back. That is a measure of attention: how long the user spent
+with the page, and when they looked away.
+
+It doesn't reveal which window or app the user switched to.
+
+<h3 id=privacy-existing>What is already exposed</h3>
+
+In a top-level document, script already learns exactly this:
+
+* <code>document.hasFocus()</code> returns whether the window is active and focus is in the document.
+* The window receives <code>focus</code> and <code>blur</code> events when the window gains and loses
+    system focus.
+* The <code>visibilitychange</code> event reports when the document is hidden, including, in many user
+    agents, when another window covers it.
+
+The feature takes the same value, and changes in the same task as those events, so script in a top-level
+document learns nothing new, not even a more precise time.
+
+In a cross-origin frame, script today learns only whether focus is inside the frame. It doesn't learn
+whether the window is active while the user is using another part of the page. The restricted value keeps it
+that way. See [[#privacy-third-party]].
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+The value is almost always ''window-focus/active'' when a page loads, because the user just opened it, and
+it changes whenever the user switches windows. It adds no meaningful information to a stable fingerprint.
+
+<h3 id=privacy-correlation>Linking visits by when the value changes</h3>
+
+When the user moves from one window to another, one window becomes inactive and the other becomes active
+at the same moment. A tracker present in both could link them by that moment.
+
+* **Top-level documents.** The <code>blur</code> and <code>focus</code> events already give script in both
+    documents that moment. The feature doesn't delay its change, because a delay would reveal nothing less
+    to script, and a title bar that dims late looks broken.
+* **Cross-origin frames.** Trackers that link visits across sites are usually embedded in those sites. With
+    the restricted value, a frame's value changes only when focus enters or leaves that frame, which
+    happens when the user clicks in it, not when they switch windows. A frame can't link the two windows.
+* **Documents without script.** The value never changes. See [[#privacy-without-script]].
+
+<h3 id=privacy-without-script>Reading the feature without script</h3>
+
+Without the rule in [[#no-script]], a style sheet could measure attention with no script at all: an email
+could load one resource when its window became inactive and another when it became active again, and the
+sender would learn how long the user read the message and when they looked away. HTML email is usually shown
+with scripting disabled, so the rule makes the feature ''window-focus/active'' there, and it never changes.
+
+Style sheets can already react to the user's attention in other ways, such as loading a resource on
+<code>:hover</code>. The rule makes sure this feature doesn't add a new one.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+A cross-origin frame that isn't allowed to use "window-focus-state" sees whether focus is inside it, which
+is what <code>document.hasFocus()</code> already tells it. The embedding page decides whether a frame needs
+to follow the window, and can allow it for that frame alone.
+
+<h3 id=privacy-inference>Sensitive inferences</h3>
+
+Attention can be used to monitor people. Online exam software watches for the user leaving the test window,
+and employers can watch how long workers spend in a web app. Script already makes this possible in
+top-level documents, and the feature doesn't change that. It doesn't make monitoring possible in contexts
+without script, or in embedded content.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* A frame that the embedding page allows to use "window-focus-state" learns what a top-level document does.
+    Embedding pages should allow it only for frames that need it.
+
+
+<h2 id=security>Security considerations</h2>
+
+* The feature can't give a window focus or take it away.
+* A page that draws its own title bar could use the feature to imitate a native window more convincingly.
+    It can already do so with <code>focus</code> and <code>blur</code> events. The protections against
+    imitation, such as the user agent's own title bar and the limits in Window Controls Overlay, are
+    unchanged.
+* A page can show content only while its window is inactive, when the user is less likely to notice it. It
+    can already do so with script.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-pseudo-class>A '':window-inactive'' pseudo-class</h3>
+
+WebKit has a nonstandard <code>:window-inactive</code> pseudo-class for selections and scrollbars. A
+pseudo-class selects elements, and this is a fact about the environment, which is what media queries
+describe. A media feature also works in <code>matchMedia()</code> and in HTML's <code>media</code>
+attributes.
+
+<h3 id=alt-top-level-everywhere>The window's state in every frame</h3>
+
+Every frame could see whether the window is active. That would let third-party frames on two sites link the
+user's windows by the moment focus moves between them, which they can't do today.
+
+<h3 id=alt-display-state>Combining with minimized and maximized states</h3>
+
+A single feature could describe focus along with whether the window is minimized, maximized, or full screen.
+Those are independent: a maximized window can be inactive. Other proposals cover window states.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should a document that is visible but in an inactive window, such as a picture-in-picture
+window the user isn't using, have a third value?
+
+<p class=issue>Is ''window-focus/active'' the right value for documents without script, or should those
+documents be allowed to follow the window when the user agent knows they aren't email?
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Whether the window showing the document is the active window, so pages can show that they are in the
+    background.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. It exposes what <code>focus</code> and <code>blur</code> events already expose to top-level
+    documents, and what <code>document.hasFocus()</code> already exposes to frames.
+: Do the features expose personal information, PII, or information derived from either?
+:: It reveals attention, which script can already measure. See [[#privacy-inference]].
+: How do the features deal with sensitive information?
+:: Frames and documents without script don't learn more than they already could.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: How long the user spends with the page and when they look away.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Only whether the window has system focus, which is already exposed.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: The moment focus moves between windows, which <code>focus</code> and <code>blur</code> events already
+    expose to top-level documents. Frames and documents without script don't see it.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: Cross-origin frames get the restricted value unless allowed "window-focus-state". See [[#frames]].
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: The same as in normal browsing, because script can read the same information.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: When it is restored, it gets the current value, as <code>document.hasFocus()</code> does.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a feature that is safe for script, because script already has the information, becomes unsafe in
+    contexts without script.

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Window Focus Media Query polyfill: tests</title>
+<script src="window-focus-media-query.js"></script>
+<style>
+  @media (window-focus: inactive) { #probe { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media not (window-focus) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+  const matches = (query, current) => matchMedia(WindowFocusMediaQuery.evaluate(query, current)).matches;
+  const color = (id) => getComputedStyle(document.getElementById(id)).color;
+  const GREEN = 'rgb(0, 128, 0)';
+
+  // Each case is [query, current value, expected].
+  function expectAll(cases) {
+    const wrong = cases.filter(([query, current, expected]) => matches(query, current) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, c, e]) => `${q} when ${c} should be ${e}`).join('; '));
+  }
+
+  test('window-focus compares with active and inactive', () => expectAll([
+    ['(window-focus: active)', 'active', true],
+    ['(window-focus: inactive)', 'active', false],
+    ['(Window-Focus: INACTIVE)', 'inactive', true],
+    ['screen and (window-focus: inactive)', 'inactive', true],
+  ]));
+
+  test('inactive is false in a boolean context', () => expectAll([
+    ['(window-focus)', 'active', true],
+    ['(window-focus)', 'inactive', false],
+    ['not (window-focus)', 'inactive', true],
+  ]));
+
+  test('invalid values and range syntax are unknown', () => expectAll([
+    ['(window-focus: focused)', 'active', false],
+    ['not (window-focus: focused)', 'active', false],
+    ['(window-focus > active)', 'active', false],
+    ['not (window-focus > active)', 'active', false],
+    ['(max-window-focus: active)', 'active', false],
+  ]));
+
+  test('the value follows document.hasFocus() in a top-level document', () => {
+    const expected = document.hasFocus() ? 'active' : 'inactive';
+    if (!matches(`(window-focus: ${expected})`)) throw new Error(`expected ${expected}`);
+  });
+
+  test('style sheets are rewritten, including nested rules', () => {
+    WindowFocusMediaQuery.pretend('inactive');
+    const on = [color('probe'), color('probe-nested')];
+    WindowFocusMediaQuery.pretend('active');
+    const off = [color('probe'), color('probe-nested')];
+    WindowFocusMediaQuery.pretend(null);
+    if (on.some((c) => c !== GREEN) || off.some((c) => c === GREEN)) {
+      throw new Error(`expected green then not, got ${on} then ${off}`);
+    }
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    let failed = 0;
+    for (const [name, body] of tests) {
+      try {
+        body();
+        log.textContent += `PASS ${name}\n`;
+      } catch (e) {
+        failed++;
+        log.textContent += `FAIL ${name}: ${e.message}\n`;
+      }
+    }
+    log.textContent += `${tests.length - failed} of ${tests.length} passed\n`;
+  });
+</script>

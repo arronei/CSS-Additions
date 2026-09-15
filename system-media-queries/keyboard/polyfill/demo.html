@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyboard Media Queries polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto 5rem; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  fieldset { display: flex; flex-wrap: wrap; gap: 0.75rem; border: 1px solid #ccc; }
+  kbd { font: 0.8em ui-monospace, monospace; border: 1px solid #9ca3af; border-radius: 4px; padding: 0 0.3em; }
+  kbd.hint { display: none; }
+  input[type=search] { width: 100%; font: inherit; padding: 0.4rem; }
+  .bottom-nav {
+    position: fixed; inset: auto 0 0; display: flex; justify-content: space-around;
+    background: #1e3a8a; color: white; padding: 0.75rem;
+  }
+
+  @media (keyboard: physical) { kbd.hint { display: inline; } }
+  @media (virtual-keyboard: visible) { .bottom-nav { display: none; } }
+</style>
+
+<h1>Keyboard Media Queries</h1>
+<p>On a computer, shortcut hints appear. On a phone, tap the search box: the bottom bar gets out of the keyboard's way.</p>
+
+<fieldset>
+  <legend>Pretend</legend>
+  <label><input type="checkbox" id="physical"> A hardware keyboard is connected</label>
+  <label><input type="checkbox" id="visible"> The on-screen keyboard is showing</label>
+  <button type="button" id="real">Use the real device</button>
+</fieldset>
+
+<p><label>Search <kbd class="hint">/</kbd> <input type="search"></label></p>
+<p>Send <kbd class="hint">Ctrl</kbd><kbd class="hint">Enter</kbd></p>
+
+<nav class="bottom-nav"><span>Home</span><span>Search</span><span>Profile</span></nav>
+
+<script src="keyboard-media-queries.js"></script>
+<script>
+  'use strict';
+  const physical = document.getElementById('physical');
+  const visible = document.getElementById('visible');
+  const pretend = () => KeyboardMediaQueries.pretend({
+    keyboard: physical.checked ? 'physical' : 'none',
+    'virtual-keyboard': visible.checked ? 'visible' : 'hidden',
+  });
+  physical.addEventListener('change', pretend);
+  visible.addEventListener('change', pretend);
+  document.getElementById('real').addEventListener('click', () => {
+    physical.checked = visible.checked = false;
+    KeyboardMediaQueries.pretend(null);
+  });
+</script>

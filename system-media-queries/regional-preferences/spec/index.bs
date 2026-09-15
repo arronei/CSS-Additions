@@ -1,0 +1,385 @@
+<pre class=metadata>
+Title: Regional Preference Media Queries
+Shortname: regional-preference-media-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/regional-preferences/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds media features for four regional preferences: '@media/hour-cycle' (a 12- or
+    24-hour clock), '@media/measurement-system' (metric, UK, or US units), '@media/temperature-unit'
+    (Celsius or Fahrenheit), and '@media/first-day-of-week'. A page can show times, distances, temperatures,
+    and calendars the way the user reads them without script. The values always match what
+    <code>Intl</code> gives script in the same document, so they reveal nothing new to script; where there is
+    no script, they come only from the language the browser already sends to servers; and they never change
+    while a document is open.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:dom; type:dfn; text:document
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: reduced-exposure context; url: #reduced-exposure-context
+spec: ecma-402; urlPrefix: https://tc39.es/ecma402/
+    type: abstract-op
+        text: DefaultLocale; url: #sec-defaultlocale
+spec: uts35; urlPrefix: https://www.unicode.org/reports/tr35/
+    type: dfn
+        text: Unicode locale extension keyword; url: #Key_And_Type_Definitions_
+        text: add likely subtags; url: #Likely_Subtags
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "DATE-MEDIA-QUERIES": {
+        "title": "Date and Time Media Queries",
+        "href": "https://arronei.github.io/CSS-Additions/date-media-queries/spec/",
+        "publisher": "CSS Additions"
+    },
+    "INTL-LOCALE-INFO": {
+        "title": "Intl Locale Info API",
+        "href": "https://tc39.es/proposal-intl-locale-info/",
+        "publisher": "Ecma TC39"
+    },
+    "CLDR": {
+        "title": "Unicode Common Locale Data Repository",
+        "href": "https://cldr.unicode.org/",
+        "publisher": "Unicode Consortium"
+    },
+    "USER-LOCALE-PREFERENCES": {
+        "title": "User Locale Preferences",
+        "href": "https://github.com/romulocintra/user-locale-client-hints",
+        "authors": ["Romulo Cintra"]
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+People read times, distances, and temperatures in the units they grew up with, and expect calendars to start on
+the day their week starts. Script can format numbers with <code>Intl</code>, but a static page, a page with script
+blocked, or a component that renders on the server before script runs can't.
+
+These features let a page include both forms and show the one the user reads:
+
+<div class=example id=example-units>
+    <pre highlight=html>
+    &lt;p>Opens at &lt;span class=h12>9:00 AM&lt;/span>&lt;span class=h23>09:00&lt;/span>.
+       &lt;span class=fahrenheit>72°F&lt;/span>&lt;span class=celsius>22°C&lt;/span>,
+       &lt;span class=miles>3 miles&lt;/span>&lt;span class=km>5 km&lt;/span> from the station.&lt;/p>
+    </pre>
+
+    <pre highlight=css>
+    .h23, .celsius, .km { display: none; }
+    @media (hour-cycle: h23) { .h12 { display: none; } .h23 { display: inline; } }
+    @media (temperature-unit: celsius) { .fahrenheit { display: none; } .celsius { display: inline; } }
+    @media (measurement-system: metric) { .miles { display: none; } .km { display: inline; } }
+    </pre>
+</div>
+
+<div class=example id=example-calendar>
+    A month view that starts on the user's first day of the week:
+
+    <pre highlight=css>
+    .month { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .month .sun { order: 0; } .month .mon { order: 1; } /* … */ .month .sat { order: 6; }
+    @media (first-day-of-week: monday) { .month .sun { order: 7; } }
+    @media (first-day-of-week: saturday) { .month .sat { order: -1; } }
+    </pre>
+</div>
+
+The date media queries [[DATE-MEDIA-QUERIES]] test the current date. These features describe how the user reads
+dates, times, and measurements.
+
+
+<h2 id=locale>The regional locale</h2>
+
+The features in this specification are [=system media features=]. Their values come from a document's
+<dfn export>regional locale</dfn>, which is a Unicode locale identifier:
+
+1. If the document is in a [=reduced-exposure context=], or scripting is disabled for the document, the regional
+    locale is the [=HTTP locale=].
+1. Otherwise, it is the locale returned by [$DefaultLocale$]() in the document's realm: the locale that
+    <code>Intl</code> uses when script doesn't give one.
+
+The <dfn export>HTTP locale</dfn> is the first language tag in the <code>Accept-Language</code> header that the
+user agent would send in a request from the document, with any Unicode locale extension removed. If the user agent
+would send no such header, the HTTP locale is "und-001".
+
+The <dfn>region</dfn> of a locale is the region subtag of the result of [=add likely subtags|adding likely
+subtags=] to it [[!CLDR]]. If there is none, the region is "001", the world.
+
+The features' values are found when the document is created, and don't change while it exists.
+
+<h3 id=consistency>Consistency with script</h3>
+
+A user agent may include a user's regional settings, such as a 24-hour clock chosen in the operating system, in
+the regional locale, as [=Unicode locale extension keywords=] such as <code>hc</code>, <code>ms</code>,
+<code>mu</code>, and <code>fw</code>. It may do so only if <code>Intl</code> uses the same settings in the same
+document, so that script that formats a time without giving a locale formats it the way '@media/hour-cycle' says.
+
+<div class=note>
+    Some user agents apply operating system regional settings to <code>Intl</code>, and others deliberately don't,
+    because the settings help identify users. This rule makes the features follow whatever the user agent already
+    does for script.
+</div>
+
+
+<h2 id=features>Media features</h2>
+
+<h3 id=hour-cycle>The '@media/hour-cycle' feature</h3>
+
+<pre class='descdef mq'>
+Name: hour-cycle
+Value: h12 | h23
+For: @media
+Type: discrete
+</pre>
+
+Let |cycle| be the first hour cycle that <code>Intl.Locale.prototype.getHourCycles()</code> returns for the
+[=regional locale=] [[INTL-LOCALE-INFO]]. That takes the <code>hc</code> keyword into account, and otherwise uses
+[[!CLDR]] data for the locale's language and region.
+
+: <dfn value for=@media/hour-cycle>h12</dfn>
+:: |cycle| is "h11" or "h12": a 12-hour clock.
+: <dfn value for=@media/hour-cycle>h23</dfn>
+:: |cycle| is "h23" or "h24": a 24-hour clock.
+
+<div class=note>
+    "h11" (0 to 11, used in Japan) and "h24" (1 to 24) are rare, and are combined with the common clocks so they
+    don't identify users.
+</div>
+
+<h3 id=measurement-system>The '@media/measurement-system' feature</h3>
+
+<pre class='descdef mq'>
+Name: measurement-system
+Value: metric | uksystem | ussystem
+For: @media
+Type: discrete
+</pre>
+
+If the [=regional locale=] has the <code>ms</code> keyword, the feature is its value. Otherwise, it is the
+measurement system that [[!CLDR]] gives for the locale's [=region=]:
+
+: <dfn value for=@media/measurement-system>metric</dfn>
+:: Metric units, such as kilometers and kilograms.
+: <dfn value for=@media/measurement-system>uksystem</dfn>
+:: A mix of metric and imperial units, such as miles and stones, as in the United Kingdom.
+: <dfn value for=@media/measurement-system>ussystem</dfn>
+:: US customary units, such as miles and pounds.
+
+<div class=note>
+    At the time of writing, CLDR gives ''ussystem'' for the United States and Liberia, ''uksystem'' for the United
+    Kingdom and Myanmar, and ''metric'' for every other region.
+</div>
+
+<h3 id=temperature-unit>The '@media/temperature-unit' feature</h3>
+
+<pre class='descdef mq'>
+Name: temperature-unit
+Value: celsius | fahrenheit
+For: @media
+Type: discrete
+</pre>
+
+If the [=regional locale=] has the <code>mu</code> keyword, the feature is ''fahrenheit'' if its value is
+"fahrenhe", and ''celsius'' otherwise. If not, it is ''fahrenheit'' if [[!CLDR]] gives the US measurement system
+for temperature in the locale's [=region=], and ''celsius'' otherwise.
+
+: <dfn value for=@media/temperature-unit>celsius</dfn>
+:: Degrees Celsius.
+: <dfn value for=@media/temperature-unit>fahrenheit</dfn>
+:: Degrees Fahrenheit.
+
+<div class=note>
+    At the time of writing, CLDR gives Fahrenheit for the United States, the Bahamas, Belize, the Cayman Islands,
+    Palau, and Puerto Rico. Kelvin is combined with Celsius.
+</div>
+
+<h3 id=first-day-of-week>The '@media/first-day-of-week' feature</h3>
+
+<pre class='descdef mq'>
+Name: first-day-of-week
+Value: monday | tuesday | wednesday | thursday | friday | saturday | sunday
+For: @media
+Type: discrete
+</pre>
+
+The feature is the first day of the week for the [=regional locale=], as
+<code>Intl.Locale.prototype.getWeekInfo()</code> reports it [[INTL-LOCALE-INFO]], with 1 as ''monday'' through
+7 as ''sunday''. That takes the <code>fw</code> keyword into account, and otherwise uses [[!CLDR]] data for the
+locale's region.
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-exposed>What the features reveal</h3>
+
+Without the user's own settings, every value follows from the language and region of the locale: a user whose
+browser asks for "en-US" gets a 12-hour clock, US units, Fahrenheit, and Sunday. The locale is already sent to every
+server in the <code>Accept-Language</code> header, and is available to script through
+<code>navigator.language</code> and <code>Intl</code>.
+
+With the user's own settings, the values can differ from the locale's defaults. A user with "en-US" who reads
+a 24-hour clock, metric units, and weeks starting on Monday may have grown up somewhere else, or may work in
+science, medicine, or the military. Settings like these can suggest where a user comes from, which can be used to
+discriminate against them.
+
+<h3 id=privacy-existing>What is already exposed</h3>
+
+The design depends on two facts:
+
+* **Script.** In a document with script, the values are required to match <code>Intl</code>
+    ([[#consistency]]). Script can already format a time and see which clock it gets, and call
+    <code>getWeekInfo()</code>. The features reveal nothing new to script, and if a user agent doesn't give the
+    user's settings to <code>Intl</code>, the features don't have them either.
+* **HTTP.** In documents without script, and in [=reduced-exposure contexts=], the values come only from the
+    language tag that the user agent sends to servers in every request anyway. A style sheet that reports them
+    reveals what the server already has.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+<table class=data>
+    <thead><tr><th>Feature<th>Values<th>From the locale alone<th>With the user's settings
+    <tbody>
+        <tr><td>'@media/hour-cycle'<td>2<td>Nothing new<td>As much as <code>Intl</code> reveals
+        <tr><td>'@media/measurement-system'<td>3<td>Nothing new<td>Not revealed by <code>Intl</code> today; a user
+            agent reveals it only by adding <code>ms</code> to the locale <code>Intl</code> uses
+        <tr><td>'@media/temperature-unit'<td>2<td>Nothing new<td>The same, with <code>mu</code>
+        <tr><td>'@media/first-day-of-week'<td>7<td>Nothing new<td>As much as <code>getWeekInfo()</code> reveals
+</table>
+
+The values are also coarser than the settings: '@media/hour-cycle' combines four clocks into two, and
+'@media/temperature-unit' combines Kelvin with Celsius.
+
+<h3 id=privacy-correlation>Linking visits</h3>
+
+The values don't change while a document exists, so there is no moment of change that could link documents.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+The values are the same in cross-origin frames as in the top-level document. A frame's script has the same
+<code>Intl</code>, and its requests carry the same <code>Accept-Language</code> header.
+
+<h3 id=privacy-locale-proposal>Relationship to User Locale Preferences</h3>
+
+The User Locale Preferences proposal [[USER-LOCALE-PREFERENCES]] would give servers, when they ask, and script
+the user's hour cycle, measurement system, first day of the week, and other settings. If it is adopted, a user agent
+should include in the regional locale only settings that it would also give through that proposal, so that the
+features reveal no more than it does.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* In a document with script, a user agent that gives the user's settings to <code>Intl</code> gives them to the
+    features too. A style sheet can then report them without script in that document, which script there could
+    already do.
+* The locale itself, which these features follow, can suggest the user's nationality or where they live.
+
+
+<h2 id=security>Security considerations</h2>
+
+* The features describe how the user prefers to read things. They are not the user's location, citizenship, or
+    legal jurisdiction, and pages must not use them to decide which laws apply, what a user is allowed to see, or
+    what taxes to charge.
+* The user controls the values, so pages must not rely on them for anything that matters for security.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-region>A region or locale feature</h3>
+
+A feature such as <code>(region: us)</code> would let authors write their own rules. It was not chosen because it
+reveals the region directly, which is more than a page needs to choose units, and because authors would use it as
+a location, which it isn't. '':lang()'' already matches the language of content.
+
+<h3 id=alt-formats>Formatting in CSS</h3>
+
+CSS could format times and quantities itself. That is a much larger feature, and it would still need to know the
+user's preferences, which is what this specification provides.
+
+<h3 id=alt-live>Updating when the settings change</h3>
+
+The values could change when the user changes a setting while a document is open. That would give documents a
+shared moment of change. Users rarely change these settings, and a reload picks up the change.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should there be a <code>paper-size</code> feature, with <code>a4</code> and <code>letter</code>, so that print style
+sheets can choose a page size? CLDR has the data.
+
+<p class=issue>Which days are the weekend depends on the region. Should there be a feature for it, which would also
+answer an open issue in [[DATE-MEDIA-QUERIES]]?
+
+<p class=issue>Should '@media/hour-cycle' distinguish <code>h11</code> for Japanese users, who read "0:30 PM"?
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: The user's clock, units, temperature scale, and first day of the week, so pages can show information the way
+    the user reads it.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. The values are coarser than the settings, and match what <code>Intl</code> or
+    <code>Accept-Language</code> already exposes.
+: Do the features expose personal information, PII, or information derived from either?
+:: The user's settings can suggest where they come from. See [[#privacy-exposed]].
+: How do the features deal with sensitive information?
+:: They reveal the user's settings only where <code>Intl</code> already does, and never without script.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Possibly the user's origin or profession, when their settings differ from their locale's defaults.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Regional settings, only as far as <code>Intl</code> already does.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: None. The values don't change while a document exists.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: It doesn't, because <code>Intl</code> and <code>Accept-Language</code> don't.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: Modes that protect against fingerprinting use the HTTP locale, without the user's settings.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: It keeps the values it had when it was created, as <code>Intl</code> does.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a new way to read a value, such as CSS, reaches contexts that the existing ways, such as script, don't.

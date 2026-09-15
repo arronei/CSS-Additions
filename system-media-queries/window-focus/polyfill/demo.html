@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Window Focus Media Query polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  .window { border: 1px solid #9ca3af; border-radius: 8px; overflow: hidden; }
+  .title-bar { background-color: #1e3a8a; color: white; padding: 0.4rem 0.75rem; font-weight: 600; }
+  .content { padding: 1rem; }
+  ::selection { background-color: #93c5fd; }
+  .paused { display: none; }
+
+  @media (window-focus: inactive) {
+    .title-bar { background-color: #e5e7eb; color: #6b7280; }
+    ::selection { background-color: #d1d5db; }
+    .paused { display: block; color: #6b7280; }
+  }
+</style>
+
+<h1>Window Focus Media Query</h1>
+<p>Select some text below, then click another window. The title bar and selection dim, as in a native app.</p>
+
+<div class="window">
+  <div class="title-bar">Example App</div>
+  <div class="content">
+    <p>This is the content of the app. Select part of this sentence.</p>
+    <p class="paused">Paused while the window is in the background: <code>@media (window-focus: inactive)</code></p>
+  </div>
+</div>
+
+<p><label><input type="checkbox" id="inactive"> Pretend the window is inactive</label></p>
+
+<script src="window-focus-media-query.js"></script>
+<script>
+  'use strict';
+  const inactive = document.getElementById('inactive');
+  inactive.addEventListener('change', () => WindowFocusMediaQuery.pretend(inactive.checked ? 'inactive' : null));
+</script>

@@ -1,0 +1,382 @@
+<pre class=metadata>
+Title: Screen Capture Media Query
+Shortname: screen-capture-media-query
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/screen-capture/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds the '@media/screen-capture' media feature, which lets a page hide
+    account balances, messages, and other personal details while the user is sharing or recording their
+    screen. It is a protected media feature: the page's appearance changes, in both the capture and on the
+    user's own screen, but the page can't find out that a capture is happening. Script, layout, and the
+    network see no difference, so the feature can't be used to detect that the user is in a meeting, and a
+    page can't show the people watching anything the user doesn't see.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:dfn; for:Document; text:visibility state
+spec:css-backgrounds-3; type:property; text:box-shadow
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: protected media feature; url: #protected-media-feature
+        text: observable value; url: #observable-value
+        text: protected evaluation; url: #protected-evaluation
+        text: observable style; url: #observable-style
+        text: painted style; url: #painted-style
+        text: paint-only properties; url: #paint-only-properties
+        text: under user control; url: #under-user-control
+spec: screen-capture; urlPrefix: https://w3c.github.io/mediacapture-screen-share/
+    type: method
+        for: MediaDevices
+            text: getDisplayMedia(); url: #dom-mediadevices-getdisplaymedia
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "ANDROID-SCREEN-RECORDING": {
+        "title": "Android 15 features: Screen recording detection",
+        "href": "https://developer.android.com/about/versions/15/features#screen-recording-detection",
+        "publisher": "Google"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+People share their screens in meetings, record tutorials, stream games, and show support staff what went
+wrong. When they do, the page they share shows everything it shows them: the balance of their bank account,
+the preview of a private message, a notification badge, an API key. Native apps on some platforms can hide
+such things while the screen is recorded. Web pages can't.
+
+This specification lets a page do the same:
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    @media (screen-capture: active) {
+      .balance, .message-preview, .api-key {
+        color: transparent;
+        text-shadow: 0 0 0.6em rgb(0 0 0 / 0.6);
+      }
+      .notification-count { background-color: transparent; color: transparent; }
+    }
+    </pre>
+</div>
+
+Telling a page that the screen is being captured would also tell it that the user is in a meeting, or
+streaming, or talking to support, and would let a page look different to the people watching than it does
+when nobody is. So the feature is a <em>protected</em> media feature [[!MEDIA-FEATURE-PRIVACY]]: rules that
+depend on it can change only colors, shadows, outlines, and decorations, and nothing the page can measure
+changes. Script that asks gets ''screen-capture/none''.
+
+<div class=example id=example-overlay>
+    Hiding images works with an overlay that is always there and is transparent until a capture starts:
+
+    <pre highlight=css>
+    .avatar { position: relative; }
+    .avatar::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background-color: transparent;
+    }
+    @media (screen-capture: active) {
+      .avatar::after { background-color: #9ca3af; }
+    }
+    </pre>
+</div>
+
+
+<h2 id=feature>The '@media/screen-capture' feature</h2>
+
+<pre class='descdef mq'>
+Name: screen-capture
+Value: none | active
+For: @media
+Type: discrete
+</pre>
+
+The '@media/screen-capture' media feature is a [=protected media feature=] whose [=observable value=] is
+''screen-capture/none''. Every document uses [=protected evaluation=] for it.
+
+Its [=actual value=] in a [=document=] |d| is:
+
+: <dfn value for=@media/screen-capture>active</dfn>
+:: |d| is [=being captured=].
+: <dfn value for=@media/screen-capture>none</dfn>
+:: Otherwise. This value evaluates to false in a [=boolean context=].
+
+<div class=note>
+    Because of protected evaluation, a rule under ''screen-capture/active'' can only change the
+    [=paint-only properties=], such as 'color', 'background-color', 'box-shadow', and 'outline'. Its other
+    declarations, such as <code>display: none</code>, have no effect. <code>matchMedia("(screen-capture:
+    active)")</code> never matches, and no <code>change</code> event is ever fired for it.
+</div>
+
+<h3 id=capture-definition>Being captured</h3>
+
+A document |d| is <dfn export>being captured</dfn> when |d|'s [=Document/visibility state=] is
+"<code>visible</code>", and the user agent knows that the part of the screen where |d| is displayed is
+included in one of these:
+
+1. A capture that the user agent makes, of a tab, window, or screen, for
+    {{MediaDevices/getDisplayMedia()}} or for its own casting or recording features.
+1. A screen recording or screen sharing session that the operating system reports to the user agent.
+1. A mirror of the display on another display, if the operating system reports it.
+
+These are not captures, and must not make any document [=being captured|be captured=]:
+
+* Assistive technology, such as screen readers, screen magnifiers, and tools that read text from the screen
+    or caption it.
+* The user agent's own use of page images, such as tab thumbnails and previews.
+* A single screenshot.
+
+The user agent should let the user exclude particular capture sessions, or particular apps that capture the
+screen, and should not count a remote desktop session in which the remote display is the only place the user
+sees the document.
+
+<div class=note>
+    Platforms report different things. Android 15 tells apps when their windows appear in a screen
+    recording [[ANDROID-SCREEN-RECORDING]]. iOS and iPadOS report when the screen is being recorded,
+    mirrored, or sent to another display. Desktop operating systems don't generally tell apps that another
+    app is capturing the screen, so on desktop computers the feature mostly reflects captures made by the
+    user agent, such as sharing a tab or window into a video meeting in the same browser.
+</div>
+
+<h3 id=timing>Timing</h3>
+
+When a capture made by the user agent starts, the user agent must not include a frame showing a document in
+the capture until it has painted that document with its new [=painted style=]. When the operating system reports a capture
+that has already started, the user agent must paint the new painted style as soon as it can.
+
+When a capture ends, the user agent should paint the new painted style at the next rendering opportunity.
+
+<h3 id=same-picture>The same picture for everyone</h3>
+
+The user agent must show the user the same painted content that it includes in a capture. It must not paint a
+document one way for the user's screen and another way for a capture.
+
+<div class=note>
+    This rule is what stops a page from showing the people watching something different from what the user
+    sees. See [[#security-evasion]].
+</div>
+
+<h3 id=user-control>User control</h3>
+
+The feature is [=under user control=]. When the user turns it off, the [=actual value=] is
+''screen-capture/none'' in every document. The user agent must also let the user turn the feature off for a
+single capture session, while it is running, for example with a control in its sharing indicator.
+
+The user agent should tell the user, while a capture is running, when a document in the capture is painted
+differently because of this feature, for example with a message in its sharing indicator such as "Some
+content on this page is hidden while you share".
+
+<div class=note>
+    User agents know when this happens: it is when a document's painted style differs from its
+    [=observable style=] because of this feature. Telling the user doesn't tell the page anything.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-unprotected>What a capture reveals</h3>
+
+If a page could find out that the user's screen is being captured, it would learn:
+
+* **What the user is doing.** They are in a meeting, presenting, streaming, recording a tutorial, or
+    getting help.
+* **Who else can see.** Someone else is watching the screen, now or later.
+* **When.** The moments a capture starts and stops are the same in every document on the screen, so a
+    tracker present in two of them could link them.
+
+Pages could use that to target streamers, to change what they show when a support agent is watching, or to
+record when the user is in meetings.
+
+<h3 id=privacy-protected>Why the feature is always protected</h3>
+
+Every use of the feature is to hide something visual, and hiding something visual doesn't need the page to know.
+The feature is therefore always evaluated with [=protected evaluation=], with no way for a page to ask for
+more:
+
+<table class=data>
+    <thead><tr><th>Channel<th>What a page sees during a capture
+    <tbody>
+        <tr><td>Script
+            <td><code>matchMedia()</code> reports ''screen-capture/none''; computed styles are unchanged
+        <tr><td>Layout
+            <td>No box changes size or position, because only paint-only properties change
+        <tr><td>Network
+            <td>No resource is fetched or not fetched because of the capture
+        <tr><td>Timing
+            <td>No events are fired, no transitions run, and no performance entries are created
+        <tr><td>Embedded content
+            <td>A frame can hide its own content, and learns no more than the top-level document does, which
+                is nothing
+</table>
+
+Because nothing is revealed, the feature needs no delay, no restriction in frames, and no special behavior in
+private browsing modes, and it can take effect before the first frame of the capture.
+
+<h3 id=privacy-fingerprinting>Fingerprinting and linking visits</h3>
+
+The feature adds no information to a fingerprint and no moment that could link visits, because no document can
+observe its value.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* **Interaction.** A page could paint a message such as "click here" only during a capture, and learn that a
+    capture is happening if someone clicks. This needs the user, or a viewer, to act on it.
+* **The page's own capture.** If the user lets a page capture its own tab, the page sees the painted result.
+    It already knows a capture is happening, because it started it.
+* **Viewers.** The people watching can see that some content is hidden. That tells them the page hides
+    content, not what it is.
+
+
+<h2 id=security>Security considerations</h2>
+
+<h3 id=security-not-protection>Not a way to protect content</h3>
+
+The feature reduces accidental exposure. It isn't a security boundary, and it isn't a way to protect content
+from copying:
+
+* The user agent only knows about some captures. Most desktop operating systems don't report captures by other
+    apps.
+* Screenshots aren't reported.
+* A camera pointed at the screen isn't reported.
+* The user can turn the feature off.
+
+Pages must not rely on the feature to keep anything secret.
+
+<h3 id=security-evasion>Looking different to the people watching</h3>
+
+A page could hide content during captures to avoid being seen by the people who would catch it: a fraudulent
+payment request hidden from a family member watching over a screen share, a scam hidden from a bank's fraud
+team, or abusive content hidden from a victim trying to record it.
+
+[[#same-picture]] means the page can't show the user one thing and the viewers another. What the viewers see is
+what the user sees. A page can still change what both see while a capture is running, and the user could
+record the page without the hidden content. To prevent that from being used to hide evidence:
+
+* The user can turn the feature off for a capture session while it runs, and the capture then shows the page
+    as it looks without a capture.
+* The user agent tells the user when content is hidden, so the user and the viewers know that what they see
+    isn't the whole page.
+
+<h3 id=security-screenshots>Screenshots</h3>
+
+Screenshots are excluded because a page can't hide anything before a screenshot is taken. Reporting them would
+only let pages detect screenshots, which could be used to punish users for keeping records.
+
+<h3 id=security-other-captures>Captures started by other pages</h3>
+
+A page that asks the user to share another tab can make that tab hide its content, but only in the capture the
+page itself receives. It learns nothing about the other tab it wouldn't see in the capture anyway.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-unprotected>An ordinary media feature</h3>
+
+An ordinary media feature would let pages use any CSS, and script, during captures, such as switching to a
+larger layout for presenting. It was not chosen because it would reveal what [[#privacy-unprotected]] describes,
+and every case it adds beyond hiding content changes what the page shows the viewers rather than protecting
+the user.
+
+<h3 id=alt-capture-only>Hiding content in the capture only</h3>
+
+A property such as <code>capture-visibility: hidden</code> could hide an element in captures while the user still
+sees it on their screen, which is more convenient for the user. It was not chosen for two reasons. It would let
+a page show the viewers something different from what the user sees, which is what makes fraud during screen
+sharing work. And it could only apply to captures the user agent makes, because an operating system captures
+the pixels on the screen. Some operating systems can exclude a whole window from captures, but not part of one.
+
+<h3 id=alt-event>A capture event for script</h3>
+
+Android 15 tells apps when their windows are recorded. A similar event for script would have the same problems
+as an ordinary media feature, and pages don't need it to hide content.
+
+<h3 id=alt-screenshots>Including screenshots</h3>
+
+See [[#security-screenshots]].
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should a display mirrored to a projector count? Presenters would benefit, and the operating system
+usually knows, but mirroring isn't always to an audience.
+
+<p class=issue>'opacity' and 'filter: blur()' are the most natural ways to hide content, and they aren't
+paint-only properties. See the open issue in [[MEDIA-FEATURE-PRIVACY]].
+
+<p class=issue>Should operating systems be asked to report captures to apps, as Android 15 does, so that the
+feature works for desktop video meeting apps?
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: None to the page. It lets the page's appearance change during a screen capture, so the page can hide
+    personal details.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. The page can't observe the value.
+: Do the features expose personal information, PII, or information derived from either?
+:: No.
+: How do the features deal with sensitive information?
+:: They help pages hide it during captures, without revealing that a capture is happening.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: No data is exposed. See [[#privacy-residual]] for what a page can learn with the user's help.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: No.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No. Rules under the feature can't load resources.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No. The user agent's sharing indicator may say that content is hidden; the page doesn't control it.
+: What temporary identifiers do the features create or expose to the web?
+:: None.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: It doesn't need to, because no context can observe the value.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: The same as in normal browsing.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: It isn't visible, so it isn't being captured. When it is restored, it is painted for the current state.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No. Assistive technology doesn't count as a capture.
+: What should this questionnaire have asked?
+:: Whether a feature can make a page look different to people other than the user, and whether the user can
+    tell.

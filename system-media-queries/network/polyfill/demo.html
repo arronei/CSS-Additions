@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Media Queries polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  fieldset { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; border: 1px solid #ccc; }
+  table { border-collapse: collapse; width: 100%; }
+  td { border-top: 1px solid #ddd; padding: 0.35rem 0.5rem; }
+  td:first-child { width: 5rem; }
+  .state::before { content: "no"; color: #777; }
+  .offline-banner { display: none; background: #fde68a; padding: 0.5rem 1rem; }
+  .hero { background: #dbeafe; padding: 1rem; }
+  .hero .still { display: none; }
+
+  @media (network: offline) {
+    .offline-banner { display: block; }
+    .needs-network { opacity: 0.5; pointer-events: none; }
+  }
+  @media (connection: metered) {
+    .hero .video { display: none; }
+    .hero .still { display: inline; }
+  }
+  @media (network: online) { #q0 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (network: offline) { #q1 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (connection: unmetered) { #q2 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (connection: metered) { #q3 .state::before { content: "yes"; color: green; font-weight: bold; } }
+</style>
+
+<h1>Network Media Queries</h1>
+<p>Each row is a real <code>@media</code> rule. Turn your network off, or pretend.</p>
+
+<fieldset>
+  <legend>Pretend</legend>
+  <label><input type="checkbox" id="offline"> Offline</label>
+  <label><input type="checkbox" id="metered"> Metered</label>
+  <button type="button" id="real">Use the real network</button>
+</fieldset>
+
+<p class="offline-banner">You're offline. Saved drafts still work.</p>
+<p class="hero"><span class="video">▶ Playing the hero video</span><span class="still">A still image, to save data</span></p>
+<p><button class="needs-network">Sync now</button> <button>Edit draft</button></p>
+
+<table>
+  <tr id="q0"><td class="state"></td><td><code>@media (network: online)</code></td></tr>
+  <tr id="q1"><td class="state"></td><td><code>@media (network: offline)</code></td></tr>
+  <tr id="q2"><td class="state"></td><td><code>@media (connection: unmetered)</code></td></tr>
+  <tr id="q3"><td class="state"></td><td><code>@media (connection: metered)</code></td></tr>
+</table>
+
+<script src="network-media-queries.js"></script>
+<script>
+  'use strict';
+  const offline = document.getElementById('offline');
+  const metered = document.getElementById('metered');
+  const pretend = () => NetworkMediaQueries.pretend({
+    network: offline.checked ? 'offline' : 'online',
+    connection: metered.checked ? 'metered' : 'unmetered',
+  });
+  offline.addEventListener('change', pretend);
+  metered.addEventListener('change', pretend);
+  document.getElementById('real').addEventListener('click', () => {
+    offline.checked = metered.checked = false;
+    NetworkMediaQueries.pretend(null);
+  });
+</script>

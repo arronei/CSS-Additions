@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Media Queries polyfill: tests</title>
+<script src="network-media-queries.js"></script>
+<style>
+  @media (network: offline) { #probe { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media (connection: metered) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+  const matches = (query, state) => matchMedia(NetworkMediaQueries.evaluate(query, state)).matches;
+  const color = (id) => getComputedStyle(document.getElementById(id)).color;
+  const GREEN = 'rgb(0, 128, 0)';
+
+  // Each case is [query, state, expected].
+  function expectAll(cases) {
+    const wrong = cases.filter(([query, state, expected]) => matches(query, state) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, s, e]) => `${q} with ${JSON.stringify(s)} should be ${e}`).join('; '));
+  }
+
+  test('network matches navigator.onLine values', () => expectAll([
+    ['(network: online)', { network: 'online' }, true],
+    ['(network: offline)', { network: 'online' }, false],
+    ['(network: offline)', { network: 'offline' }, true],
+    ['(NETWORK: Offline)', { network: 'offline' }, true],
+  ]));
+
+  test('offline is false in a boolean context', () => expectAll([
+    ['(network)', { network: 'online' }, true],
+    ['(network)', { network: 'offline' }, false],
+    ['not (network)', { network: 'offline' }, true],
+  ]));
+
+  test('connection has two values, both true in a boolean context', () => expectAll([
+    ['(connection: metered)', { connection: 'metered' }, true],
+    ['(connection: unmetered)', { connection: 'metered' }, false],
+    ['(connection)', { connection: 'unmetered' }, true],
+    ['(connection: metered), (prefers-reduced-data: reduce)', { connection: 'metered' }, true],
+  ]));
+
+  test('invalid values and range syntax are unknown', () => expectAll([
+    ['(network: wifi)', {}, false],
+    ['not (network: wifi)', {}, false],
+    ['(network: wifi) or (min-width: 0px)', {}, true],
+    ['(network > online)', {}, false],
+    ['not (network > online)', {}, false],
+    ['(min-network: online)', {}, false],
+  ]));
+
+  test('style sheets are rewritten, including nested rules', () => {
+    NetworkMediaQueries.pretend({ network: 'offline', connection: 'metered' });
+    const on = [color('probe'), color('probe-nested')];
+    NetworkMediaQueries.pretend({ network: 'online', connection: 'unmetered' });
+    const off = [color('probe'), color('probe-nested')];
+    NetworkMediaQueries.pretend(null);
+    if (on.some((c) => c !== GREEN) || off.some((c) => c === GREEN)) {
+      throw new Error(`expected green then not, got ${on} then ${off}`);
+    }
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    let failed = 0;
+    for (const [name, body] of tests) {
+      try {
+        body();
+        log.textContent += `PASS ${name}\n`;
+      } catch (e) {
+        failed++;
+        log.textContent += `FAIL ${name}: ${e.message}\n`;
+      }
+    }
+    log.textContent += `${tests.length - failed} of ${tests.length} passed\n`;
+  });
+</script>

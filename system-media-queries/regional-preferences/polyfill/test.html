@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regional Preference Media Queries polyfill: tests</title>
+<script src="regional-preference-media-queries.js"></script>
+<style>
+  @media (hour-cycle: h23) and (temperature-unit: celsius) { #probe { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media (first-day-of-week: monday) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+  const matches = (query, state) => matchMedia(RegionalPreferenceMediaQueries.evaluate(query, state)).matches;
+  const color = (id) => getComputedStyle(document.getElementById(id)).color;
+  const GREEN = 'rgb(0, 128, 0)';
+
+  // Checks the given features of valuesFor(tag).
+  function expectValues(tag, expected) {
+    const actual = RegionalPreferenceMediaQueries.valuesFor(tag);
+    const wrong = Object.entries(expected).filter(([name, value]) => actual[name] !== value);
+    if (wrong.length) throw new Error(`${tag}: ${wrong.map(([n, v]) => `${n} is ${actual[n]}, not ${v}`).join(', ')}`);
+  }
+
+  test('locale defaults come from CLDR', () => {
+    expectValues('en-US', { 'hour-cycle': 'h12', 'measurement-system': 'ussystem', 'temperature-unit': 'fahrenheit', 'first-day-of-week': 'sunday' });
+    expectValues('en-GB', { 'hour-cycle': 'h23', 'measurement-system': 'uksystem', 'temperature-unit': 'celsius', 'first-day-of-week': 'monday' });
+    expectValues('de-DE', { 'hour-cycle': 'h23', 'measurement-system': 'metric', 'temperature-unit': 'celsius', 'first-day-of-week': 'monday' });
+    expectValues('ar-EG', { 'hour-cycle': 'h12', 'measurement-system': 'metric', 'first-day-of-week': 'saturday' });
+  });
+
+  test('a language without a region uses its likely region', () => {
+    expectValues('en', { 'measurement-system': 'ussystem', 'temperature-unit': 'fahrenheit' });
+    expectValues('fr', { 'measurement-system': 'metric', 'temperature-unit': 'celsius' });
+  });
+
+  test('the world region, for an HTTP locale of und-001', () => {
+    expectValues('und-001', { 'measurement-system': 'metric', 'temperature-unit': 'celsius', 'first-day-of-week': 'monday' });
+  });
+
+  test('measurement system and temperature follow CLDR separately', () => {
+    expectValues('en-LR', { 'measurement-system': 'ussystem', 'temperature-unit': 'celsius' });
+    expectValues('my-MM', { 'measurement-system': 'uksystem', 'temperature-unit': 'celsius' });
+    expectValues('en-BS', { 'measurement-system': 'metric', 'temperature-unit': 'fahrenheit' });
+  });
+
+  test('Unicode extension keywords override the region', () => {
+    expectValues('en-US-u-hc-h23', { 'hour-cycle': 'h23' });
+    expectValues('en-GB-u-hc-h12', { 'hour-cycle': 'h12' });
+    expectValues('en-US-u-ms-metric', { 'measurement-system': 'metric' });
+    expectValues('en-US-u-mu-celsius', { 'temperature-unit': 'celsius' });
+    expectValues('de-DE-u-mu-fahrenhe', { 'temperature-unit': 'fahrenheit' });
+    expectValues('en-US-u-mu-kelvin', { 'temperature-unit': 'celsius' });
+  });
+
+  test('h11 and h24 are combined with h12 and h23', () => {
+    expectValues('ja-JP-u-hc-h11', { 'hour-cycle': 'h12' });
+    expectValues('en-US-u-hc-h24', { 'hour-cycle': 'h23' });
+  });
+
+  test('queries compare with the values, all true in a boolean context', () => {
+    const cases = [
+      ['(hour-cycle: h23)', { 'hour-cycle': 'h23' }, true],
+      ['(hour-cycle: h12)', { 'hour-cycle': 'h23' }, false],
+      ['(hour-cycle)', { 'hour-cycle': 'h12' }, true],
+      ['(measurement-system: uksystem)', { 'measurement-system': 'uksystem' }, true],
+      ['(first-day-of-week: Saturday)', { 'first-day-of-week': 'saturday' }, true],
+      ['(temperature-unit: kelvin)', {}, false],
+      ['not (temperature-unit: kelvin)', {}, false],
+      ['(first-day-of-week > monday)', {}, false],
+      ['not (first-day-of-week > monday)', {}, false],
+      ['(first-day-of-week: monday)', { 'first-day-of-week': undefined }, false],
+      ['not (first-day-of-week: monday)', { 'first-day-of-week': undefined }, false],
+    ];
+    const wrong = cases.filter(([query, state, expected]) => matches(query, state) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, s, e]) => `${q} with ${JSON.stringify(s)} should be ${e}`).join('; '));
+  });
+
+  test('the page uses the locale Intl uses', () => {
+    const expected = RegionalPreferenceMediaQueries.valuesFor(new Intl.DateTimeFormat().resolvedOptions().locale);
+    if (JSON.stringify(expected) !== JSON.stringify(RegionalPreferenceMediaQueries.values)) throw new Error('different locale');
+  });
+
+  test('style sheets are rewritten, including nested rules', () => {
+    RegionalPreferenceMediaQueries.pretend('de-DE');
+    const on = [color('probe'), color('probe-nested')];
+    RegionalPreferenceMediaQueries.pretend('en-US');
+    const off = [color('probe'), color('probe-nested')];
+    RegionalPreferenceMediaQueries.pretend(null);
+    if (on.some((c) => c !== GREEN) || off.some((c) => c === GREEN)) {
+      throw new Error(`expected green then not, got ${on} then ${off}`);
+    }
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    let failed = 0;
+    for (const [name, body] of tests) {
+      try {
+        body();
+        log.textContent += `PASS ${name}\n`;
+      } catch (e) {
+        failed++;
+        log.textContent += `FAIL ${name}: ${e.message}\n`;
+      }
+    }
+    log.textContent += `${tests.length - failed} of ${tests.length} passed\n`;
+  });
+</script>

