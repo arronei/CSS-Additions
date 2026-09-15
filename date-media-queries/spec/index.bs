@@ -1,0 +1,691 @@
+<pre class=metadata>
+Title: Date and Time Media Queries
+Shortname: date-media-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/date-media-queries/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds media features and functions that test the current date and time:
+    '@media/date', '@media/time', '@media/weekday', '@media/month', '@media/day', '@media/moon-phase',
+    and '@media/season', plus the ''holiday()'' and ''calendar()'' functions. Dates and times are written
+    as the ISO 8601 strings that Temporal parses, such as <code>"2026-09-09"</code>,
+    <code>"--12-25"</code>, and <code>"18:00"</code>, so a style sheet can turn on a sale banner for one
+    week, a winter theme every December, or a launch button at one moment worldwide, without script.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:css-values-4; type:type; text:<string>
+spec:css-values-4; type:type; text:<ident>
+spec:css-values-4; type:type; text:<integer>
+spec:mediaqueries-5; type:type; text:<mf-value>
+spec:mediaqueries-5; type:type; text:<media-in-parens>
+spec:mediaqueries-5; type:type; text:<media-condition>
+spec:mediaqueries-5; type:type; text:<media-feature>
+spec:mediaqueries-5; type:type; text:<general-enclosed>
+spec:mediaqueries-5; type:dfn; text:media feature
+spec:mediaqueries-5; type:dfn; text:range context
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:mediaqueries-5; type:dfn; text:media condition
+</pre>
+
+<pre class=anchors>
+spec: temporal; urlPrefix: https://tc39.es/proposal-temporal/
+    type: abstract-op
+        text: SystemUTCEpochNanoseconds; url: #sec-temporal-systemutcepochnanoseconds
+        text: SystemTimeZoneIdentifier; url: #sec-systemtimezoneidentifier
+        text: GetISODateTimeFor; url: #sec-temporal-getisodatetimefor
+        text: ParseISODateTime; url: #sec-temporal-parseisodatetime
+        text: ToTemporalZonedDateTime; url: #sec-temporal-totemporalzoneddatetime
+        text: ToTemporalInstant; url: #sec-temporal-totemporalinstant
+        text: ToTemporalTime; url: #sec-temporal-totemporaltime
+        text: CompareEpochNanoseconds; url: #sec-temporal-compareepochnanoseconds
+        text: CompareISODateTime; url: #sec-temporal-compareisodatetime
+        text: CompareISODate; url: #sec-temporal-compareisodate
+        text: CompareTimeRecord; url: #sec-temporal-comparetimerecord
+        text: CombineISODateAndTimeRecord; url: #sec-temporal-combineisodateandtimerecord
+        text: ISODateWithinLimits; url: #sec-temporal-isodatewithinlimits
+        text: ISODateTimeWithinLimits; url: #sec-temporal-isodatetimewithinlimits
+        text: CanonicalizeCalendar; url: #sec-temporal-canonicalizecalendar
+        text: CalendarISOToDate; url: #sec-temporal-calendarisotodate
+        text: ISODayOfWeek; url: #sec-temporal-isodayofweek
+        text: CreateMonthCode; url: #sec-temporal-createmonthcode
+    type: dfn
+        text: ISO Date-Time Record; url: #sec-temporal-iso-date-time-records
+        text: ISO Date Record; url: #sec-temporal-iso-date-records
+        text: Time Record; url: #sec-temporal-time-records
+        text: month code; url: #sec-temporal-month-codes
+        text: calendar type; url: #sec-calendar-types
+        text: TemporalDateTimeString; url: #prod-TemporalDateTimeString
+        text: TemporalInstantString; url: #prod-TemporalInstantString
+        text: AnnotatedMonthDay; url: #prod-AnnotatedMonthDay
+        text: TemporalMonthDayString; url: #prod-TemporalMonthDayString
+        text: TimeDesignator; url: #prod-TimeDesignator
+        text: Time; url: #prod-Time
+        text: MonthCode; url: #prod-MonthCode
+        text: epoch nanoseconds; url: #sec-temporal-zoneddatetime-objects
+spec: ecma-262; urlPrefix: https://tc39.es/ecma262/
+    type: abstract-op
+        text: ParseText; url: #sec-parsetext
+</pre>
+
+<pre class=biblio>
+{
+    "TEMPORAL": {
+        "title": "Temporal",
+        "href": "https://tc39.es/proposal-temporal/",
+        "publisher": "Ecma TC39"
+    },
+    "MEEUS": {
+        "title": "Astronomical Algorithms, second edition",
+        "authors": ["Jean Meeus"],
+        "publisher": "Willmann-Bell",
+        "date": "1998"
+    },
+    "TZDB": {
+        "title": "Time Zone Database",
+        "href": "https://www.iana.org/time-zones",
+        "publisher": "IANA"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Sites change with the calendar. A store shows a sale banner for one week, a news site switches to a
+darker look in the evening, a game adds snow in December, and a product page reveals its "Buy now" button
+at the moment of launch. Today each of these needs script that reads the clock, compares dates, and
+toggles a class, and then has to run again when the date changes while the page is open.
+
+This specification lets a style sheet ask about the date directly, the same way it asks about the width
+of the viewport. Dates and times are written as ISO 8601 strings, in exactly the formats that
+Temporal [[!TEMPORAL]] parses, and they compare the way Temporal compares them.
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    /* A sale banner from September 9 through September 15, 2026 */
+    @media ("2026-09-09" <= date <= "2026-09-15") {
+      .sale-banner { display: block; }
+    }
+
+    /* Snow every year from December 20 through January 5 */
+    @media (date >= "--12-20"), (date <= "--01-05") {
+      body { background-image: url(snow.svg); }
+    }
+
+    /* Warmer colors from 6pm local time */
+    @media (time >= "18:00") {
+      :root { --accent: orange; }
+    }
+
+    /* "Buy now" appears at 9:00 in New York, the same moment everywhere */
+    @media (date >= "2026-11-27T09:00[America/New_York]") {
+      .buy-now { display: inline-block; }
+    }
+
+    /* US Thanksgiving, and Passover in the Hebrew calendar */
+    @media holiday(us, thanksgiving) { … }
+    @media calendar(hebrew, (month: M07) and (15 <= day <= 22)) { … }
+
+    /* Full moon, and winter in whichever hemisphere the user is in */
+    @media (moon-phase: full-moon) { … }
+    @media (season: winter) { … }
+    </pre>
+</div>
+
+Because these are media queries, they also work in HTML's <code>media</code> attributes and in
+<code>matchMedia()</code>, and they update on their own when the date changes.
+
+<div class=example id=example-intro-html>
+    <pre highlight=html>
+    &lt;picture>
+      &lt;source media='(date = "--12-25")' srcset="hero-christmas.jpg">
+      &lt;img src="hero.jpg" alt="">
+    &lt;/picture>
+    </pre>
+
+    CSS strings can use single or double quotes, so a query inside an HTML attribute uses whichever
+    quote the attribute doesn't.
+</div>
+
+
+<h2 id=syntax>Syntax</h2>
+
+This specification makes two changes to the media query grammar in [[!MEDIAQUERIES-5]].
+
+1. <<mf-value>> gains a <<string>> alternative, so a media feature can be compared with a string:
+
+    <pre class=prod>
+    <<mf-value>> = <<number>> | <<dimension>> | <<ident>> | <<ratio>> | <<string>>
+    </pre>
+
+    The media features in [[!MEDIAQUERIES-5]] don't accept strings, so this changes nothing for them.
+
+2. <<media-in-parens>> gains the ''holiday()'' and ''calendar()'' functions:
+
+    <pre class=prod>
+    <<media-in-parens>> = ( <<media-condition>> ) | ( <<media-feature>> )
+                        | <<holiday()>> | <<calendar()>> | <<general-enclosed>>
+    </pre>
+
+    As before, the <<general-enclosed>> branch is chosen only if the input matches none of the others.
+
+<div class=note>
+    A user agent that doesn't implement this specification parses every query in it as
+    <<general-enclosed>>, or as an unknown <<media-feature>>. Both evaluate to "unknown", which makes
+    the media query false. Styles meant for a date are never applied early by an older browser; they
+    are not applied at all.
+</div>
+
+
+<h2 id=now>The current date and time</h2>
+
+The <dfn export>current instant</dfn> is [$SystemUTCEpochNanoseconds$](), rounded down to a whole
+second (a multiple of 10<sup>9</sup> nanoseconds).
+
+The <dfn export>current time zone</dfn> is [$SystemTimeZoneIdentifier$]().
+
+The <dfn export>current date-time</dfn> is the [=ISO Date-Time Record=] returned by
+[$GetISODateTimeFor$]([=current time zone=], [=current instant=]). Its \[[ISODate]] field is the
+<dfn export>current date</dfn>, and its \[[Time]] field is the <dfn export>current time</dfn>.
+
+<div class=note>
+    These are the values that <code>Temporal.Now.zonedDateTimeISO()</code> returns in script, except
+    for the rounding. A document's styles and its scripts agree about what day it is.
+</div>
+
+When the user agent evaluates media queries for a document, it uses one [=current instant=] for all of
+them, so two queries about the same moment never disagree.
+
+The media features and functions in this specification change value as time passes, and when the
+[=current time zone=] or the system clock changes. When that changes the result of a media query, the
+user agent must respond as it does when any other media feature changes: it restyles the document and
+fires <code>change</code> events at the affected <code>MediaQueryList</code> objects. It should do so
+within one second.
+
+<div class=note>
+    Implementations don't need to poll. From the queries in use, a user agent can work out the next
+    instant at which any result can change, such as a boundary written in a query or the next local
+    midnight, and wait until then.
+</div>
+
+
+<h2 id=strings>Date and time strings</h2>
+
+<h3 id=date-strings>Date strings</h3>
+
+A <dfn type>&lt;date-string></dfn> is a <<string>> for which [=parse a date string=] doesn't return
+failure.
+
+To <dfn export>parse a date string</dfn> |s|, run these steps. If any operation they call throws an
+exception, return failure.
+
+1. If [$ParseText$](|s|, [=TemporalDateTimeString=]<sub>[+Zoned]</sub>) is a Parse Node, the string
+    names a time zone. Return an <dfn>instant value</dfn>: the \[[EpochNanoseconds]] of
+    [$ToTemporalZonedDateTime$](|s|).
+1. If [$ParseText$](|s|, [=TemporalInstantString=]) is a Parse Node, the string has a UTC offset. Return
+    an [=instant value=]: the \[[EpochNanoseconds]] of [$ToTemporalInstant$](|s|).
+1. If [$ParseText$](|s|, [=TemporalDateTimeString=]<sub>[~Zoned]</sub>) is a Parse Node:
+    1. Let |result| be [$ParseISODateTime$](|s|, « [=TemporalDateTimeString=]<sub>[~Zoned]</sub> »).
+    1. If |result|.\[[Calendar]] is not empty, perform
+        [$CanonicalizeCalendar$](|result|.\[[Calendar]]).
+    1. Let |date| be the [=ISO Date Record=] with \[[Year]] |result|.\[[Year]], \[[Month]]
+        |result|.\[[Month]], and \[[Day]] |result|.\[[Day]].
+    1. If [$ISODateWithinLimits$](|date|) is false, return failure.
+    1. If |result|.\[[Time]] is start-of-day, the string has no time. Return a
+        <dfn>date value</dfn>: |date|.
+    1. Let |dateTime| be [$CombineISODateAndTimeRecord$](|date|, |result|.\[[Time]]).
+    1. If [$ISODateTimeWithinLimits$](|dateTime|) is false, return failure.
+    1. Return a <dfn>date-time value</dfn>: |dateTime|.
+1. If [$ParseText$](|s|, [=AnnotatedMonthDay=]) is a Parse Node:
+    1. Let |result| be [$ParseISODateTime$](|s|, « [=TemporalMonthDayString=] »).
+    1. Return a <dfn>month-day value</dfn>: the pair (|result|.\[[Month]], |result|.\[[Day]]).
+1. Return failure.
+
+A calendar annotation such as <code>[u-ca=hebrew]</code> is accepted, as Temporal accepts it, but it
+doesn't change the date: the fields of the string are always ISO 8601 fields. To match dates in another
+calendar, use ''calendar()''.
+
+To <dfn export>compare the current date with</dfn> a parsed date string |v|:
+
+: If |v| is an [=instant value=]
+:: Return [$CompareEpochNanoseconds$]([=current instant=], |v|).
+: If |v| is a [=date-time value=]
+:: Return [$CompareISODateTime$]([=current date-time=], |v|).
+: If |v| is a [=date value=]
+:: Return [$CompareISODate$]([=current date=], |v|).
+: If |v| is a [=month-day value=] (|month|, |day|)
+:: Return [$CompareISODate$](|a|, |b|), where |a| is the [=ISO Date Record=] for year 1972 with the
+    [=current date=]'s month and day, and |b| is the one for year 1972 with |month| and |day|.
+
+The result is -1 if the current date comes first, 0 if they are equal, and 1 if |v| comes first.
+
+<div class=note>
+    1972 is the reference year that Temporal uses for <code>PlainMonthDay</code>. It is a leap year,
+    so <code>"--02-29"</code> is a valid month-day. In other years no date is equal to it, and March 1
+    is after it.
+</div>
+
+<div class=example id=example-date-strings>
+    <table class=data>
+        <thead><tr><th>String<th>Kind<th>Meaning
+        <tbody>
+            <tr><td><code>"2026-09-09"</code><td>date<td>September 9, 2026, in the user's time zone
+            <tr><td><code>"20260909"</code><td>date<td>The same date, in ISO 8601 basic format
+            <tr><td><code>"2026-11-27T09:00"</code><td>date-time<td>9:00 on November 27, 2026, in the user's time zone
+            <tr><td><code>"2026-11-27T09:00[America/New_York]"</code><td>instant<td>9:00 on that day in New York, one moment for every user
+            <tr><td><code>"2026-11-27T14:00Z"</code><td>instant<td>The same moment, written in UTC
+            <tr><td><code>"2026-11-27[America/New_York]"</code><td>instant<td>The start of that day in New York
+            <tr><td><code>"--12-25"</code> or <code>"12-25"</code><td>month-day<td>December 25 of every year
+    </table>
+</div>
+
+<h3 id=time-strings>Time strings</h3>
+
+A <dfn type>&lt;time-string></dfn> is a <<string>> for which [=parse a time string=] doesn't return
+failure.
+
+To <dfn export>parse a time string</dfn> |s|:
+
+1. If |s| doesn't start with "T" or "t", set |s| to the concatenation of "T" and |s|.
+1. If [$ParseText$](|s|, [=TimeDesignator=] [=Time=]) is not a Parse Node, return failure.
+1. Return the \[[Time]] of [$ToTemporalTime$](|s|). If that throws, return failure.
+
+<div class=note>
+    Adding the "T" prevents a basic-format time such as <code>"1225"</code> from being read as a
+    month and day, which is how Temporal resolves the same ambiguity.
+</div>
+
+
+<h2 id=media-features>Media features</h2>
+
+All of these features have a value at all times, so in a [=boolean context=] they are always true.
+Range features also accept the <code>min-</code> and <code>max-</code> prefixes, as
+[[!MEDIAQUERIES-5]] defines for every range feature.
+
+<h3 id=date-feature>The '@media/date' feature</h3>
+
+<pre class='descdef mq'>
+Name: date
+Value: <<date-string>>
+For: @media
+Type: range
+</pre>
+
+The '@media/date' media feature is the current date and time. Compared with a <<date-string>> |v|, the
+feature is less than, equal to, or greater than |v| when the result of
+[=compare the current date with|comparing the current date with=] |v| is -1, 0, or 1.
+
+Each comparison in a query parses its own string, so a range can mix kinds:
+<code>("2026-09-09" <= date < "2026-09-15T12:00")</code> starts at the beginning of September 9 and
+ends at noon on September 15.
+
+<div class=example id=example-date-wrap>
+    A range of month-days doesn't wrap around the end of the year, because
+    <code>("--12-20" <= date <= "--01-05")</code> means
+    <code>(date >= "--12-20") and (date <= "--01-05")</code>, which no date satisfies. Join the two
+    halves with a comma or <code>or</code> instead:
+
+    <pre highlight=css>
+    @media (date >= "--12-20") or (date <= "--01-05") { … }
+    </pre>
+</div>
+
+<h3 id=time-feature>The '@media/time' feature</h3>
+
+<pre class='descdef mq'>
+Name: time
+Value: <<time-string>>
+For: @media
+Type: range
+</pre>
+
+The '@media/time' media feature is the [=current time=]. Compared with a <<time-string>>, whose parsed
+value is |t|, the feature is less than, equal to, or greater than it when
+[$CompareTimeRecord$]([=current time=], |t|) is -1, 0, or 1.
+
+<div class=example id=example-time-night>
+    <pre highlight=css>
+    /* From 10pm to 6am */
+    @media (time >= "22:00") or (time < "06:00") { … }
+    </pre>
+</div>
+
+<h3 id=weekday-feature>The '@media/weekday' feature</h3>
+
+<pre class='descdef mq'>
+Name: weekday
+Value: monday | tuesday | wednesday | thursday | friday | saturday | sunday
+For: @media
+Type: range
+</pre>
+
+The '@media/weekday' media feature is the day of the week of the [=current date=]. The keywords stand
+for the numbers 1 (''monday'') through 7 (''sunday''), the numbering of [$ISODayOfWeek$], and compare
+as those numbers. The value is [$ISODayOfWeek$]([=current date=]).
+
+<div class=example id=example-weekend>
+    <pre highlight=css>
+    @media (weekday >= saturday) { .weekend-hours { display: block; } }
+    </pre>
+</div>
+
+<h3 id=month-feature>The '@media/month' feature</h3>
+
+<pre class='descdef mq'>
+Name: month
+Value: <<integer [1,99]>> | <<month-code>>
+For: @media
+Type: range
+</pre>
+
+A <dfn type>&lt;month-code></dfn> is an <<ident>> that, converted to ASCII uppercase, is matched by
+the [=MonthCode=] production of [[!TEMPORAL]], such as ''M01'' or ''M05L''. An <<integer>> |n| is
+equivalent to the [=month code=] [$CreateMonthCode$](|n|, false), so ''12'' means ''M12''.
+
+The '@media/month' media feature is the \[[MonthCode]] of
+[$CalendarISOToDate$]([=date calendar=], [=current date=]). Month codes compare by code unit order,
+which [[!TEMPORAL]] defines to be the order of the months in a year, including leap months.
+
+<h3 id=day-feature>The '@media/day' feature</h3>
+
+<pre class='descdef mq'>
+Name: day
+Value: <<integer [1,∞]>>
+For: @media
+Type: range
+</pre>
+
+The '@media/day' media feature is the \[[Day]] of
+[$CalendarISOToDate$]([=date calendar=], [=current date=]): the day of the month.
+
+<div class=example id=example-nth-weekday>
+    '@media/month', '@media/day', and '@media/weekday' together describe any "<var>n</var>th weekday of the month" rule,
+    because the fourth Thursday of a month always falls on day 22 to 28, and the last Monday of May on
+    day 25 to 31:
+
+    <pre highlight=css>
+    @media (month: 11) and (weekday: thursday) and (22 <= day <= 28) { /* US Thanksgiving */ }
+    @media (month: 5) and (weekday: monday) and (day >= 25) { /* US Memorial Day */ }
+    </pre>
+</div>
+
+<h3 id=moon-phase-feature>The '@media/moon-phase' feature</h3>
+
+<pre class='descdef mq'>
+Name: moon-phase
+Value: new-moon | waxing-crescent | first-quarter | waxing-gibbous | full-moon | waning-gibbous | last-quarter | waning-crescent
+For: @media
+Type: discrete
+</pre>
+
+The <dfn>principal phases</dfn> of the Moon are the instants at which the Moon's geocentric apparent
+ecliptic longitude exceeds the Sun's by 0° (''new-moon''), 90° (''first-quarter''), 180°
+(''full-moon''), and 270° (''last-quarter''). The date of a principal phase is the \[[ISODate]] of
+[$GetISODateTimeFor$]([=current time zone=], the phase's instant).
+
+The '@media/moon-phase' media feature is:
+
+* The principal phase whose date is the [=current date=], if there is one.
+* Otherwise, the phase after the most recent of the [=principal phases=]: ''waxing-crescent'' after ''new-moon'',
+    ''waxing-gibbous'' after ''first-quarter'', ''waning-gibbous'' after ''full-moon'', and
+    ''waning-crescent'' after ''last-quarter''.
+
+User agents must place the instants of the principal phases within one minute of their true times.
+
+<div class=note>
+    The method in chapter 49 of [[MEEUS]] is accurate enough. Principal phases are about seven days
+    apart, so no date has two of them. Because the date depends on the time zone, users in different
+    time zones can see a full moon on different dates.
+</div>
+
+<h3 id=season-feature>The '@media/season' feature</h3>
+
+<pre class='descdef mq'>
+Name: season
+Value: spring | summer | autumn | winter
+For: @media
+Type: discrete
+</pre>
+
+The astronomical seasons are bounded by the <dfn>March equinox</dfn>, <dfn>June solstice</dfn>,
+<dfn>September equinox</dfn>, and <dfn>December solstice</dfn>: the instants at which the Sun's
+geocentric apparent ecliptic longitude is 0°, 90°, 180°, and 270°. The date of each is the \[[ISODate]]
+of [$GetISODateTimeFor$]([=current time zone=], its instant) in the year of the [=current date=].
+
+The <dfn>hemisphere</dfn> is southern if the [=current time zone=] is a named time zone whose location
+in the Time Zone Database [[!TZDB]] has a negative latitude, and northern otherwise. Offset time zones
+and zones with no location, such as "UTC", are northern. User agents use the entry for the time zone's
+own identifier where the database lists one, and otherwise the entry for the zone it links to.
+
+The '@media/season' media feature is found from the [=current date=] |d|:
+
+<table class=data>
+    <thead><tr><th>When |d| is<th>Northern<th>Southern
+    <tbody>
+        <tr><td>on or after the date of the [=March equinox=] and before the date of the [=June solstice=]<td>''spring''<td>''autumn''
+        <tr><td>on or after the date of the [=June solstice=] and before the date of the [=September equinox=]<td>''summer''<td>''winter''
+        <tr><td>on or after the date of the [=September equinox=] and before the date of the [=December solstice=]<td>''autumn''<td>''spring''
+        <tr><td>any other date<td>''winter''<td>''summer''
+</table>
+
+User agents must place the equinoxes and solstices within one minute of their true times.
+
+<div class=note>
+    The method in chapter 27 of [[MEEUS]] is accurate enough for dates near the present. The hemisphere
+    comes from the time zone, which script can already read, rather than from the user's location.
+    Near the equator the astronomical seasons don't match the local climate, and authors should keep
+    that in mind for audiences there.
+</div>
+
+
+<h2 id=functions>Functions</h2>
+
+<h3 id=calendar-function>The ''calendar()'' function</h3>
+
+<pre class=prod>
+<dfn type>&lt;calendar()></dfn> = calendar( <<ident>> , <<media-condition>> )
+</pre>
+
+The <dfn function>calendar()</dfn> function evaluates a media condition in another calendar.
+
+Every [=media condition=] is evaluated with a <dfn>date calendar</dfn>, which is "iso8601" unless
+''calendar()'' says otherwise. The date calendar decides what '@media/month' and '@media/day' mean. It
+doesn't affect '@media/date', '@media/time', or '@media/weekday', which are the same in every calendar.
+
+To evaluate <code>calendar(|name|, |condition|)</code>:
+
+1. Let |calendar| be [$CanonicalizeCalendar$](|name|). If that throws, because the user agent doesn't
+    support a calendar of that [=calendar type=], the result is "unknown".
+1. The result is the result of evaluating |condition| with |calendar| as the [=date calendar=].
+
+The calendar types are the ones <code>Intl.DateTimeFormat</code> supports, such as ''hebrew'',
+''chinese'', ''islamic-umalqura'', ''persian'', and ''ethiopic''.
+
+<div class=example id=example-calendar>
+    <pre highlight=css>
+    /* Lunar New Year through the Lantern Festival */
+    @media calendar(chinese, (month: M01) and (day <= 15)) { … }
+
+    /* Purim: 14 Adar, which is Adar II in a Hebrew leap year */
+    @media calendar(hebrew, (month: M06) and (day = 14)) { … }
+    </pre>
+</div>
+
+<h3 id=holiday-function>The ''holiday()'' function</h3>
+
+<pre class=prod>
+<dfn type>&lt;holiday()></dfn> = holiday( [ <<ident>> , ]? <<ident>> )
+</pre>
+
+The <dfn function>holiday()</dfn> function tests whether the [=current date=] is a holiday.
+Its last argument names the holiday. The optional first argument is a region: two ASCII letters, an ISO
+3166-1 alpha-2 code as used in Unicode region subtags, such as ''us'' or ''il''. The author chooses the
+region; the user's own region plays no part.
+
+To evaluate <code>holiday(|region|, |name|)</code>, with |region| possibly omitted:
+
+1. If |region| is present and isn't two ASCII letters, the result is "unknown".
+1. Let |entry| be the entry of the [[#holiday-registry]] whose name matches |name| and whose region
+    matches |region|, ignoring ASCII case.
+1. If there is no such entry, let |entry| be the entry whose name matches |name| and that has no region.
+1. If there is still no entry, the result is "unknown".
+1. The result is true if the [=current date=] is a date of |entry|, and false otherwise.
+
+The dates of an entry are the dates on which its rule's [=media condition=] is true, evaluated with
+"iso8601" as the [=date calendar=], or the dates its rule describes in words. If an entry's rule uses a
+calendar that the user agent doesn't support, the result is "unknown".
+
+<div class=example id=example-holiday>
+    <pre highlight=css>
+    @media holiday(us, thanksgiving) { … }  /* fourth Thursday of November */
+    @media holiday(ca, thanksgiving) { … }  /* second Monday of October */
+    @media holiday(us, christmas) { … }     /* no US entry, so the regionless one */
+    @media holiday(il, passover) { … }      /* 7 days in Israel, instead of 8 */
+    </pre>
+</div>
+
+<h3 id=holiday-registry>Holiday registry</h3>
+
+<table class=data>
+    <thead><tr><th>Name<th>Region<th>Rule
+    <tbody>
+        <tr><td>''new-years-day''<td><td><code>(date = "--01-01")</code>
+        <tr><td>''valentines-day''<td><td><code>(date = "--02-14")</code>
+        <tr><td>''halloween''<td><td><code>(date = "--10-31")</code>
+        <tr><td>''christmas-eve''<td><td><code>(date = "--12-24")</code>
+        <tr><td>''christmas''<td><td><code>(date = "--12-25")</code>
+        <tr><td>''new-years-eve''<td><td><code>(date = "--12-31")</code>
+        <tr><td>''easter''<td><td>The [=Gregorian Easter=] of the year of the [=current date=]
+        <tr><td>''good-friday''<td><td>2 days before ''easter''
+        <tr><td>''orthodox-easter''<td><td>The [=Orthodox Easter=] of the year of the [=current date=]
+        <tr><td>''lunar-new-year''<td><td><code>calendar(chinese, (month: M01) and (day = 1))</code>
+        <tr><td>''mid-autumn-festival''<td><td><code>calendar(chinese, (month: M08) and (day = 15))</code>
+        <tr><td>''rosh-hashanah''<td><td><code>calendar(hebrew, (month: M01) and (day <= 2))</code>
+        <tr><td>''yom-kippur''<td><td><code>calendar(hebrew, (month: M01) and (day = 10))</code>
+        <tr><td>''passover''<td><td><code>calendar(hebrew, (month: M07) and (15 <= day <= 22))</code>
+        <tr><td>''passover''<td>''il''<td><code>calendar(hebrew, (month: M07) and (15 <= day <= 21))</code>
+        <tr><td>''hanukkah''<td><td>The 8 days starting on each date whose \[[MonthCode]] and \[[Day]] in
+            [$CalendarISOToDate$]("hebrew", date) are "M03" and 25 (25 Kislev)
+        <tr><td>''thanksgiving''<td>''us''<td><code>(month: 11) and (weekday: thursday) and (22 <= day <= 28)</code>
+        <tr><td>''independence-day''<td>''us''<td><code>(date = "--07-04")</code>
+        <tr><td>''memorial-day''<td>''us''<td><code>(month: 5) and (weekday: monday) and (day >= 25)</code>
+        <tr><td>''labor-day''<td>''us''<td><code>(month: 9) and (weekday: monday) and (day <= 7)</code>
+        <tr><td>''mothers-day''<td>''us''<td><code>(month: 5) and (weekday: sunday) and (8 <= day <= 14)</code>
+        <tr><td>''fathers-day''<td>''us''<td><code>(month: 6) and (weekday: sunday) and (15 <= day <= 21)</code>
+        <tr><td>''thanksgiving''<td>''ca''<td><code>(month: 10) and (weekday: monday) and (8 <= day <= 14)</code>
+        <tr><td>''canada-day''<td>''ca''<td><code>(date = "--07-01")</code>
+        <tr><td>''mothers-day''<td>''gb''<td>21 days before ''easter''
+        <tr><td>''dia-de-muertos''<td>''mx''<td><code>("--11-01" <= date <= "--11-02")</code>
+</table>
+
+The <dfn>Gregorian Easter</dfn> of year |Y| is found with integer division and a non-negative remainder:
+
+1. Let |a| be |Y| mod 19, |b| be |Y| ÷ 100, and |c| be |Y| mod 100.
+1. Let |d| be |b| ÷ 4, |e| be |b| mod 4, |f| be (|b| + 8) ÷ 25, and |g| be (|b| − |f| + 1) ÷ 3.
+1. Let |h| be (19|a| + |b| − |d| − |g| + 15) mod 30.
+1. Let |i| be |c| ÷ 4, and |k| be |c| mod 4.
+1. Let |l| be (32 + 2|e| + 2|i| − |h| − |k|) mod 7.
+1. Let |m| be (|a| + 11|h| + 22|l|) ÷ 451.
+1. Let |n| be |h| + |l| − 7|m| + 114.
+1. Return the ISO date in year |Y|, month |n| ÷ 31, day (|n| mod 31) + 1.
+
+The <dfn>Orthodox Easter</dfn> of year |Y| is found the same way:
+
+1. Let |a| be |Y| mod 4, |b| be |Y| mod 7, and |c| be |Y| mod 19.
+1. Let |d| be (19|c| + 15) mod 30.
+1. Let |e| be (2|a| + 4|b| − |d| + 34) mod 7.
+1. Let |n| be |d| + |e| + 114.
+1. Let |julian| be the date in year |Y|, month |n| ÷ 31, day (|n| mod 31) + 1, in the Julian calendar.
+1. Return the ISO date (|Y| ÷ 100) − (|Y| ÷ 400) − 2 days after the ISO date with the same fields as
+    |julian|.
+
+<div class=note>
+    These are the algorithms in chapter 8 of [[MEEUS]]. Every other rule in the registry is a media
+    query that authors could write themselves; the registry gives them names and keeps regional
+    differences, like the length of Passover, in one place.
+</div>
+
+New entries are added through the specification's issue tracker. An entry can only be added if its
+dates can be calculated. Holidays whose dates depend on observation, or on calendars that
+<code>Intl.DateTimeFormat</code> doesn't support, aren't eligible; see [[#open-issues]].
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+* The current date and time and the user's time zone are already available to script, through
+    <code>Date</code>, <code>Temporal</code>, and <code>Intl</code>. These features make them available
+    to style sheets, including in contexts where script doesn't run, such as HTML email or pages with
+    script blocked. A style sheet can report them to a server by loading different resources under
+    different queries. User agents that block script for privacy should consider the same treatment for
+    these features, such as evaluating them in the "UTC" time zone.
+* The [=current instant=] is rounded down to a second, so queries can't measure the user's clock more
+    finely than that.
+* The [=hemisphere=] for '@media/season' comes from the time zone, not from the user's location.
+* The region in ''holiday()'' is chosen by the author. Nothing in this specification reveals the user's
+    region or locale.
+
+
+<h2 id=security>Security considerations</h2>
+
+* These features show and hide content; they don't protect it. Content hidden until a date is in the
+    style sheet and the document already, and users can change their clocks. Embargoed content must stay
+    on the server until its release.
+* Nothing in this specification fetches resources or runs script.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-numbers>ISO 8601 basic format as numbers</h3>
+
+ISO 8601's basic format writes dates and times without separators, and those parse as CSS numbers:
+<code>(20260909 <= date <= 20260915)</code>, <code>(date = 1225)</code>, <code>(time >= 1800)</code>.
+That needs no grammar change. It was not chosen because:
+
+* A number has no time zone or UTC offset, so "9:00 in New York" can't be written.
+* A specific moment takes several conditions:
+    <code>(date > 20261127), ((date = 20261127) and (time >= 900))</code>.
+* Leading zeros vanish, so January 5 is <code>105</code>, and the number of digits decides whether a
+    number is a date or a month-day.
+
+<h3 id=alt-features>Features instead of functions</h3>
+
+Holidays and calendars could be media features with no grammar change:
+<code>(holiday: us-thanksgiving)</code>, and per-calendar features such as
+<code>(hebrew-month: M07) and (hebrew-day >= 15)</code>. It was not chosen because a date can be several
+holidays at once, which no other media feature allows, and because a pair of features for every calendar
+multiplies the feature names.
+
+<h3 id=alt-locale>A locale in ''holiday()''</h3>
+
+The first argument could be a locale, such as ''en-us''. Holidays depend on the region, not the
+language, so only the region is used.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>Islamic holidays, such as Eid al-Fitr and the start of Ramadan, begin when the new
+crescent moon is sighted, which no algorithm predicts. Authors who accept a tabular approximation can use
+<code>calendar(islamic-umalqura, (month: M09))</code>. Should the registry include such entries with that
+caveat?
+
+<p class=issue>Diwali, Holi, Vesak, and other holidays of Hindu and Buddhist lunisolar calendars can't
+be listed, because CLDR and <code>Intl.DateTimeFormat</code> don't support those calendars.
+
+<p class=issue>Many events are relative to a holiday: Black Friday is the day after US Thanksgiving, and
+a sale might run for the week before Christmas. Should ''holiday()'' accept a range of days before and
+after?
+
+<p class=issue>Some countries use meteorological seasons, which start on the first of March, June,
+September, and December. Should '@media/season' offer them?
+
+<p class=issue>Which days are the weekend depends on the region: Saturday and Sunday in most of the
+world, Friday and Saturday in others. Should there be a way to test for the weekend, as
+<code>Intl.Locale.prototype.getWeekInfo()</code> reports it?

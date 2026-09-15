@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Date and Time Media Queries polyfill: tests</title>
+<script src="date-media-queries.js"></script>
+<style>
+  @media (date >= "2000-01-01") { #probe-on { color: rgb(0, 128, 0); } }
+  @media screen and (date < "2000-01-01") { #probe-off { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media calendar(hebrew, (month >= M01)) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe-on"></p><p id="probe-off"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  let failed = 0;
+  let count = 0;
+
+  // The current date and time for a test, as "2026-09-15T10:30" in New York unless a zone is given.
+  const at = (s) => Temporal.ZonedDateTime.from(s.includes('[') ? s : `${s}[America/New_York]`);
+  const matches = (query, now) => matchMedia(DateMediaQueries.evaluate(query, now)).matches;
+
+  // The polyfill rewrites style sheets parsed after its script at DOMContentLoaded, so the tests wait for it too.
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+
+  function run(name, body) {
+    count++;
+    try {
+      body();
+      log.textContent += `PASS ${name}\n`;
+    } catch (e) {
+      failed++;
+      log.textContent += `FAIL ${name}: ${e.message}\n`;
+    }
+  }
+
+  // Each case is [query, expected]. All are evaluated at `now`.
+  function expectAll(now, cases) {
+    const wrong = cases.filter(([query, expected]) => matches(query, at(now)) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, e]) => `${q} should be ${e}`).join('; '));
+  }
+
+  test('date compares with dates, in the user\'s time zone', () => expectAll('2026-09-15T10:30', [
+    ['("2026-09-09" <= date <= "2026-09-15")', true],
+    ['(date > "2026-09-15")', false],
+    ['(date = "20260915")', true],
+    ['(date: "2026-09-15")', true],
+    ['(min-date: "2026-09-16")', false],
+    ['(max-date: "2026-09-15")', true],
+    ['(date)', true],
+  ]));
+
+  test('date compares with date-times, to the second', () => expectAll('2026-09-15T10:30', [
+    ['(date >= "2026-09-15T10:30")', true],
+    ['(date > "2026-09-15T10:30")', false],
+    ['(date < "2026-09-15T10:30:01")', true],
+    ['("2026-09-09" <= date < "2026-09-15T12:00")', true],
+  ]));
+
+  test('date compares with instants when the string has a time zone or offset', () => expectAll('2026-09-15T10:30', [
+    ['(date >= "2026-09-15T10:30[America/New_York]")', true],
+    ['(date >= "2026-09-15T10:30[America/Los_Angeles]")', false],
+    ['(date = "2026-09-15T14:30Z")', true],
+    ['(date > "2026-09-15T14:30Z")', false],
+    ['(date >= "2026-09-15T15:00+01:00")', true],
+    ['(date >= "2026-09-15[Asia/Tokyo]")', true],
+    ['(date >= "2026-09-16[Asia/Tokyo]")', false],
+  ]));
+
+  test('date compares with month-days, every year', () => {
+    expectAll('2026-09-15T10:30', [
+      ['(date = "--09-15")', true],
+      ['(date = "09-15")', true],
+      ['(date >= "--12-20") or (date <= "--01-05")', false],
+    ]);
+    expectAll('2027-12-31T23:59', [
+      ['(date >= "--12-20") or (date <= "--01-05")', true],
+      ['("--12-20" <= date <= "--01-05")', false],
+    ]);
+    expectAll('2027-03-01T00:00', [['(date > "--02-29")', true]]);
+  });
+
+  test('an invalid date string makes the feature unknown', () => expectAll('2026-09-15T10:30', [
+    ['(date = "nope")', false],
+    ['not (date = "nope")', false],
+    ['(date = "nope") or (min-width: 0px)', true],
+    ['(date = "2026-02-30")', false],
+    ['not (date = "2026-02-30")', false],
+    ['(date = "--12-25[u-ca=hebrew]")', false],
+    ['not (date = "--12-25[u-ca=hebrew]")', false],
+    ['(date = 20260915)', false],
+    ['not (date = 20260915)', false],
+  ]));
+
+  test('time compares with the local time', () => expectAll('2026-09-15T10:30', [
+    ['(time >= "10:30")', true],
+    ['(time > "1030")', false],
+    ['(time < "T10:30:01")', true],
+    ['(time >= "22:00") or (time < "06:00")', false],
+    ['not (time = "10:3")', false],
+    ['not (time = "2026-09-15T10:30")', false],
+  ]));
+
+  test('weekday uses ISO numbering from Monday', () => expectAll('2026-09-15T10:30', [
+    ['(weekday: tuesday)', true],
+    ['(weekday >= saturday)', false],
+    ['(monday < weekday < wednesday)', true],
+  ]));
+
+  test('month and day in the ISO calendar', () => expectAll('2026-09-15T10:30', [
+    ['(month: 9) and (day: 15)', true],
+    ['(month: M09)', true],
+    ['(month > 8)', true],
+    ['(month < M09L)', true],
+    ['(month > M08L)', true],
+    ['(22 <= day <= 28)', false],
+  ]));
+
+  test('calendar() changes month and day, and nothing else', () => expectAll('2026-04-02T12:00', [
+    ['calendar(hebrew, (month: M07) and (day: 15))', true],
+    ['calendar(hebrew, (month: 4))', false],
+    ['calendar(hebrew, (date = "2026-04-02"))', true],
+    ['calendar(chinese, calendar(hebrew, (month: M07)))', true],
+    ['calendar(klingon, (month: 1))', false],
+    ['not calendar(klingon, (month: 1))', false],
+    ['calendar(hebrew, month: 4)', false],
+    ['not calendar(hebrew, month: 4)', false],
+    ['calendar(hebrew, month: 4) or (min-width: 0px)', true],
+  ]));
+
+  test('holiday() looks up the region, then the regionless entry', () => {
+    expectAll('2026-11-26T12:00', [['holiday(us, thanksgiving)', true], ['holiday(ca, thanksgiving)', false]]);
+    expectAll('2026-10-12T12:00', [['holiday(CA, Thanksgiving)', true]]);
+    expectAll('2026-12-25T12:00', [['holiday(us, christmas)', true], ['holiday(christmas)', true]]);
+    expectAll('2026-04-09T12:00', [['holiday(passover)', true], ['holiday(il, passover)', false]]);
+    expectAll('2026-09-15T10:30', [
+      ['holiday(thanksgiving)', false],
+      ['not holiday(thanksgiving)', false],
+      ['not holiday(usa, christmas)', false],
+    ]);
+  });
+
+  test('holiday() computes Easter, calendar holidays, and Hanukkah', () => {
+    expectAll('2026-04-05T12:00', [['holiday(easter)', true], ['holiday(orthodox-easter)', false]]);
+    expectAll('2026-04-03T12:00', [['holiday(good-friday)', true]]);
+    expectAll('2026-04-12T12:00', [['holiday(orthodox-easter)', true]]);
+    expectAll('2024-05-05T12:00', [['holiday(orthodox-easter)', true]]);
+    expectAll('2026-03-15T12:00', [['holiday(gb, mothers-day)', true], ['holiday(us, mothers-day)', false]]);
+    expectAll('2026-02-17T12:00', [['holiday(lunar-new-year)', true]]);
+    expectAll('2026-09-12T12:00', [['holiday(rosh-hashanah)', true]]);
+    expectAll('2026-12-05T12:00', [['holiday(hanukkah)', true]]);
+    expectAll('2026-12-12T12:00', [['holiday(hanukkah)', true]]);
+    expectAll('2026-12-13T12:00', [['holiday(hanukkah)', false]]);
+    expectAll('2026-11-02T12:00', [['holiday(mx, dia-de-muertos)', true]]);
+  });
+
+  test('the Meeus worked examples', () => {
+    const near = (a, b, label) => { if (Math.abs(a - b) > 0.0001) throw new Error(`${label}: ${a} vs ${b}`); };
+    near(DateMediaQueries.meeus.phaseJDE(-283), 2443192.65118, 'example 49.a, new moon');
+    near(DateMediaQueries.meeus.phaseJDE(544.75), 2467636.49186, 'example 49.b, last quarter');
+    near(DateMediaQueries.meeus.seasonJDE(1962, 1), 2437837.39245, 'example 27.a, June solstice');
+  });
+
+  test('moon-phase names the principal phase on its local date', () => {
+    expectAll('2026-03-03T12:00[UTC]', [['(moon-phase: full-moon)', true]]); // total lunar eclipse
+    expectAll('2026-03-05T12:00[UTC]', [['(moon-phase: waning-gibbous)', true]]);
+    expectAll('2026-08-12T12:00[UTC]', [['(moon-phase: new-moon)', true]]); // total solar eclipse
+    expectAll('2026-08-14T12:00[UTC]', [['(moon-phase: waxing-crescent)', true]]);
+    expectAll('2026-08-14T12:00[UTC]', [['not (moon-phase >= new-moon)', false], ['not (moon-phase: blue)', false]]);
+  });
+
+  test('season follows the local date of the equinox, and the hemisphere of the time zone', () => {
+    expectAll('2026-09-15T10:30', [['(season: summer)', true]]);
+    expectAll('2026-09-15T10:30[Australia/Sydney]', [['(season: winter)', true]]);
+    expectAll('2026-09-15T10:30[Australia/NSW]', [['(season: winter)', true]]);
+    // The September equinox is at about 00:05 UTC on the 23rd, which is still the 22nd in New York.
+    expectAll('2026-09-22T12:00', [['(season: autumn)', true]]);
+    expectAll('2026-09-22T12:00[Europe/London]', [['(season: summer)', true]]);
+    expectAll('2026-01-10T12:00[UTC]', [['(season: winter)', true]]);
+  });
+
+  test('style sheets are rewritten, including nested rules', () => {
+    const color = (id) => getComputedStyle(document.getElementById(id)).color;
+    if (color('probe-on') !== 'rgb(0, 128, 0)') throw new Error('rule for a past date not applied');
+    if (color('probe-off') === 'rgb(0, 128, 0)') throw new Error('rule for before 2000 applied');
+    if (color('probe-nested') !== 'rgb(0, 128, 0)') throw new Error('@media inside @supports not applied');
+  });
+
+  test('pretend() moves the page to another date', () => {
+    const style = document.createElement('style');
+    style.textContent = '@media holiday(christmas) { #probe-on { outline: 1px solid rgb(255, 0, 0); } }';
+    document.head.append(style);
+    DateMediaQueries.pretend(at('2026-12-25T08:00'));
+    const on = getComputedStyle(document.getElementById('probe-on')).outlineStyle;
+    DateMediaQueries.pretend(at('2026-12-26T08:00'));
+    const off = getComputedStyle(document.getElementById('probe-on')).outlineStyle;
+    DateMediaQueries.pretend(null);
+    style.remove();
+    if (on !== 'solid' || off !== 'none') throw new Error(`expected solid then none, got ${on} then ${off}`);
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    for (const [name, body] of tests) run(name, body);
+    log.textContent += `${count - failed} of ${count} passed\n`;
+  });
+</script>

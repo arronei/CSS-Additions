@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Date and Time Media Queries polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  fieldset { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; border: 1px solid #ccc; }
+  label { display: grid; font-size: 0.875rem; }
+  table { border-collapse: collapse; width: 100%; }
+  td { border-top: 1px solid #ddd; padding: 0.35rem 0.5rem; vertical-align: top; }
+  td:first-child { width: 5rem; }
+  .state::before { content: "no"; color: #777; }
+  .sale { display: none; background: #fde68a; padding: 0.5rem 1rem; }
+  /* The rows' "yes" rules are added by the script below, as ordinary @media rules. */
+</style>
+
+<h1>Date and Time Media Queries</h1>
+<p>Each row is a real <code>@media</code> rule. Pick a date to see which ones match, or use the clock.</p>
+
+<fieldset>
+  <legend>Pretend it is</legend>
+  <label>Date and time <input type="datetime-local" id="when" step="1"></label>
+  <label>Time zone
+    <select id="zone">
+      <option>America/New_York</option><option>America/Los_Angeles</option><option>Europe/London</option>
+      <option>Asia/Tokyo</option><option>Australia/Sydney</option><option>UTC</option>
+    </select>
+  </label>
+  <button type="button" id="clock">Use the clock</button>
+</fieldset>
+
+<p class="sale" id="sale">The September sale is on. <code>("2026-09-09" &lt;= date &lt;= "2026-09-15")</code></p>
+
+<table id="rows"></table>
+
+<script src="date-media-queries.js"></script>
+<script>
+  'use strict';
+  const queries = [
+    '("2026-09-09" <= date <= "2026-09-15")',
+    '(date >= "--12-20") or (date <= "--01-05")',
+    '(date >= "2026-11-27T09:00[America/New_York]")',
+    '(time >= "18:00")',
+    '(time >= "22:00") or (time < "06:00")',
+    '(weekday >= saturday)',
+    '(month: 11) and (weekday: thursday) and (22 <= day <= 28)',
+    'holiday(us, thanksgiving)',
+    'holiday(christmas)',
+    'holiday(easter)',
+    'holiday(orthodox-easter)',
+    'holiday(lunar-new-year)',
+    'holiday(rosh-hashanah)',
+    'holiday(hanukkah)',
+    'calendar(hebrew, (month: M07) and (15 <= day <= 22))',
+    'calendar(chinese, (month: M01) and (day <= 15))',
+    ...['new-moon', 'waxing-crescent', 'first-quarter', 'waxing-gibbous', 'full-moon', 'waning-gibbous',
+      'last-quarter', 'waning-crescent'].map((phase) => `(moon-phase: ${phase})`),
+    ...['spring', 'summer', 'autumn', 'winter'].map((season) => `(season: ${season})`),
+  ];
+
+  const rows = document.getElementById('rows');
+  const css = ['@media ("2026-09-09" <= date <= "2026-09-15") { #sale { display: block; } }'];
+  queries.forEach((query, i) => {
+    rows.insertAdjacentHTML('beforeend', `<tr id="q${i}"><td class="state"></td><td><code></code></td></tr>`);
+    rows.lastElementChild.querySelector('code').textContent = `@media ${query}`;
+    css.push(`@media ${query} { #q${i} .state::before { content: "yes"; color: green; font-weight: bold; } }`);
+  });
+  const style = document.createElement('style');
+  style.textContent = css.join('\n');
+  document.head.append(style);
+
+  const when = document.getElementById('when');
+  const zone = document.getElementById('zone');
+  const now = Temporal.Now.zonedDateTimeISO();
+  when.value = now.toPlainDateTime().round({ smallestUnit: 'second', roundingMode: 'trunc' }).toString();
+  if ([...zone.options].every((o) => o.value !== now.timeZoneId)) zone.add(new Option(now.timeZoneId), 0);
+  zone.value = now.timeZoneId;
+
+  const pretend = () => {
+    if (when.value) DateMediaQueries.pretend(Temporal.PlainDateTime.from(when.value).toZonedDateTime(zone.value));
+  };
+  when.addEventListener('input', pretend);
+  zone.addEventListener('change', pretend);
+  document.getElementById('clock').addEventListener('click', () => DateMediaQueries.pretend(null));
+</script>
