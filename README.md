@@ -14,3 +14,11 @@ Specs are written in [Bikeshed](https://speced.github.io/bikeshed/). To build on
 pip install bikeshed
 bikeshed spec <proposal>/spec/index.bs <proposal>/spec/index.html
 ```
+
+## License
+
+This document and all associated files in the github project are licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ![](https://licensebuttons.net/p/zero/1.0/80x15.png).
+This means you can reuse, remix, or otherwise appropriate this project for your own use **without restriction**.
+(The actual legal meaning can be found at the above link.)
+Don't ask me for permission to use any part of this project, **just use it**.
+I would appreciate attribution, but that is not required by the license.
