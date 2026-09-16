@@ -53,3 +53,11 @@ avoid fingerprinting. None of the features may be derived from whether assistive
 | [spec/](spec/) | The specification. [index.bs](spec/index.bs) is the Bikeshed source, and [index.html](spec/index.html) is the rendered spec. |
 
 There is no polyfill: browsers don't expose these settings to script.
+
+## License
+
+This document and all associated files in the github project are licensed under [CC0](https://creativecommons.org/publicdomain/zero/1.0/) ![](https://licensebuttons.net/p/zero/1.0/80x15.png).
+This means you can reuse, remix, or otherwise appropriate this project for your own use **without restriction**.
+(The actual legal meaning can be found at the above link.)
+Don't ask me for permission to use any part of this project, **just use it**.
+I would appreciate attribution, but that is not required by the license.
