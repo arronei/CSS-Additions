@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platform Media Query polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  kbd { font: 0.85em ui-monospace, monospace; border: 1px solid #9ca3af; border-radius: 4px; padding: 0 0.35em; }
+  .panel { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem; margin-block: 1rem; }
+  .dialog-buttons { display: flex; gap: 0.5rem; justify-content: flex-end; }
+  .badge { border: 1px solid #111; border-radius: 6px; padding: 0.35rem 0.75rem; display: inline-block; }
+
+  /* Defaults: Windows and Linux conventions. */
+  .key-mod::after { content: "Ctrl"; }
+  .download-dmg, .download-deb, .badge-app-store, .badge-play { display: none; }
+
+  @media (platform: macos), (platform: ios) { .key-mod::after { content: "⌘"; } }
+  @media (platform: windows) { .dialog-buttons .accept { order: -1; } }
+  @media (platform: macos) { .download-exe { display: none; } .download-dmg { display: inline; } }
+  @media (platform: linux), (platform: chromeos) { .download-exe { display: none; } .download-deb { display: inline; } }
+  @media (platform: ios), (platform: macos) { .badge-play { display: none; } .badge-app-store { display: inline-block; } }
+  @media (platform: android), (platform: chromeos) { .badge-play { display: inline-block; } }
+  @media (platform: windows), (platform: linux), (platform: other) { .badge-play { display: none; } }
+</style>
+
+<h1>Platform Media Query</h1>
+<p>Each panel follows the conventions of the platform your browser reports. Pick another to compare.</p>
+
+<p><label>Pretend the platform is
+  <select id="platform">
+    <option value="">This browser's</option>
+    <option>windows</option><option>macos</option><option>ios</option><option>android</option>
+    <option>linux</option><option>chromeos</option><option>other</option>
+  </select>
+</label> <code id="current"></code></p>
+
+<div class="panel">
+  <p>Press <kbd class="key-mod"></kbd> <kbd>K</kbd> to search.</p>
+</div>
+
+<div class="panel">
+  <p>Delete this project?</p>
+  <div class="dialog-buttons"><button>Cancel</button><button class="accept">Delete</button></div>
+</div>
+
+<div class="panel">
+  <p>Download: <span class="download-exe">Setup.exe</span><span class="download-dmg">Example.dmg</span><span class="download-deb">example.deb</span></p>
+  <p><span class="badge badge-app-store">Download on the App Store</span><span class="badge badge-play">Get it on Google Play</span></p>
+</div>
+
+<script src="platform-media-query.js"></script>
+<script>
+  'use strict';
+  const select = document.getElementById('platform');
+  const current = document.getElementById('current');
+  const show = () => {
+    PlatformMediaQuery.pretend(select.value || null);
+    current.textContent = `(platform: ${select.value || PlatformMediaQuery.value})`;
+  };
+  select.addEventListener('change', show);
+  show();
+</script>

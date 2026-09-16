@@ -494,6 +494,8 @@ explain their choice in their privacy considerations.
         <tr><td>Keyboard Media Queries<td><td>''keyboard'' only<td>Yes<td>Yes
         <tr><td>Accessibility Preferences<td>When not shared<td>Yes<td>Yes<td>Yes
         <tr><td>Regional Preferences<td><td><td><td>Through <code>Intl</code>
+        <tr><td>Platform<td><td><td><td>Through the <code>User-Agent</code> header
+        <tr><td>Form Factor<td><td><td>Yes<td>Yes
 </table>
 
 

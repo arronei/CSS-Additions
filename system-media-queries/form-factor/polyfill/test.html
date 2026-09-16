@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form Factor Media Query polyfill: tests</title>
+<script src="form-factor-media-query.js"></script>
+<style>
+  @media (form-factor: tv) { #probe { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media (form-factor: mobile) and (not (form-factor: watch)) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+  const matches = (query, factors) => matchMedia(FormFactorMediaQuery.evaluate(query, factors)).matches;
+  const color = (id) => getComputedStyle(document.getElementById(id)).color;
+  const GREEN = 'rgb(0, 128, 0)';
+
+  // Each case is [query, form factors, expected].
+  function expectAll(cases) {
+    const wrong = cases.filter(([query, factors, expected]) => matches(query, factors) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, f, e]) => `${q} with ${f} should be ${e}`).join('; '));
+  }
+
+  test('a keyword matches when it is one of the device\'s form factors', () => expectAll([
+    ['(form-factor: desktop)', ['desktop'], true],
+    ['(form-factor: mobile)', ['desktop'], false],
+    ['(Form-Factor: TV)', ['tv', 'desktop'], true],
+  ]));
+
+  test('a device with several form factors matches each of them', () => expectAll([
+    ['(form-factor: watch)', ['watch', 'mobile'], true],
+    ['(form-factor: mobile)', ['watch', 'mobile'], true],
+    ['(form-factor: mobile) and (not (form-factor: watch))', ['watch', 'mobile'], false],
+    ['(form-factor: mobile) and (not (form-factor: watch))', ['mobile'], true],
+  ]));
+
+  test('every value is true in a boolean context', () => expectAll([
+    ['(form-factor)', ['other'], true],
+    ['not (form-factor)', ['tv'], false],
+  ]));
+
+  test('keywords outside the closed list are unknown', () => expectAll([
+    ['(form-factor: fridge)', ['other'], false],
+    ['not (form-factor: fridge)', ['other'], false],
+    ['(form-factor: fridge) or (min-width: 0px)', ['other'], true],
+    ['(form-factor > mobile)', ['mobile'], false],
+    ['not (form-factor > mobile)', ['mobile'], false],
+  ]));
+
+  test('the coarse form factor is the mobile bit', () => {
+    const cases = [
+      ['Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 Chrome/152.0.0.0 Mobile Safari/537.36', undefined, 'mobile'],
+      ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/152.0.0.0 Safari/537.36', undefined, 'desktop'],
+      ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/152.0.0.0 Safari/537.36', true, 'mobile'],
+      ['Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 Chrome/152.0.0.0 Mobile Safari/537.36', false, 'desktop'],
+    ];
+    const wrong = cases.filter(([ua, mobile, expected]) => FormFactorMediaQuery.coarseFor(ua, mobile) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([ua, m, e]) => `${ua.slice(0, 30)}… mobile=${m} should be ${e}`).join('; '));
+  });
+
+  test('televisions and headsets are guessed from the User-Agent string', () => {
+    const cases = [
+      ['Mozilla/5.0 (SMART-TV; Linux; Tizen 7.0) AppleWebKit/537.36 Chrome/108.0.0.0 TV Safari/537.36', 'tv'],
+      ['Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 Chrome/108.0.0.0 Safari/537.36', 'tv'],
+      ['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/136.0.0.0 OculusBrowser/38.0 Quest 3 Safari/537.36', 'xr'],
+      ['Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 Chrome/152.0.0.0 Mobile Safari/537.36', undefined],
+    ];
+    const wrong = cases.filter(([ua, expected]) => {
+      const guesses = FormFactorMediaQuery.guessFor(ua);
+      return expected === undefined ? guesses.length !== 0 : !guesses.includes(expected);
+    });
+    if (wrong.length) throw new Error(wrong.map(([ua]) => ua.slice(0, 40)).join('; '));
+  });
+
+  test('the page value is a list of keywords from the closed list', () => {
+    const values = ['desktop', 'mobile', 'tablet', 'tv', 'watch', 'xr', 'eink', 'automotive', 'other'];
+    const value = FormFactorMediaQuery.value;
+    if (!Array.isArray(value) || !value.length || value.some((v) => !values.includes(v))) {
+      throw new Error(`got ${JSON.stringify(value)}`);
+    }
+  });
+
+  test('style sheets are rewritten, including nested rules', () => {
+    FormFactorMediaQuery.pretend(['tv', 'desktop']);
+    const tv = [color('probe'), color('probe-nested')];
+    FormFactorMediaQuery.pretend(['mobile']);
+    const phone = [color('probe'), color('probe-nested')];
+    FormFactorMediaQuery.pretend(['watch', 'mobile']);
+    const watch = color('probe-nested');
+    FormFactorMediaQuery.pretend(null);
+    if (tv[0] !== GREEN || tv[1] === GREEN || phone[0] === GREEN || phone[1] !== GREEN || watch === GREEN) {
+      throw new Error(`expected tv, then phone, then not watch; got ${tv}, ${phone}, ${watch}`);
+    }
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    let failed = 0;
+    for (const [name, body] of tests) {
+      try {
+        body();
+        log.textContent += `PASS ${name}\n`;
+      } catch (e) {
+        failed++;
+        log.textContent += `FAIL ${name}: ${e.message}\n`;
+      }
+    }
+    log.textContent += `${tests.length - failed} of ${tests.length} passed\n`;
+  });
+</script>

@@ -1,0 +1,451 @@
+<pre class=metadata>
+Title: Platform Media Query
+Shortname: platform-media-query
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds the '@media/platform' media feature, which reports the family of the user's
+    operating system from a closed list of keywords, so that a style sheet can follow that platform's
+    conventions: writing a shortcut as ⌘K or Ctrl+K, ordering the buttons of a dialog, offering the right
+    download, or showing the right app store badge. The value must be the same platform the user agent
+    already reveals in its <code>User-Agent</code> string and <code>navigator.userAgentData</code>, including
+    when the user agent deliberately reports a platform it isn't running on, so the feature adds no
+    information to any context. It never reports the version of the operating system, the device model, the
+    architecture, or the browser.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: reduced-exposure context; url: #reduced-exposure-context
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "FORM-FACTOR-MEDIA-QUERY": {
+        "title": "Form Factor Media Query",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/",
+        "publisher": "CSS Additions"
+    },
+    "UA-CLIENT-HINTS": {
+        "title": "User-Agent Client Hints",
+        "href": "https://wicg.github.io/ua-client-hints/",
+        "publisher": "WICG"
+    },
+    "UA-REDUCTION": {
+        "title": "User-Agent Reduction",
+        "href": "https://www.chromium.org/updates/ua-reduction/",
+        "publisher": "The Chromium Projects"
+    },
+    "FINGERPRINT-SURVEY": {
+        "title": "Browser Fingerprinting: A Survey",
+        "authors": ["Pierre Laperdrix", "Nataliia Bielova", "Benoit Baudry", "Gildas Avoine"],
+        "href": "https://arxiv.org/abs/1905.01051",
+        "date": "2019"
+    },
+    "HIDING-IN-THE-CROWD": {
+        "title": "Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale",
+        "authors": ["Alejandro Gómez-Boix", "Pierre Laperdrix", "Benoit Baudry"],
+        "href": "https://hal.inria.fr/hal-01718234/document",
+        "date": "2018"
+    },
+    "TOR-UA-SPOOFING": {
+        "title": "Stop spoofing the OS in the User-Agent header (tor-browser#42467)",
+        "href": "https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467",
+        "publisher": "The Tor Project"
+    },
+    "MOZ-787521": {
+        "title": "Bug 787521: Disable theme-related CSS media queries features when not in chrome context",
+        "href": "https://bugzilla.mozilla.org/show_bug.cgi?id=787521",
+        "publisher": "Mozilla"
+    },
+    "MOZ-PLATFORM": {
+        "title": "Bug 1754547: Provide a @media query to target major platform/toolkits",
+        "href": "https://bugzilla.mozilla.org/show_bug.cgi?id=1754547",
+        "publisher": "Mozilla"
+    },
+    "DESIGN-PRINCIPLES": {
+        "title": "Web Platform Design Principles",
+        "href": "https://www.w3.org/TR/design-principles/",
+        "publisher": "W3C TAG"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Every operating system has conventions that its users know without being taught. On macOS the shortcut is ⌘K and
+the accept button of a dialog is on the right; on Windows the same shortcut is Ctrl+K and the accept button is on
+the left. An app downloads as a <code>.dmg</code>, an <code>.exe</code>, or a <code>.deb</code>. The share icon is
+a box with an arrow on iOS and three connected dots on Android, and the app store badge is a different image on
+each platform.
+
+Media queries can describe what the device can do, but not whose conventions to follow. ''pointer/coarse'' doesn't
+mean iOS: a Windows laptop with a touchscreen and an iPad both report it, and they want opposite button orders
+and opposite shortcut labels. Feature queries can't help either, because the question isn't whether the engine
+supports something, it's what the user's platform calls it and expects it to look like.
+
+So pages work around it. They detect the platform once in script and write a class onto the root element, which is
+what Visual Studio Code does, and what the user agent parsing libraries exist to feed: in one week of September
+2026, <code>bowser</code> was downloaded about 42 million times and <code>ua-parser-js</code> about 23 million.
+Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature
+[[MOZ-PLATFORM]] that only its internal style sheets can use.
+
+This specification gives style sheets the same thing, in a form that reveals nothing that the user agent doesn't
+already send to every server in its <code>User-Agent</code> header.
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    /* Shortcut labels */
+    .key-mod::after { content: "Ctrl"; }
+    @media (platform: macos), (platform: ios) {
+      .key-mod::after { content: "⌘"; }
+    }
+
+    /* Dialog buttons: accept last on Apple platforms, first on Windows */
+    .dialog-buttons { display: flex; }
+    @media (platform: windows) {
+      .dialog-buttons .accept { order: -1; }
+    }
+
+    /* The right download, and the right store badge */
+    .download-dmg, .download-deb, .badge-app-store, .badge-play { display: none; }
+    @media (platform: macos) { .download-exe { display: none; } .download-dmg { display: inline; } }
+    @media (platform: linux) { .download-exe { display: none; } .download-deb { display: inline; } }
+    @media (platform: ios) { .badge-play { display: none; } .badge-app-store { display: inline; } }
+    </pre>
+</div>
+
+The feature reports a family, never a version, and never a device. It is deliberately not a way to ask what the
+browser can do: that is what feature queries are for, and [[#security-not-detection]] explains why using it that
+way breaks browsers.
+
+
+<h2 id=feature>The '@media/platform' feature</h2>
+
+<pre class='descdef mq'>
+Name: platform
+Value: windows | macos | ios | android | linux | chromeos | other
+For: @media
+Type: discrete
+</pre>
+
+The '@media/platform' media feature is a [=system media feature=]. Its [=actual value=] is the keyword for the
+document's [=reported platform=]:
+
+: <dfn value for=@media/platform>windows</dfn>
+:: Microsoft Windows.
+: <dfn value for=@media/platform>macos</dfn>
+:: Apple macOS.
+: <dfn value for=@media/platform>ios</dfn>
+:: Apple iOS and iPadOS.
+: <dfn value for=@media/platform>android</dfn>
+:: Android, including systems built on it whose conventions are Android's.
+: <dfn value for=@media/platform>linux</dfn>
+:: A Linux or Unix-like desktop system that isn't one of the above.
+: <dfn value for=@media/platform>chromeos</dfn>
+:: ChromeOS.
+: <dfn value for=@media/platform>other</dfn>
+:: Any other platform, and any platform the user agent chooses not to identify.
+
+In a [=boolean context=], the feature is always true.
+
+The list of keywords is closed. A user agent must report ''platform/other'' for a platform that has no keyword,
+and must not invent keywords. New keywords are added by revising this specification.
+
+<div class=note>
+    A closed list keeps the feature from identifying the users of uncommon systems. If every system had its own
+    keyword, the few users of one would be easy to recognize, while the feature is worth little to them, because
+    an author can't design for a platform they have never seen. See [[#privacy-closed-list]].
+</div>
+
+<h3 id=platform-source>The reported platform</h3>
+
+The <dfn export>reported platform</dfn> of a [=document=] is the platform that the user agent presents to that
+document's origin elsewhere. It is not necessarily the platform the user agent is running on.
+
+A user agent must determine the reported platform as follows:
+
+1. If the user agent implements <code>navigator.userAgentData</code> [[UA-CLIENT-HINTS]], the reported platform is
+    the value of its <code>platform</code> property for the document, mapped with the table below.
+1. Otherwise, the reported platform is the platform identified by the <code>User-Agent</code> header the user agent
+    would send with a request for the document.
+
+<table class=data>
+    <thead><tr><th><code>navigator.userAgentData.platform</code><th>'@media/platform'
+    <tbody>
+        <tr><td>"Android"<td>''platform/android''
+        <tr><td>"Chrome OS", "Chromium OS"<td>''platform/chromeos''
+        <tr><td>"iOS"<td>''platform/ios''
+        <tr><td>"Linux"<td>''platform/linux''
+        <tr><td>"macOS"<td>''platform/macos''
+        <tr><td>"Windows"<td>''platform/windows''
+        <tr><td>Any other value, including "Unknown" and "Fuchsia"<td>''platform/other''
+</table>
+
+The feature must agree with what the user agent reports elsewhere, even when that isn't the platform it is running
+on. In particular:
+
+* If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode, the
+    feature reports that other platform. On iPadOS, Safari's desktop-class browsing presents itself as macOS, so
+    the feature is ''platform/macos''. In Chrome on Android, desktop mode presents itself as Linux, so the feature
+    is ''platform/linux''.
+* If the user agent normalizes or hides the platform to protect the user from fingerprinting, the feature reports
+    the normalized platform, and reports ''platform/other'' if the user agent identifies no platform.
+
+<div class=note>
+    This rule is what makes the feature safe: it can't disagree with the <code>User-Agent</code> header, with
+    <code>navigator.userAgentData.platform</code>, or with the user's choice of desktop mode, so it never tells
+    anyone anything they couldn't already learn. It also means the feature is wrong exactly when the user agent is
+    already wrong, which authors can't do anything about, and users have asked for.
+</div>
+
+<h3 id=changes>Changes</h3>
+
+The value is determined when the [=document=] is created, and doesn't change while the document exists.
+
+<div class=note>
+    Turning "request desktop site" on or off reloads the page, so there is no need for the value to change, and
+    nothing that could link two documents by the moment it changed.
+</div>
+
+<h3 id=reduced-exposure>Reduced exposure</h3>
+
+In a [=reduced-exposure context=], the feature follows the same rule: it reports the [=reported platform=]. A user
+agent that already normalizes the platform it presents, in that context or generally, gets the same normalization
+here for free.
+
+<div class=note>
+    There is nothing to take away. A style sheet that reports the value to a server tells it what the server read
+    in the <code>User-Agent</code> header of the request that fetched the style sheet.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-exposed>What the feature reveals</h3>
+
+The feature reveals which of seven operating system families the user agent presents itself as. It doesn't reveal:
+
+* the version of the operating system, or its build, edition, or distribution;
+* the device model, the manufacturer, the CPU architecture, or the bitness;
+* the browser, its engine, or its version;
+* whether the reported platform is the real one.
+
+<h3 id=privacy-nothing-new>Why it adds nothing</h3>
+
+The platform is already available to everyone who can see a request or run script:
+
+* Every request the document makes carries a <code>User-Agent</code> header that identifies the platform family.
+    Even after Chromium's User-Agent Reduction, which froze the platform version, the architecture, and the device
+    model, the header still identifies the family: <code>Windows NT 10.0; Win64; x64</code>,
+    <code>Macintosh; Intel Mac OS X 10_15_7</code>, <code>X11; Linux x86_64</code>,
+    <code>X11; CrOS x86_64 14541.0.0</code>, or <code>Linux; Android 10; K</code> [[UA-REDUCTION]].
+* <code>Sec-CH-UA-Platform</code> is one of the three client hints that user agents implementing
+    [[UA-CLIENT-HINTS]] send on every request by default, because the platform name on its own is low entropy.
+* Script can read <code>navigator.userAgentData.platform</code> and <code>navigator.platform</code>.
+
+Because [[#platform-source]] requires the feature to agree with those, it reaches no context that they don't.
+This includes documents where script is disabled, such as messages in an email client: the request that fetched the
+message, and the request a style sheet would make to report the value, both carry the same header.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+The platform family is one of the cheapest parts of the user agent string. Measured across large fingerprint
+collections, the whole <code>User-Agent</code> string carries about 10 bits of identifying information in
+Panopticlick's 2010 data, 9.8 bits in AmIUnique's 2016 data, and 7.2 bits in the 2018 "Hiding in the Crowd"
+data set of over two million fingerprints; <code>navigator.platform</code>, on its own, carries 2.3 bits and 1.2
+bits in the last two [[FINGERPRINT-SURVEY]] [[HIDING-IN-THE-CROWD]]. Almost all of the entropy of a user agent
+string is in versions and device models, which this feature doesn't report.
+
+The value is also stable, changes only when the user changes platforms, and is the same for large numbers of users.
+It adds nothing to a fingerprint that the same page's requests didn't already carry.
+
+<h3 id=privacy-closed-list>The closed list</h3>
+
+An open list would punish the users of uncommon systems. If the feature had a keyword for every system, a user on
+one that a thousandth of users run would reveal about 10 bits, while an author who has never seen that system
+can't style for it anyway. Every such system reports ''platform/other'', which is also what a user agent reports
+when it doesn't want to identify the platform at all.
+
+<h3 id=privacy-normalization>User agents that normalize the platform</h3>
+
+Tor Browser normalizes rather than randomizes: all Windows users appear as one Windows version, all macOS users as
+one macOS version, and all Linux and BSD systems as one. It used to disguise the family itself, and stopped,
+because the benefit was "a negligible amount of benefit to the user in terms of additional linkability
+protections" against real site breakage [[TOR-UA-SPOOFING]]. Firefox's resist-fingerprinting mode likewise reports
+the latest release version but doesn't spoof the operating system.
+
+This feature inherits whatever the user agent decides, including a decision to report ''platform/other'' everywhere.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+The feature has the same value in cross-origin frames as in the top-level document, because a frame's own requests
+carry the same <code>User-Agent</code> header and its script can read the same values.
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* **Entrenchment.** Making platform styling easy makes platform sniffing more common, and sniffing tends to
+    outlive its reason. [[#security-not-detection]] and [[#alt-conventions]] discuss this.
+* **Style-only contexts.** A style sheet can report the value without script. It reports a fact the same server
+    already received in a header, but it does so without the page's script being involved, which a site's own
+    content security policy might otherwise have limited.
+
+
+<h2 id=security>Security considerations</h2>
+
+<h3 id=security-not-detection>It is not feature detection</h3>
+
+The platform doesn't say which CSS or JavaScript features work. Sites that decide what to send from the platform
+break browsers that the site's author didn't test, which is the reason user agent strings are full of the names of
+other browsers. Authors should use ''@supports'', <code>@media</code> capability features such as
+'@media/pointer' and '@media/hover', and script feature detection, and use this feature only for conventions:
+what to call a key, which order to put buttons in, which asset to show. [[DESIGN-PRINCIPLES]] says features should
+be detectable, and this one deliberately doesn't help with that.
+
+<h3 id=security-targeting>Targeting</h3>
+
+A page can show different content to users of one platform, such as an attack that tells Windows users to press a
+key combination that runs a command. Attackers already do this from the server, using the
+<code>User-Agent</code> header, so the feature adds no reach. What it adds is that the variation can happen
+entirely in a style sheet, so a service that checks the page by fetching it once, from one platform, sees only one
+version. Checking services should render pages as more than one platform.
+
+<h3 id=security-not-a-decision>Not an input to decisions that matter</h3>
+
+The user controls the value, through desktop mode, through browser settings, and by choosing a browser that
+normalizes it. Pages must not use it for licensing, entitlement, fraud scoring, or any security decision.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-conventions>Features for the conventions themselves</h3>
+
+Instead of naming the platform, CSS could expose each convention: a feature for how the modifier key is written, one
+for the order of dialog buttons, one for the direction of the system back gesture. That would say what authors
+actually need, would survive a platform changing its conventions, and matches how the CSS Working Group has
+handled other requests, by turning "what device is this" into "what does it do". It was not chosen here because the
+list of conventions is long and open-ended, and because assets such as store badges and installer formats aren't
+conventions the user agent knows about. This is the strongest alternative, and reviewers may prefer it.
+
+<h3 id=alt-version>The operating system version</h3>
+
+A feature for the version would let a page match the platform's current design language. It is not proposed:
+the version is where almost all of the fingerprinting value of a user agent string is, Safari froze the macOS
+version in its user agent string in 2020 and now reports <code>Intel Mac OS X 10_15_7</code> permanently,
+Chromium's User-Agent Reduction froze it too [[UA-REDUCTION]], and <code>Sec-CH-UA-Platform-Version</code> is a
+high-entropy hint that a site has to ask for. Matching a design language is better served by the features that
+describe it, such as '@media/prefers-reduced-transparency' and '@media/prefers-contrast'.
+
+<h3 id=alt-model-arch>The device model, architecture, and bitness</h3>
+
+A download page would like to offer an Apple Silicon or an Intel build, and <code>Sec-CH-UA-Arch</code> exists for
+that. These are not proposed: they are high-entropy hints that a site must request, the user agent is told to
+report them as empty unless a binary download is likely [[UA-CLIENT-HINTS]], and choosing a download link is
+something a page can do with script or on the server, where the hint already is.
+
+<h3 id=alt-browser>The browser or its engine</h3>
+
+A feature for the browser brand or engine is not proposed. Feature queries answer the question that browser
+sniffing is usually asking, sniffing entrenches the assumptions that break new browsers, and engines have been
+closing the CSS-only browser detection channels that exist rather than opening new ones. A page that needs to work
+around an engine bug can usually detect the bug.
+
+<h3 id=alt-media-type>A media type</h3>
+
+CSS once had media types for device classes, such as <code>@media tv</code> and <code>@media handheld</code>, and
+they were deprecated: they made one keyword stand for a whole bundle of assumptions. This feature deliberately
+stands for one thing, the platform's conventions, and nothing else. Device classes are handled separately by
+[[FORM-FACTOR-MEDIA-QUERY]].
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>On iPadOS, Safari presents itself as macOS, so an iPad reports ''platform/macos'' and gets macOS
+conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
+specification say anything, given that the alternative is disagreeing with the user agent string?
+
+<p class=issue>Should ''platform/chromeos'' exist, or should ChromeOS report ''platform/linux''? It has its own
+conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
+with a single browser.
+
+<p class=issue>Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
+[[MOZ-787521]], on the grounds that they expose system configuration without script. Does the argument in
+[[#privacy-nothing-new]] answer that objection for this feature, given that those features exposed settings that
+the <code>User-Agent</code> header doesn't carry?
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Which of seven operating system families the user agent presents itself as, so pages can follow that platform's
+    conventions.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. A closed list of families, with no version, model, architecture, or browser, and the value must match what
+    the <code>User-Agent</code> header already carries.
+: Do the features expose personal information, PII, or information derived from either?
+:: No. The platform family suggests little about a person, though it correlates weakly with income and occupation.
+: How do the features deal with sensitive information?
+:: They expose none beyond what every request already carries.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Only weakly: that the user chose a desktop mode, since the reported platform then changes.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Yes, its family, to the same extent as the <code>User-Agent</code> header.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: None. The value doesn't change while a document exists.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: It doesn't, because a cross-origin frame's own requests carry the same header.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: The same as the <code>User-Agent</code> header does in that mode. A user agent that normalizes the platform
+    there reports the normalized value here.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: It keeps the value it was created with, as its <code>User-Agent</code> header would.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a feature encourages a practice, such as user-agent sniffing, whose cost falls on browsers and users
+    that the author never tested.

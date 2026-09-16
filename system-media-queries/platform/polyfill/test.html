@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Platform Media Query polyfill: tests</title>
+<script src="platform-media-query.js"></script>
+<style>
+  @media (platform: macos) { #probe { color: rgb(0, 128, 0); } }
+  @supports (color: red) { @media (platform: windows) { #probe-nested { color: rgb(0, 128, 0); } } }
+</style>
+<p id="probe"></p><p id="probe-nested"></p>
+<pre id="log"></pre>
+<script>
+  'use strict';
+  const log = document.getElementById('log');
+  const tests = [];
+  const test = (name, body) => tests.push([name, body]);
+  const matches = (query, current) => matchMedia(PlatformMediaQuery.evaluate(query, current)).matches;
+  const color = (id) => getComputedStyle(document.getElementById(id)).color;
+  const GREEN = 'rgb(0, 128, 0)';
+
+  // Each case is [query, platform, expected].
+  function expectAll(cases) {
+    const wrong = cases.filter(([query, current, expected]) => matches(query, current) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([q, c, e]) => `${q} on ${c} should be ${e}`).join('; '));
+  }
+
+  test('platform compares with the keyword', () => expectAll([
+    ['(platform: macos)', 'macos', true],
+    ['(platform: windows)', 'macos', false],
+    ['(Platform: MacOS)', 'macos', true],
+    ['(platform: macos), (platform: ios)', 'ios', true],
+    ['(platform: windows) and (min-width: 0px)', 'windows', true],
+    ['not (platform: windows)', 'macos', true],
+  ]));
+
+  test('every value is true in a boolean context', () => expectAll([
+    ['(platform)', 'other', true],
+    ['(platform)', 'windows', true],
+    ['not (platform)', 'other', false],
+  ]));
+
+  test('keywords outside the closed list are unknown', () => expectAll([
+    ['(platform: fuchsia)', 'other', false],
+    ['not (platform: fuchsia)', 'other', false],
+    ['(platform: fuchsia) or (min-width: 0px)', 'other', true],
+    ['(platform: haiku)', 'other', false],
+    ['(platform > macos)', 'macos', false],
+    ['not (platform > macos)', 'macos', false],
+  ]));
+
+  test('User-Agent strings map to the spec\'s keywords', () => {
+    const cases = [
+      ['Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'windows'],
+      ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'macos'],
+      ['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'linux'],
+      ['Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'chromeos'],
+      ['Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Mobile Safari/537.36', 'android'],
+      ['Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1', 'ios'],
+      ['Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1', 'ios'],
+      ['Mozilla/5.0 (Fuchsia) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'other'],
+    ];
+    const wrong = cases.filter(([ua, expected]) => PlatformMediaQuery.platformFor(ua) !== expected);
+    if (wrong.length) throw new Error(wrong.map(([ua, e]) => `${ua.slice(0, 40)}… should be ${e}`).join('; '));
+  });
+
+  test('an iPad in desktop mode reports macos, as its User-Agent string does', () => {
+    const ipadDesktop = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
+    if (PlatformMediaQuery.platformFor(ipadDesktop) !== 'macos') throw new Error('should follow the User-Agent string');
+  });
+
+  test('the page value is one of the closed list', () => {
+    const values = ['windows', 'macos', 'ios', 'android', 'linux', 'chromeos', 'other'];
+    if (!values.includes(PlatformMediaQuery.value)) throw new Error(`got ${PlatformMediaQuery.value}`);
+  });
+
+  test('style sheets are rewritten, including nested rules', () => {
+    PlatformMediaQuery.pretend('macos');
+    const mac = [color('probe'), color('probe-nested')];
+    PlatformMediaQuery.pretend('windows');
+    const win = [color('probe'), color('probe-nested')];
+    PlatformMediaQuery.pretend(null);
+    if (mac[0] !== GREEN || mac[1] === GREEN || win[0] === GREEN || win[1] !== GREEN) {
+      throw new Error(`expected macos then windows rules, got ${mac} then ${win}`);
+    }
+  });
+
+  addEventListener('DOMContentLoaded', () => {
+    let failed = 0;
+    for (const [name, body] of tests) {
+      try {
+        body();
+        log.textContent += `PASS ${name}\n`;
+      } catch (e) {
+        failed++;
+        log.textContent += `FAIL ${name}: ${e.message}\n`;
+      }
+    }
+    log.textContent += `${tests.length - failed} of ${tests.length} passed\n`;
+  });
+</script>

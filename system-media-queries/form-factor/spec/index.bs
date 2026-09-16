@@ -1,0 +1,420 @@
+<pre class=metadata>
+Title: Form Factor Media Query
+Shortname: form-factor-media-query
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification adds the '@media/form-factor' media feature, which reports the kind of device the
+    page is shown on, from a closed list: a desktop computer, a phone, a tablet, a television, a watch, a
+    headset, an e-ink reader, or a car. Media queries already describe what a device can do, and a page can
+    often guess from that, but the guesses are wrong in the cases that matter, and nothing distinguishes a
+    television from a laptop. The feature matches the form factors of the User-Agent Client Hint of the same
+    name, is limited in cross-origin frames by the same policy that delegates that hint, and falls back to the
+    coarse mobile signal that every site already receives where fingerprinting protections apply.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:mediaqueries-5; type:dfn; text:boolean context
+spec:dom; type:dfn; text:document
+spec:html; type:dfn; text:allowed to use
+</pre>
+
+<pre class=anchors>
+spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/
+    type: dfn
+        text: system media feature; url: #system-media-feature
+        text: actual value; url: #actual-value
+        text: frame-scoped exposure; url: #frame-scoped-exposure
+        text: restricted value; url: #restricted-value
+        text: reduced-exposure context; url: #reduced-exposure-context
+        text: under user control; url: #under-user-control
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIA-FEATURE-PRIVACY": {
+        "title": "Privacy Protections for Media Features",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/",
+        "publisher": "CSS Additions"
+    },
+    "PLATFORM-MEDIA-QUERY": {
+        "title": "Platform Media Query",
+        "href": "https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/",
+        "publisher": "CSS Additions"
+    },
+    "UA-CLIENT-HINTS": {
+        "title": "User-Agent Client Hints",
+        "href": "https://wicg.github.io/ua-client-hints/",
+        "publisher": "WICG"
+    },
+    "CLIENT-HINTS-INFRASTRUCTURE": {
+        "title": "Client Hints Infrastructure",
+        "href": "https://wicg.github.io/client-hints-infrastructure/",
+        "publisher": "WICG"
+    },
+    "DEVICE-POSTURE": {
+        "title": "Device Posture API",
+        "href": "https://www.w3.org/TR/device-posture/",
+        "publisher": "W3C"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+A page on a television is read from across a room with a remote in hand. A page on a watch has a few seconds of the
+user's attention. A page in a car must not ask for careful aim. A page on an e-ink reader shouldn't animate. These
+are different designs, not different sizes.
+
+[[MEDIAQUERIES-5]] describes what a device can do, and a page can guess the kind of device from that: a large
+viewport with a fine pointer is probably a computer, and ''update/slow'' suggests e-ink. The guesses are wrong
+exactly where it matters. A television reports a large viewport and looks like a desktop, though it is used from
+three meters away with a directional pad. A tablet and a touchscreen laptop report the same pointer and hover
+capabilities. A car's screen reports nothing that distinguishes it from a tablet.
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    /* A television is read from across the room, and focused with a remote */
+    @media (form-factor: tv) {
+      :root { font-size: 24px; }
+      :focus-visible { outline: 4px solid; outline-offset: 4px; }
+      .hover-only-toolbar { display: none; }
+    }
+
+    /* A watch shows one thing at a time */
+    @media (form-factor: watch) {
+      .sidebar, .related, .footer-links { display: none; }
+      .headline { font-size: 1.1rem; }
+    }
+
+    /* A car: bigger targets, less to read, nothing that moves */
+    @media (form-factor: automotive) {
+      button, a.button { min-block-size: 4rem; font-size: 1.5rem; }
+      .marquee { animation: none; }
+    }
+
+    /* E-ink: no animation, no gray-on-gray */
+    @media (form-factor: eink) {
+      * { animation: none !important; transition: none !important; }
+      body { color: black; background: white; }
+    }
+    </pre>
+</div>
+
+The kinds of device are the ones that the <code>Sec-CH-UA-Form-Factors</code> client hint already defines
+[[UA-CLIENT-HINTS]], with one addition, ''form-factor/tv'', which that hint doesn't have; see [[#tv]]. Unlike the
+platform [[PLATFORM-MEDIA-QUERY]], this feature does reveal something that a site has to ask for today, so
+[[#frames]] and [[#reduced-exposure]] limit who gets it.
+
+
+<h2 id=feature>The '@media/form-factor' feature</h2>
+
+<pre class='descdef mq'>
+Name: form-factor
+Value: desktop | mobile | tablet | tv | watch | xr | eink | automotive | other
+For: @media
+Type: discrete
+</pre>
+
+The '@media/form-factor' media feature is a [=system media feature=]. A device can have more than one form factor: a
+watch is also mobile, and a car's screen can also be a tablet. The feature matches a keyword when that keyword is one
+of the document's [=form factors=], rather than testing a single value.
+
+The <dfn export>form factors</dfn> of a [=document=] are the kinds of device it is shown on, each of which is:
+
+: <dfn value for=@media/form-factor>desktop</dfn>
+:: A personal computer.
+: <dfn value for=@media/form-factor>mobile</dfn>
+:: A small, touch-oriented device that the user carries with them.
+: <dfn value for=@media/form-factor>tablet</dfn>
+:: A touch-oriented device larger than a ''form-factor/mobile'' one, that isn't typically carried on the person.
+: <dfn value for=@media/form-factor>tv</dfn>
+:: A television or set-top device, shown on a distant screen and usually operated with a remote control.
+: <dfn value for=@media/form-factor>watch</dfn>
+:: A device worn on the wrist, whose screen is typically less than two inches.
+: <dfn value for=@media/form-factor>xr</dfn>
+:: An immersive device that augments or replaces the surroundings.
+: <dfn value for=@media/form-factor>eink</dfn>
+:: A device with a screen that updates slowly and has limited or no color.
+: <dfn value for=@media/form-factor>automotive</dfn>
+:: A device built into a vehicle, whose user may be driving it and unable to attend to small details.
+: <dfn value for=@media/form-factor>other</dfn>
+:: A kind of device with no keyword here, or one the user agent chooses not to identify. A document whose form
+    factors are empty or unknown has ''form-factor/other'' as its only form factor.
+
+In a [=boolean context=], the feature is always true.
+
+The list of keywords is closed. A user agent must report ''form-factor/other'' for a kind of device with no keyword,
+and must not invent keywords. New keywords are added by revising this specification.
+
+<div class=example id=example-multiple>
+    On a watch, both of these match, because the device's form factors are ''form-factor/watch'' and
+    ''form-factor/mobile'':
+
+    <pre highlight=css>
+    @media (form-factor: watch) { … }
+    @media (form-factor: mobile) { … }
+    </pre>
+
+    A page that wants phones but not watches says so:
+
+    <pre highlight=css>
+    @media (form-factor: mobile) and (not (form-factor: watch)) { … }
+    </pre>
+</div>
+
+<h3 id=source>Where the value comes from</h3>
+
+A user agent that implements [[UA-CLIENT-HINTS]] must report the same form factors that it reports in
+<code>Sec-CH-UA-Form-Factors</code> and in <code>navigator.userAgentData.getHighEntropyValues(["formFactors"])</code>
+for the document, lowercased, plus ''form-factor/tv'' where [[#tv]] applies.
+
+A user agent that doesn't implement those must report the kinds of device that match the definitions above.
+
+The form factors must agree with the platform the user agent presents [[PLATFORM-MEDIA-QUERY]]. If the user agent
+presents itself as a desktop system, as browsers do in a "request desktop site" mode, the document's form factors are
+''form-factor/desktop''.
+
+<h3 id=tv>Televisions</h3>
+
+<code>Sec-CH-UA-Form-Factors</code> has no value for a television, so a television browser that implements it reports
+something else, usually <code>"Desktop"</code>. A user agent must report ''form-factor/tv'' for a television or
+set-top device even so.
+
+<div class=note>
+    This is the one place where the feature and the client hint can disagree, and it should be fixed in the hint
+    rather than here: a page on a television needs to know, and the client hint's own rule is that a value is added
+    "when there is a compelling use-case". See [[#open-issues]].
+</div>
+
+<h3 id=changes>Changes</h3>
+
+The value is determined when the [=document=] is created, and doesn't change while the document exists.
+
+<h3 id=frames>Frames</h3>
+
+The feature uses [=frame-scoped exposure=] [[!MEDIA-FEATURE-PRIVACY]]. Its policy-controlled feature is
+"<code>ch-ua-form-factors</code>", the one that already delegates the client hint [[CLIENT-HINTS-INFRASTRUCTURE]],
+whose default allowlist is <code>&#39;self&#39;</code>.
+
+In a document that isn't [=allowed to use=] it, the feature takes its [=restricted value=], which is the
+[=coarse form factor=].
+
+<div class=note>
+    A site that delegates the client hint to a frame, so that the frame's server can adapt, gives the frame's style
+    sheets the same information: <code>Permissions-Policy: ch-ua-form-factors=(self "widgets.example")</code>.
+</div>
+
+<h3 id=reduced-exposure>Reduced exposure</h3>
+
+The feature is [=under user control=]. In a [=reduced-exposure context=], and when the user turns the feature off, it
+is the [=coarse form factor=].
+
+The <dfn export>coarse form factor</dfn> of a document is ''form-factor/mobile'' if the user agent reports itself as
+mobile, in the <code>Sec-CH-UA-Mobile</code> client hint, in <code>navigator.userAgentData.mobile</code>, or with a
+"Mobile" token in its <code>User-Agent</code> header, and ''form-factor/desktop'' otherwise.
+
+<div class=note>
+    The coarse form factor is the bit that every site already receives on every request, so a document that gets only
+    it learns nothing new. A watch or a car falls back to ''form-factor/mobile'', and a television to
+    ''form-factor/desktop'', which is what a page assumes today.
+</div>
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-exposed>What the feature reveals</h3>
+
+The feature reveals which kinds of device, from a closed list of nine, the page is being shown on. It doesn't reveal
+the device's model, manufacturer, screen size, operating system version, or price.
+
+Unlike the platform [[PLATFORM-MEDIA-QUERY]], this is more than every site receives today. Of the signals it
+corresponds to, only the mobile bit is sent to every site by default; the rest of
+<code>Sec-CH-UA-Form-Factors</code> is a hint a site must ask for, and which isn't shared with cross-origin frames
+unless the top-level site delegates it. This specification keeps both of those limits: [[#frames]] uses the same
+policy, and [[#reduced-exposure]] falls back to the mobile bit.
+
+<h3 id=privacy-fingerprinting>Fingerprinting</h3>
+
+Most users are on a phone, a tablet, or a computer, so for most users the feature reveals little more than the
+mobile bit does. The users it identifies are the ones on uncommon devices: a watch, a headset, an e-ink reader, or a
+car. If one user in a thousand browses from a watch, the feature tells a site about 10 bits about that user.
+
+Two things limit the cost:
+
+* Those devices are already recognizable without this feature. A watch has a tiny viewport and often round safe-area
+    insets; an e-ink reader reports ''update/slow'' and often ''color/0''; a headset reports ''environment-blending''
+    other than ''environment-blending/opaque''; a car's browser has a distinctive user agent string. The feature
+    mostly saves authors from guessing, rather than revealing something new.
+* The list is closed, so an unusual device reports ''form-factor/other'' rather than naming itself, and the value is
+    restricted in frames and in reduced-exposure contexts.
+
+The value never changes while a document exists, so it can't link two documents by the moment it changed.
+
+<h3 id=privacy-third-party>Embedded content</h3>
+
+Cross-origin frames get the [=coarse form factor=] unless the embedding page delegates
+<code>ch-ua-form-factors</code> to them, which is exactly the rule the client hint already follows. A tracker
+embedded across many sites therefore learns the same bit it already gets from the <code>User-Agent</code> header.
+
+<h3 id=privacy-inference>Sensitive inferences</h3>
+
+A device can suggest things about its owner. A car's browser says the user is in a vehicle; a headset says they are
+wearing one; an e-ink reader or a watch suggests what someone bought. None of this is precise, and none of it
+approaches what the same page learns from its own content and the user's IP address, but a site can use the value to
+decide who is worth serving: to charge differently, or to send an unusable page to devices its author didn't like.
+See [[#security-discrimination]].
+
+<h3 id=privacy-residual>Remaining risks</h3>
+
+* A user on an uncommon device is identified by the value in any document the value reaches, which is the top-level
+    document and frames that the site delegates to.
+* The fallback for reduced-exposure contexts is a real loss of function for those same users: a watch in a private
+    window gets the phone layout.
+
+
+<h2 id=security>Security considerations</h2>
+
+<h3 id=security-not-detection>It is not feature detection</h3>
+
+The kind of device doesn't say which features work, how large the viewport is, or whether there is a pointer. Pages
+should keep using '@media/pointer', '@media/hover', '@media/update', '@media/overflow-block',
+'@media/environment-blending', the viewport features, and ''@supports'' for those, and use this feature for the
+things they can't express: how far away the screen is, how much attention the user can spare, and what kind of
+control the user holds.
+
+<h3 id=security-discrimination>Refusing to serve devices</h3>
+
+The clearest misuse is a page that decides some devices don't deserve content: a site that shows a television or an
+e-ink reader a "please use a supported device" message rather than a page that works. This has a long history with
+user agent sniffing, and it is the reason CSS deprecated its device-class media types. Authors should treat the
+feature as a way to adapt, never as a way to exclude, and the fallbacks in this specification are designed so that an
+unrecognized device gets a usable layout rather than nothing.
+
+<h3 id=security-automotive>Cars</h3>
+
+''form-factor/automotive'' exists so a page can be safer to use while driving: larger targets, less text, no
+animation. A page could do the opposite. Nothing in CSS can prevent that, and vehicle systems restrict what browsers
+may show while moving; this feature doesn't change those restrictions, and must not be treated as permission to show
+anything.
+
+<h3 id=security-not-a-decision>Not an input to decisions that matter</h3>
+
+The user controls the value: desktop mode changes it, and so does turning the feature off. Pages must not use it for
+entitlement, fraud scoring, or any security decision.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-capabilities>Only capability features</h3>
+
+CSS could keep describing capabilities and let pages infer the rest, adding features for the qualities that are
+missing, such as viewing distance or the kind of control the user holds. That is how the CSS Working Group has
+handled similar requests, turning "what device is this" into "what does it do", as the Device Posture API did by
+exposing ''device-posture/folded'' rather than a device model [[DEVICE-POSTURE]]. It was not chosen because the
+missing qualities are many and correlated, and because every browser already computes exactly this classification
+for <code>Sec-CH-UA-Form-Factors</code>: authors would be inferring something the user agent already knows. A
+reviewer may still prefer this direction, and [[#open-issues]] asks the question.
+
+<h3 id=alt-media-types>Reviving the media types</h3>
+
+CSS had <code>@media tv</code>, <code>@media handheld</code>, and <code>@media projection</code>, and deprecated
+them. They failed because each keyword stood for a bundle of assumptions about size, input, and capability, and
+authors used them for layout, which viewport queries do better. This feature is narrower: the device class alone,
+with capabilities and sizes left to the features that describe them, and with rules that keep an unrecognized device
+working.
+
+<h3 id=alt-screen-size>Physical screen size</h3>
+
+A feature for the physical size of the display would separate a television from a laptop, and a watch from a phone.
+It was not chosen because it is a continuous value, and therefore a much larger fingerprinting surface than a closed
+list of nine keywords, and because '@media/form-factor' answers the question that authors actually ask.
+
+<h3 id=alt-hint-only>Leaving it to the client hint</h3>
+
+Sites can already request <code>Sec-CH-UA-Form-Factors</code> and serve different CSS. That works only for pages
+built on a server that varies its response, doesn't work for static files, caches badly, and doesn't work at all
+where script and server negotiation aren't available, such as an HTML email or a document opened from disk.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<p class=issue>''form-factor/tv'' has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
+specification requires a value the client hint can't express. The right fix is to add "TV" to the hint. Until then,
+should the feature report ''form-factor/tv'' at all, or wait?
+
+<p class=issue>Should ''form-factor/eink'' exist when '@media/update' already reports ''update/slow''? They aren't
+the same thing, since a slow-updating LCD isn't e-ink, but they overlap more than the other values do.
+
+<p class=issue>Is matching against a set the right model for a discrete media feature? Every other discrete feature
+in [[MEDIAQUERIES-5]] has one value at a time, and a set makes ''(form-factor: mobile)'' true on a watch, which
+some authors will not expect.
+
+<p class=issue>Should the restricted value in frames be the [=coarse form factor=], or should a frame see nothing at
+all? The coarse value is what the frame's own requests already carry, but it also means a frame always gets an
+answer that looks authoritative.
+
+
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: Which kinds of device, from a closed list of nine, the page is shown on, so pages can adapt their design to the
+    device rather than guess from its capabilities.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. A closed list, with no model, size, or version, limited in frames and reduced to the mobile bit where
+    fingerprinting protections apply.
+: Do the features expose personal information, PII, or information derived from either?
+:: The kind of device can suggest what someone owns or that they are in a vehicle. See [[#privacy-inference]].
+: How do the features deal with sensitive information?
+:: The same limits as the client hint it mirrors, plus a fallback to the bit every site already receives.
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: Yes: owning a watch, a headset, or an e-ink reader, and being in a car.
+: Do the features introduce state that persists across browsing sessions?
+:: No.
+: Do the features expose information about the underlying platform to origins?
+:: Yes, the device class the user agent already computes for <code>Sec-CH-UA-Form-Factors</code>.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: No.
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: None. The value doesn't change while a document exists.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: Cross-origin frames get the coarse form factor unless the embedding page delegates
+    <code>ch-ua-form-factors</code>, the same rule the client hint follows.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: Modes that protect against fingerprinting are reduced-exposure contexts, where the feature is the coarse form
+    factor.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: It keeps the value it was created with.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: No.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No. A device used as an accessibility aid, such as a switch-controlled tablet, reports the same value as any other
+    tablet.
+: What should this questionnaire have asked?
+:: Whether a feature lets a site decide that some users' devices aren't worth serving.

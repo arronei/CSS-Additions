@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form Factor Media Query polyfill: demo</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 2rem auto; max-width: 52rem; padding-inline: 1rem; }
+  code { font: 0.9em ui-monospace, monospace; }
+  fieldset { display: flex; flex-wrap: wrap; gap: 0.75rem; border: 1px solid #ccc; }
+  .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 1rem; margin-block: 1rem; }
+  .card .aside, .card .related { color: #6b7280; }
+  .card button { font: inherit; padding: 0.4rem 0.8rem; }
+  table { border-collapse: collapse; width: 100%; }
+  td { border-top: 1px solid #ddd; padding: 0.35rem 0.5rem; }
+  td:first-child { width: 4rem; }
+  .state::before { content: "no"; color: #777; }
+
+  @media (form-factor: tv) {
+    .card { font-size: 1.5rem; }
+    .card :focus-visible { outline: 4px solid; outline-offset: 4px; }
+    .card .aside { display: none; }
+  }
+  @media (form-factor: watch) {
+    .card { font-size: 0.9rem; }
+    .card .aside, .card .related, .card button + button { display: none; }
+  }
+  @media (form-factor: automotive) {
+    .card button { min-block-size: 3.5rem; font-size: 1.4rem; }
+    .card .related { display: none; }
+  }
+  @media (form-factor: eink) {
+    .card { color: black; background: white; border-color: black; }
+    .card * { animation: none !important; transition: none !important; }
+  }
+  @media (form-factor: desktop) { #q0 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: mobile) { #q1 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: tablet) { #q2 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: tv) { #q3 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: watch) { #q4 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: xr) { #q5 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: eink) { #q6 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: automotive) { #q7 .state::before { content: "yes"; color: green; font-weight: bold; } }
+  @media (form-factor: mobile) and (not (form-factor: watch)) { #q8 .state::before { content: "yes"; color: green; font-weight: bold; } }
+</style>
+
+<h1>Form Factor Media Query</h1>
+<p>The card below adapts to the kind of device. A device can have more than one form factor, so tick as many as you like.</p>
+
+<fieldset id="pretend">
+  <legend>Pretend this device is</legend>
+</fieldset>
+<p><button type="button" id="real">Use the real device</button> <code id="current"></code></p>
+
+<div class="card">
+  <h2>Storm warning</h2>
+  <p>Heavy rain expected this evening. <span class="aside">Forecasters say the system will clear by morning.</span></p>
+  <p class="related">Related: last month's flooding, how to prepare</p>
+  <button>Read more</button> <button>Share</button>
+</div>
+
+<table id="rows"></table>
+
+<script src="form-factor-media-query.js"></script>
+<script>
+  'use strict';
+  const VALUES = ['desktop', 'mobile', 'tablet', 'tv', 'watch', 'xr', 'eink', 'automotive'];
+  const queries = [...VALUES.map((v) => `(form-factor: ${v})`), '(form-factor: mobile) and (not (form-factor: watch))'];
+
+  const pretend = document.getElementById('pretend');
+  for (const value of VALUES) {
+    pretend.insertAdjacentHTML('beforeend', `<label><input type="checkbox" value="${value}"> ${value}</label>`);
+  }
+  const rows = document.getElementById('rows');
+  queries.forEach((query, i) => {
+    rows.insertAdjacentHTML('beforeend', `<tr id="q${i}"><td class="state"></td><td><code></code></td></tr>`);
+    rows.lastElementChild.querySelector('code').textContent = `@media ${query}`;
+  });
+
+  const current = document.getElementById('current');
+  const boxes = [...pretend.querySelectorAll('input')];
+  const show = () => {
+    const chosen = boxes.filter((b) => b.checked).map((b) => b.value);
+    FormFactorMediaQuery.pretend(chosen.length ? chosen : null);
+    current.textContent = (chosen.length ? chosen : FormFactorMediaQuery.value).join(', ');
+  };
+  boxes.forEach((b) => b.addEventListener('change', show));
+  document.getElementById('real').addEventListener('click', () => {
+    boxes.forEach((b) => { b.checked = false; });
+    show();
+  });
+  show();
+</script>

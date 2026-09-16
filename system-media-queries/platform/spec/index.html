@@ -1,7 +1,7 @@
 <!doctype html><html lang="en">
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  <title>Reduced Power Preference Media Query</title>
+  <title>Platform Media Query</title>
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version ac92c2f0d, updated Fri Aug 21 16:01:29 2026 -0700" name="generator">
-  <link href="https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/" rel="canonical">
+  <link href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/" rel="canonical">
   <meta content="47c154e54698fec04cc9dc0067d33bbd7c156ff3" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
@@ -2202,13 +2202,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="no-ref p-name" id="title">Reduced Power Preference Media Query</h1>
+   <h1 class="no-ref p-name" id="title">Platform Media Query</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Living Document,
-    <time class="dt-updated" datetime="2026-09-15">15 September 2026</time></span></h2>
+    <time class="dt-updated" datetime="2026-09-16">16 September 2026</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/</a>
+     <dd><a class="u-url" href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/arronei/CSS-Additions/issues/">GitHub</a>
      <dd><a href="#issues-index">Inline In Spec</a>
@@ -2220,7 +2220,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 15 September 2026,
+In addition, as of 16 September 2026,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2230,11 +2230,14 @@ Parts of this work may be from another specification document.  If so, those par
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="heading no-num no-ref no-toc settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>This specification adds the <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power">prefers-reduced-power</a> media feature, which reports that
-the user’s device is saving power, as it does when Low Power Mode, Battery Saver, or Energy Saver is
-on, so that pages can turn off video backgrounds, heavy animation, and background work. It reports
-whether a power-saving mode is on, never a battery level, and it uses delayed change delivery so that
-a change can’t link the user’s visits to different sites.</p>
+   <p>This specification adds the <a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform">platform</a> media feature, which reports the family of the user’s
+operating system from a closed list of keywords, so that a style sheet can follow that platform’s
+conventions: writing a shortcut as ⌘K or Ctrl+K, ordering the buttons of a dialog, offering the right
+download, or showing the right app store badge. The value must be the same platform the user agent
+already reveals in its <code>User-Agent</code> string and <code>navigator.userAgentData</code>, including
+when the user agent deliberately reports a platform it isn’t running on, so the feature adds no
+information to any context. It never reports the version of the operating system, the device model, the
+architecture, or the browser.</p>
   </div>
   <div data-fill-with="at-risk"></div>
   <nav data-fill-with="table-of-contents" id="toc">
@@ -2242,30 +2245,38 @@ a change can’t link the user’s visits to different sites.</p>
    <ol class="toc">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li>
-     <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">prefers-reduced-power</span> feature</span></a>
+     <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">platform</span> feature</span></a>
      <ol class="toc">
-      <li><a href="#changes"><span class="secno">2.1</span> <span class="content">Changes</span></a>
-      <li><a href="#reduced-exposure"><span class="secno">2.2</span> <span class="content">Reduced exposure</span></a>
+      <li><a href="#platform-source"><span class="secno">2.1</span> <span class="content">The reported platform</span></a>
+      <li><a href="#changes"><span class="secno">2.2</span> <span class="content">Changes</span></a>
+      <li><a href="#reduced-exposure"><span class="secno">2.3</span> <span class="content">Reduced exposure</span></a>
      </ol>
     <li>
      <a href="#privacy"><span class="secno">3</span> <span class="content">Privacy considerations</span></a>
      <ol class="toc">
       <li><a href="#privacy-exposed"><span class="secno">3.1</span> <span class="content">What the feature reveals</span></a>
-      <li><a href="#privacy-existing"><span class="secno">3.2</span> <span class="content">What is already exposed</span></a>
+      <li><a href="#privacy-nothing-new"><span class="secno">3.2</span> <span class="content">Why it adds nothing</span></a>
       <li><a href="#privacy-fingerprinting"><span class="secno">3.3</span> <span class="content">Fingerprinting</span></a>
-      <li><a href="#privacy-correlation"><span class="secno">3.4</span> <span class="content">Linking visits by when the value changes</span></a>
-      <li><a href="#privacy-without-script"><span class="secno">3.5</span> <span class="content">Reading the feature without script</span></a>
+      <li><a href="#privacy-closed-list"><span class="secno">3.4</span> <span class="content">The closed list</span></a>
+      <li><a href="#privacy-normalization"><span class="secno">3.5</span> <span class="content">User agents that normalize the platform</span></a>
       <li><a href="#privacy-third-party"><span class="secno">3.6</span> <span class="content">Embedded content</span></a>
-      <li><a href="#privacy-inference"><span class="secno">3.7</span> <span class="content">Sensitive inferences</span></a>
-      <li><a href="#privacy-residual"><span class="secno">3.8</span> <span class="content">Remaining risks</span></a>
+      <li><a href="#privacy-residual"><span class="secno">3.7</span> <span class="content">Remaining risks</span></a>
      </ol>
-    <li><a href="#security"><span class="secno">4</span> <span class="content">Security considerations</span></a>
+    <li>
+     <a href="#security"><span class="secno">4</span> <span class="content">Security considerations</span></a>
+     <ol class="toc">
+      <li><a href="#security-not-detection"><span class="secno">4.1</span> <span class="content">It is not feature detection</span></a>
+      <li><a href="#security-targeting"><span class="secno">4.2</span> <span class="content">Targeting</span></a>
+      <li><a href="#security-not-a-decision"><span class="secno">4.3</span> <span class="content">Not an input to decisions that matter</span></a>
+     </ol>
     <li>
      <a href="#alternate-proposals"><span class="secno">5</span> <span class="content">Alternate proposals</span></a>
      <ol class="toc">
-      <li><a href="#alt-name"><span class="secno">5.1</span> <span class="content"><span class="css">(power-saver: active)</span></span></a>
-      <li><a href="#alt-battery"><span class="secno">5.2</span> <span class="content">Battery level and charging features</span></a>
-      <li><a href="#alt-frames"><span class="secno">5.3</span> <span class="content">Restricting the feature in frames</span></a>
+      <li><a href="#alt-conventions"><span class="secno">5.1</span> <span class="content">Features for the conventions themselves</span></a>
+      <li><a href="#alt-version"><span class="secno">5.2</span> <span class="content">The operating system version</span></a>
+      <li><a href="#alt-model-arch"><span class="secno">5.3</span> <span class="content">The device model, architecture, and bitness</span></a>
+      <li><a href="#alt-browser"><span class="secno">5.4</span> <span class="content">The browser or its engine</span></a>
+      <li><a href="#alt-media-type"><span class="secno">5.5</span> <span class="content">A media type</span></a>
      </ol>
     <li><a href="#open-issues"><span class="secno">6</span> <span class="content">Open issues</span></a>
     <li><a href="#questionnaire"><span class="secno"></span> <span class="content">Appendix: Security and privacy questionnaire</span></a>
@@ -2294,224 +2305,303 @@ a change can’t link the user’s visits to different sites.</p>
   <main>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><em>This section is non-normative.</em></p>
-   <p>Phones, tablets, and laptops have modes that save power when the battery is low or when the user asks:
-Low Power Mode on iOS, iPadOS, and macOS, Battery Saver on Android and ChromeOS, and Energy Saver on
-Windows. Browsers have their own, such as the energy saving modes in Chrome and Edge. These modes slow
-down native apps and background work, but a web page can’t tell that one is on. It keeps playing its
-video background, running its WebGL animation, and polling its server.</p>
-   <p>This specification lets a page find out, so it can do less.</p>
+   <p>Every operating system has conventions that its users know without being taught. On macOS the shortcut is ⌘K and
+the accept button of a dialog is on the right; on Windows the same shortcut is Ctrl+K and the accept button is on
+the left. An app downloads as a <code>.dmg</code>, an <code>.exe</code>, or a <code>.deb</code>. The share icon is
+a box with an arrow on iOS and three connected dots on Android, and the app store badge is a different image on
+each platform.</p>
+   <p>Media queries can describe what the device can do, but not whose conventions to follow. <span class="css">coarse</span> doesn’t
+mean iOS: a Windows laptop with a touchscreen and an iPad both report it, and they want opposite button orders
+and opposite shortcut labels. Feature queries can’t help either, because the question isn’t whether the engine
+supports something, it’s what the user’s platform calls it and expects it to look like.</p>
+   <p>So pages work around it. They detect the platform once in script and write a class onto the root element, which is
+what Visual Studio Code does, and what the user agent parsing libraries exist to feed: in one week of September
+2026, <code>bowser</code> was downloaded about 42 million times and <code>ua-parser-js</code> about 23 million.
+Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature
+<a data-link-type="biblio" href="#biblio-moz-platform" title="Bug 1754547: Provide a @media query to target major platform/toolkits">[MOZ-PLATFORM]</a> that only its internal style sheets can use.</p>
+   <p>This specification gives style sheets the same thing, in a form that reveals nothing that the user agent doesn’t
+already send to every server in its <code>User-Agent</code> header.</p>
    <div class="example" id="example-intro">
     <a class="self-link" href="#example-intro"></a>
     
-<pre class="highlight"><c- n>@media</c-> <c- p>(</c->prefers-reduced-power: reduce<c- p>)</c-> <c- p>{</c->
-  .hero video <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
-  .hero <c- p>{</c-> <c- k>background-image</c-><c- p>:</c-> <c- nf>url</c-><c- p>(</c-><c- s>hero-still.jpg</c-><c- p>);</c-> <c- p>}</c->
-  .spinner<c- p>,</c-> .confetti <c- p>{</c-> <c- k>animation</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
-  .glass <c- p>{</c-> <c- k>backdrop-filter</c-><c- p>:</c-> none<c- p>;</c-> <c- k>background-color</c-><c- p>:</c-> <c- nf>rgb</c-><c- p>(</c-><c- m>255</c-> <c- m>255</c-> <c- m>255</c-> / <c- m>0.9</c-><c- p>);</c-> <c- p>}</c->
+<pre class="highlight"><c- c>/* Shortcut labels */</c->
+.key-mod::after <c- p>{</c-> <c- k>content</c-><c- p>:</c-> <c- s>"Ctrl"</c-><c- p>;</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: macos<c- p>),</c-> <c- p>(</c->platform: ios<c- p>)</c-> <c- p>{</c->
+  .key-mod::after <c- p>{</c-> <c- k>content</c-><c- p>:</c-> <c- s>"⌘"</c-><c- p>;</c-> <c- p>}</c->
 <c- p>}</c->
-</pre>
-<pre class="highlight"><c- p>&lt;</c-><c- f>picture</c-><c- p>></c->
-  <c- p>&lt;</c-><c- f>source</c-> <c- e>media</c-><c- o>=</c-><c- s>"(prefers-reduced-power: reduce)"</c-> <c- e>srcset</c-><c- o>=</c-><c- s>"logo-still.png"</c-><c- p>></c->
-  <c- p>&lt;</c-><c- f>img</c-> <c- e>src</c-><c- o>=</c-><c- s>"logo-animated.avif"</c-> <c- e>alt</c-><c- o>=</c-><c- s>"Example Inc."</c-><c- p>></c->
-<c- p>&lt;/</c-><c- f>picture</c-><c- p>></c->
-</pre>
-<pre class="highlight"><c- a>const</c-> saving <c- o>=</c-> matchMedia<c- p>(</c-><c- u>"(prefers-reduced-power: reduce)"</c-><c- p>);</c->
-<c- a>const</c-> poll <c- o>=</c-> <c- p>()</c-> <c- p>=></c-> setTimeout<c- p>(</c->refresh<c- p>,</c-> saving<c- p>.</c->matches <c- o>?</c-> <c- mf>60</c->_000 <c- o>:</c-> <c- mf>5</c->_000<c- p>);</c->
+
+<c- c>/* Dialog buttons: accept last on Apple platforms, first on Windows */</c->
+.dialog-buttons <c- p>{</c-> <c- k>display</c-><c- p>:</c-> flex<c- p>;</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: windows<c- p>)</c-> <c- p>{</c->
+  .dialog-buttons .accept <c- p>{</c-> <c- k>order</c-><c- p>:</c-> <c- m>-1</c-><c- p>;</c-> <c- p>}</c->
+<c- p>}</c->
+
+<c- c>/* The right download, and the right store badge */</c->
+.download-dmg<c- p>,</c-> .download-deb<c- p>,</c-> .badge-app-store<c- p>,</c-> .badge-play <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: macos<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .download-dmg <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: linux<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .download-deb <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: ios<c- p>)</c-> <c- p>{</c-> .badge-play <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .badge-app-store <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
 </pre>
    </div>
-   <p>The feature reports that a power-saving mode is on, and nothing more: not the battery level, not whether
-the device is charging, and not which mode. Its value can reveal something about the user’s battery, and a
-change in its value can link visits to different sites, so <a href="#privacy">§ 3 Privacy considerations</a> describes how the feature limits
-both.</p>
-   <h2 class="heading settled" data-level="2" id="feature"><span class="secno">2. </span><span class="content">The <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power①">prefers-reduced-power</a> feature</span><a class="self-link" href="#feature"></a></h2>
+   <p>The feature reports a family, never a version, and never a device. It is deliberately not a way to ask what the
+browser can do: that is what feature queries are for, and <a href="#security-not-detection">§ 4.1 It is not feature detection</a> explains why using it that
+way breaks browsers.</p>
+   <h2 class="heading settled" data-level="2" id="feature"><span class="secno">2. </span><span class="content">The <a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform①">platform</a> feature</span><a class="self-link" href="#feature"></a></h2>
    <table class="def descdef mq">
     <tbody>
      <tr>
       <th>Name:
-      <td><dfn class="css dfn-paneled" data-dfn-for="@media" data-dfn-type="descriptor" data-export id="descdef-media-prefers-reduced-power">prefers-reduced-power</dfn>
+      <td><dfn class="css dfn-paneled" data-dfn-for="@media" data-dfn-type="descriptor" data-export id="descdef-media-platform">platform</dfn>
      <tr>
       <th>For:
       <td><a class="css" data-link-type="at-rule" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-media" id="ref-for-at-ruledef-media">@media</a>
      <tr>
       <th>Value:
-      <td class="prod">no-preference <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one">|</a> reduce
+      <td class="prod">windows <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one">|</a> macos <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one①">|</a> ios <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one②">|</a> android <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one③">|</a> linux <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one④">|</a> chromeos <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one⑤">|</a> other
      <tr>
       <th>Type:
       <td>discrete
    </table>
-   <p>The <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power②">prefers-reduced-power</a> media feature is a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature" id="ref-for-system-media-feature">system media feature</a>. Its <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value" id="ref-for-actual-value">actual value</a> is
-one of:</p>
+   <p>The <a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform②">platform</a> media feature is a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature" id="ref-for-system-media-feature">system media feature</a>. Its <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value" id="ref-for-actual-value">actual value</a> is the keyword for the
+document’s <a data-link-type="dfn" href="#reported-platform" id="ref-for-reported-platform">reported platform</a>:</p>
    <dl>
-    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/prefers-reduced-power" data-dfn-type="value" data-export id="valdef-media-prefers-reduced-power-no-preference">no-preference</dfn>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-windows">windows</dfn>
     <dd data-md>
-     <p>No power-saving mode is on, or the user agent doesn’t know. This value evaluates to false in a
-<a data-link-type="dfn" href="https://drafts.csswg.org/mediaqueries-5/#boolean-context" id="ref-for-boolean-context">boolean context</a>.</p>
-    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/prefers-reduced-power" data-dfn-type="value" data-export id="valdef-media-prefers-reduced-power-reduce">reduce</dfn>
+     <p>Microsoft Windows.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-macos">macos</dfn>
     <dd data-md>
-     <p>A power-saving mode is on.</p>
+     <p>Apple macOS.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-ios">ios</dfn>
+    <dd data-md>
+     <p>Apple iOS and iPadOS.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-android">android</dfn>
+    <dd data-md>
+     <p>Android, including systems built on it whose conventions are Android’s.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-linux">linux</dfn>
+    <dd data-md>
+     <p>A Linux or Unix-like desktop system that isn’t one of the above.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-chromeos">chromeos</dfn>
+    <dd data-md>
+     <p>ChromeOS.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/platform" data-dfn-type="value" data-export id="valdef-media-platform-other">other</dfn>
+    <dd data-md>
+     <p>Any other platform, and any platform the user agent chooses not to identify.</p>
    </dl>
-   <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="power-saving-mode">power-saving mode</dfn> is a mode that the user, or the device on the user’s behalf, has
-turned on to use less energy at the cost of performance or features. The user agent reports
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce">reduce</a> when any of these is on:</p>
+   <p>In a <a data-link-type="dfn" href="https://drafts.csswg.org/mediaqueries-5/#boolean-context" id="ref-for-boolean-context">boolean context</a>, the feature is always true.</p>
+   <p>The list of keywords is closed. A user agent must report <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other">other</a> for a platform that has no keyword,
+and must not invent keywords. New keywords are added by revising this specification.</p>
+   <div class="note" role="note">
+    A closed list keeps the feature from identifying the users of uncommon systems. If every system had its own
+    keyword, the few users of one would be easy to recognize, while the feature is worth little to them, because
+    an author can’t design for a platform they have never seen. See <a href="#privacy-closed-list">§ 3.4 The closed list</a>.
+</div>
+   <h3 class="heading settled" data-level="2.1" id="platform-source"><span class="secno">2.1. </span><span class="content">The reported platform</span><a class="self-link" href="#platform-source"></a></h3>
+   <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="reported-platform">reported platform</dfn> of a <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document">document</a> is the platform that the user agent presents to that
+document’s origin elsewhere. It is not necessarily the platform the user agent is running on.</p>
+   <p>A user agent must determine the reported platform as follows:</p>
+   <ol>
+    <li data-md>
+     <p>If the user agent implements <code>navigator.userAgentData</code> <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, the reported platform is
+the value of its <code>platform</code> property for the document, mapped with the table below.</p>
+    <li data-md>
+     <p>Otherwise, the reported platform is the platform identified by the <code>User-Agent</code> header the user agent
+would send with a request for the document.</p>
+   </ol>
+   <table class="data">
+    <thead>
+     <tr>
+      <th><code>navigator.userAgentData.platform</code>
+      <th><a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform③">platform</a>
+    
+    <tbody>
+     <tr>
+      <td>"Android"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-android" id="ref-for-valdef-media-platform-android">android</a>
+        
+     <tr>
+      <td>"Chrome OS", "Chromium OS"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos" id="ref-for-valdef-media-platform-chromeos">chromeos</a>
+        
+     <tr>
+      <td>"iOS"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-ios" id="ref-for-valdef-media-platform-ios">ios</a>
+        
+     <tr>
+      <td>"Linux"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux">linux</a>
+        
+     <tr>
+      <td>"macOS"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos">macos</a>
+        
+     <tr>
+      <td>"Windows"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-windows" id="ref-for-valdef-media-platform-windows">windows</a>
+        
+     <tr>
+      <td>Any other value, including "Unknown" and "Fuchsia"
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other①">other</a>
+
+   </table>
+   <p>The feature must agree with what the user agent reports elsewhere, even when that isn’t the platform it is running
+on. In particular:</p>
    <ul>
     <li data-md>
-     <p>A power-saving mode of the operating system. A mode that the operating system turns on by itself when
-the battery reaches a level the user has chosen, or has agreed to, counts.</p>
+     <p>If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode, the
+feature reports that other platform. On iPadOS, Safari’s desktop-class browsing presents itself as macOS, so
+the feature is <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos①">macos</a>. In Chrome on Android, desktop mode presents itself as Linux, so the feature
+is <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux①">linux</a>.</p>
     <li data-md>
-     <p>A power-saving mode of the user agent.</p>
-    <li data-md>
-     <p>A setting in the user agent that asks pages to use less power.</p>
+     <p>If the user agent normalizes or hides the platform to protect the user from fingerprinting, the feature reports
+the normalized platform, and reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other②">other</a> if the user agent identifies no platform.</p>
    </ul>
-   <p>The user agent must not report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce①">reduce</a> because the device is running on battery,
-because of the battery level, or because of the device’s temperature or load, unless a power-saving mode
-is on because of it.</p>
    <div class="note" role="note">
-    The feature doesn’t change what the user agent does itself. A user agent can slow down timers or
-    lower frame rates in a power-saving mode whether or not pages use this feature. The feature is
-    independent of <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion" id="ref-for-descdef-media-prefers-reduced-motion">prefers-reduced-motion</a> and <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data" id="ref-for-descdef-media-prefers-reduced-data">prefers-reduced-data</a>: saving power
-    doesn’t mean the user wants less motion, and it doesn’t mean the network is expensive.
+    This rule is what makes the feature safe: it can’t disagree with the <code>User-Agent</code> header, with
+    <code>navigator.userAgentData.platform</code>, or with the user’s choice of desktop mode, so it never tells
+    anyone anything they couldn’t already learn. It also means the feature is wrong exactly when the user agent is
+    already wrong, which authors can’t do anything about, and users have asked for.
 </div>
-   <h3 class="heading settled" data-level="2.1" id="changes"><span class="secno">2.1. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
-   <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery" id="ref-for-delayed-change-delivery">delayed change delivery</a> <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a>, with a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay" id="ref-for-maximum-delay">maximum delay</a> of
-60 seconds and a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval" id="ref-for-minimum-interval">minimum interval</a> of 10 minutes.</p>
+   <h3 class="heading settled" data-level="2.2" id="changes"><span class="secno">2.2. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
+   <p>The value is determined when the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document①">document</a> is created, and doesn’t change while the document exists.</p>
    <div class="note" role="note">
-    A power-saving mode saves energy over minutes and hours, so a page that adapts up to a minute late
-    loses little. <a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a> explains the values.
+    Turning "request desktop site" on or off reloads the page, so there is no need for the value to change, and
+    nothing that could link two documents by the moment it changed.
 </div>
-   <h3 class="heading settled" data-level="2.2" id="reduced-exposure"><span class="secno">2.2. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
-   <p>The feature is <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control" id="ref-for-under-user-control">under user control</a>. In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, the feature is
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference">no-preference</a>.</p>
-   <p>The user agent may also let the user choose to report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce②">reduce</a> at all times,
-which saves power on every page and reveals nothing, because the value never changes.</p>
+   <h3 class="heading settled" data-level="2.3" id="reduced-exposure"><span class="secno">2.3. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
+   <p>In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, the feature follows the same rule: it reports the <a data-link-type="dfn" href="#reported-platform" id="ref-for-reported-platform①">reported platform</a>. A user
+agent that already normalizes the platform it presents, in that context or generally, gets the same normalization
+here for free.</p>
+   <div class="note" role="note">
+    There is nothing to take away. A style sheet that reports the value to a server tells it what the server read
+    in the <code>User-Agent</code> header of the request that fetched the style sheet.
+</div>
    <h2 class="heading settled" data-level="3" id="privacy"><span class="secno">3. </span><span class="content">Privacy considerations</span><a class="self-link" href="#privacy"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="privacy-exposed"><span class="secno">3.1. </span><span class="content">What the feature reveals</span><a class="self-link" href="#privacy-exposed"></a></h3>
-   <p>Directly, the feature reveals whether a power-saving mode is on. Less obviously, it can also reveal:</p>
+   <p>The feature reveals which of seven operating system families the user agent presents itself as. It doesn’t reveal:</p>
    <ul>
     <li data-md>
-     <p><strong>That the battery is low.</strong> Most power-saving modes turn on, or offer to, when the battery reaches a
-level such as 20%. A change to <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce③">reduce</a> on a device where the user usually
-doesn’t turn the mode on by hand suggests that the battery just reached that level.</p>
+     <p>the version of the operating system, or its build, edition, or distribution;</p>
     <li data-md>
-     <p><strong>That the device started charging.</strong> Some modes turn off when the device is plugged in, or when it
-has charged past a level such as 80%.</p>
+     <p>the device model, the manufacturer, the CPU architecture, or the bitness;</p>
     <li data-md>
-     <p><strong>That the device has a battery.</strong> This distinguishes laptops from desktop computers, which the
-user-agent string doesn’t.</p>
+     <p>the browser, its engine, or its version;</p>
     <li data-md>
-     <p><strong>Habits.</strong> Over days, the times at which the mode turns on show when the user is away from a charger.</p>
+     <p>whether the reported platform is the real one.</p>
    </ul>
-   <p>The feature doesn’t reveal the battery level, whether the device is charging, how long the battery will
-last, or which mode is on, and the user agent never reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce④">reduce</a> because of
-the battery level alone.</p>
-   <h3 class="heading settled" data-level="3.2" id="privacy-existing"><span class="secno">3.2. </span><span class="content">What is already exposed</span><a class="self-link" href="#privacy-existing"></a></h3>
-   <p>In browsers that support it, the Battery Status API reveals the battery level and charging state to
-script. Firefox and Safari removed that API because of the linking attack described in
-<a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a>.</p>
-   <p>Some browsers lower the rate of <code>requestAnimationFrame()</code> callbacks in a power-saving mode, and
-script can measure that rate. Where they do, script can often already tell that a mode is on. What this
-feature adds is that style sheets can tell without script, and that browsers that don’t throttle reveal
-it too.</p>
+   <h3 class="heading settled" data-level="3.2" id="privacy-nothing-new"><span class="secno">3.2. </span><span class="content">Why it adds nothing</span><a class="self-link" href="#privacy-nothing-new"></a></h3>
+   <p>The platform is already available to everyone who can see a request or run script:</p>
+   <ul>
+    <li data-md>
+     <p>Every request the document makes carries a <code>User-Agent</code> header that identifies the platform family.
+Even after Chromium’s User-Agent Reduction, which froze the platform version, the architecture, and the device
+model, the header still identifies the family: <code>Windows NT 10.0; Win64; x64</code>,
+<code>Macintosh; Intel Mac OS X 10_15_7</code>, <code>X11; Linux x86_64</code>,
+<code>X11; CrOS x86_64 14541.0.0</code>, or <code>Linux; Android 10; K</code> <a data-link-type="biblio" href="#biblio-ua-reduction" title="User-Agent Reduction">[UA-REDUCTION]</a>.</p>
+    <li data-md>
+     <p><code>Sec-CH-UA-Platform</code> is one of the three client hints that user agents implementing
+<a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a> send on every request by default, because the platform name on its own is low entropy.</p>
+    <li data-md>
+     <p>Script can read <code>navigator.userAgentData.platform</code> and <code>navigator.platform</code>.</p>
+   </ul>
+   <p>Because <a href="#platform-source">§ 2.1 The reported platform</a> requires the feature to agree with those, it reaches no context that they don’t.
+This includes documents where script is disabled, such as messages in an email client: the request that fetched the
+message, and the request a style sheet would make to report the value, both carry the same header.</p>
    <h3 class="heading settled" data-level="3.3" id="privacy-fingerprinting"><span class="secno">3.3. </span><span class="content">Fingerprinting</span><a class="self-link" href="#privacy-fingerprinting"></a></h3>
-   <p>The feature has two values, and a device’s value changes, often daily. It is a poor stable identifier,
-but while the mode is on it adds −log<sub>2</sub>(<var>p</var>) bits to a fingerprint, where <var>p</var> is the fraction of
-users whose mode is on at that moment. If 10% of users have a power-saving mode on at a given time, a
-user whose mode is on reveals 3.3 bits, and a user whose mode is off reveals 0.15 bits.</p>
-   <p>Mitigations:</p>
-   <ul>
-    <li data-md>
-     <p>Two values only; no levels or mode names.</p>
-    <li data-md>
-     <p><a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference①">no-preference</a> in <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context①">reduced-exposure contexts</a>.</p>
-    <li data-md>
-     <p>The option to report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑤">reduce</a> at all times, which makes the value constant.</p>
-   </ul>
-   <h3 class="heading settled" data-level="3.4" id="privacy-correlation"><span class="secno">3.4. </span><span class="content">Linking visits by when the value changes</span><a class="self-link" href="#privacy-correlation"></a></h3>
-   <p>When the mode turns on, every open document could learn of it at the same moment. A tracker present on two
-sites the user has open would see the change at the same moment in both and conclude that the two visits
-belong to one user. This is how the battery level was used to link visits <a data-link-type="biblio" href="#biblio-leaking-battery" title="The leaking battery: A privacy analysis of the HTML5 Battery Status API">[LEAKING-BATTERY]</a>, and a
-power-saving mode that turns on at a battery level has the same weakness.</p>
-   <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery" id="ref-for-delayed-change-delivery①">delayed change delivery</a>, so:</p>
-   <ul>
-    <li data-md>
-     <p>A document that is hidden when the mode changes learns of the change only when it becomes visible.
-That moment is already revealed by the <code>visibilitychange</code> event, so the document learns
-nothing about when the mode changed. On phones, where power-saving modes matter most, usually only
-one document is visible at a time.</p>
-    <li data-md>
-     <p>A document that is visible learns of the change after a random delay of up to 60 seconds, chosen for
-each document. Two visible documents learn of the same change up to a minute apart.</p>
-    <li data-md>
-     <p>A document learns of at most one change every 10 minutes, so a mode that keeps turning on and off,
-such as while a laptop is plugged in and unplugged, reveals fewer moments.</p>
-   </ul>
-   <p>Together these mean that a tracker needs two of its documents to be visible when the mode changes, on
-several separate occasions, to link visits with confidence. <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a> works through the
-numbers. This is a real cost to a tracker but not a guarantee, which is why the feature also reveals so
-little: a mode, not a level.</p>
-   <h3 class="heading settled" data-level="3.5" id="privacy-without-script"><span class="secno">3.5. </span><span class="content">Reading the feature without script</span><a class="self-link" href="#privacy-without-script"></a></h3>
-   <p>A style sheet can report the value to a server by loading a resource under the query, including in HTML
-email and on pages with script blocked, and a rule that loads a resource only after the value changes
-reports roughly when it changed. The value is one bit, and documents where script is disabled for privacy
-reasons are <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context②">reduced-exposure contexts</a>, where the feature is always
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference②">no-preference</a>.</p>
+   <p>The platform family is one of the cheapest parts of the user agent string. Measured across large fingerprint
+collections, the whole <code>User-Agent</code> string carries about 10 bits of identifying information in
+Panopticlick’s 2010 data, 9.8 bits in AmIUnique’s 2016 data, and 7.2 bits in the 2018 "Hiding in the Crowd"
+data set of over two million fingerprints; <code>navigator.platform</code>, on its own, carries 2.3 bits and 1.2
+bits in the last two <a data-link-type="biblio" href="#biblio-fingerprint-survey" title="Browser Fingerprinting: A Survey">[FINGERPRINT-SURVEY]</a> <a data-link-type="biblio" href="#biblio-hiding-in-the-crowd" title="Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale">[HIDING-IN-THE-CROWD]</a>. Almost all of the entropy of a user agent
+string is in versions and device models, which this feature doesn’t report.</p>
+   <p>The value is also stable, changes only when the user changes platforms, and is the same for large numbers of users.
+It adds nothing to a fingerprint that the same page’s requests didn’t already carry.</p>
+   <h3 class="heading settled" data-level="3.4" id="privacy-closed-list"><span class="secno">3.4. </span><span class="content">The closed list</span><a class="self-link" href="#privacy-closed-list"></a></h3>
+   <p>An open list would punish the users of uncommon systems. If the feature had a keyword for every system, a user on
+one that a thousandth of users run would reveal about 10 bits, while an author who has never seen that system
+can’t style for it anyway. Every such system reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other③">other</a>, which is also what a user agent reports
+when it doesn’t want to identify the platform at all.</p>
+   <h3 class="heading settled" data-level="3.5" id="privacy-normalization"><span class="secno">3.5. </span><span class="content">User agents that normalize the platform</span><a class="self-link" href="#privacy-normalization"></a></h3>
+   <p>Tor Browser normalizes rather than randomizes: all Windows users appear as one Windows version, all macOS users as
+one macOS version, and all Linux and BSD systems as one. It used to disguise the family itself, and stopped,
+because the benefit was "a negligible amount of benefit to the user in terms of additional linkability
+protections" against real site breakage <a data-link-type="biblio" href="#biblio-tor-ua-spoofing" title="Stop spoofing the OS in the User-Agent header (tor-browser#42467)">[TOR-UA-SPOOFING]</a>. Firefox’s resist-fingerprinting mode likewise reports
+the latest release version but doesn’t spoof the operating system.</p>
+   <p>This feature inherits whatever the user agent decides, including a decision to report <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other④">other</a> everywhere.</p>
    <h3 class="heading settled" data-level="3.6" id="privacy-third-party"><span class="secno">3.6. </span><span class="content">Embedded content</span><a class="self-link" href="#privacy-third-party"></a></h3>
-   <p>The feature has the same value in cross-origin frames as in the top-level document. Advertisements and
-embedded video account for much of the energy that pages use, and they are the content that most needs to
-do less, so restricting the feature in frames would defeat its purpose. The feature is not restricted in
-frames; the delays above apply there too.</p>
-   <h3 class="heading settled" data-level="3.7" id="privacy-inference"><span class="secno">3.7. </span><span class="content">Sensitive inferences</span><a class="self-link" href="#privacy-inference"></a></h3>
-   <p>A low battery can be exploited. Businesses have observed that people whose battery is about to run out are
-more willing to accept a higher price or a worse offer, because they can’t shop around. A page could use
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑥">reduce</a> as a sign of a low battery and change its offers.</p>
-   <p>Mitigations: the value is not a battery level, many users turn the mode on by hand, and changes arrive late.
-Users who are concerned can turn the feature off, or report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑦">reduce</a> at all times.</p>
-   <h3 class="heading settled" data-level="3.8" id="privacy-residual"><span class="secno">3.8. </span><span class="content">Remaining risks</span><a class="self-link" href="#privacy-residual"></a></h3>
+   <p>The feature has the same value in cross-origin frames as in the top-level document, because a frame’s own requests
+carry the same <code>User-Agent</code> header and its script can read the same values.</p>
+   <h3 class="heading settled" data-level="3.7" id="privacy-residual"><span class="secno">3.7. </span><span class="content">Remaining risks</span><a class="self-link" href="#privacy-residual"></a></h3>
    <ul>
     <li data-md>
-     <p>A tracker that sees the same user’s documents visible during several changes can still link them.</p>
+     <p><strong>Entrenchment.</strong> Making platform styling easy makes platform sniffing more common, and sniffing tends to
+outlive its reason. <a href="#security-not-detection">§ 4.1 It is not feature detection</a> and <a href="#alt-conventions">§ 5.1 Features for the conventions themselves</a> discuss this.</p>
     <li data-md>
-     <p>Where a user rarely turns the mode on by hand, a change to <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑧">reduce</a> still
-suggests a battery level of about 20%.</p>
+     <p><strong>Style-only contexts.</strong> A style sheet can report the value without script. It reports a fact the same server
+already received in a header, but it does so without the page’s script being involved, which a site’s own
+content security policy might otherwise have limited.</p>
    </ul>
    <h2 class="heading settled" data-level="4" id="security"><span class="secno">4. </span><span class="content">Security considerations</span><a class="self-link" href="#security"></a></h2>
-   <ul>
-    <li data-md>
-     <p>The feature can’t change whether a power-saving mode is on.</p>
-    <li data-md>
-     <p>A page can do more work when no power-saving mode is on, for example to run a cryptocurrency miner
-only when the user is less likely to notice. Pages can already do this with the Battery Status API or
-by measuring frame rates. The user agent’s own limits on background work are the protection against it.</p>
-    <li data-md>
-     <p>The feature is a hint for efficiency. Pages must not use it to decide anything that matters for security.</p>
-   </ul>
+   <h3 class="heading settled" data-level="4.1" id="security-not-detection"><span class="secno">4.1. </span><span class="content">It is not feature detection</span><a class="self-link" href="#security-not-detection"></a></h3>
+   <p>The platform doesn’t say which CSS or JavaScript features work. Sites that decide what to send from the platform
+break browsers that the site’s author didn’t test, which is the reason user agent strings are full of the names of
+other browsers. Authors should use <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a>, <code>@media</code> capability features such as
+<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer" id="ref-for-descdef-media-pointer">pointer</a> and <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover" id="ref-for-descdef-media-hover">hover</a>, and script feature detection, and use this feature only for conventions:
+what to call a key, which order to put buttons in, which asset to show. <a data-link-type="biblio" href="#biblio-design-principles" title="Web Platform Design Principles">[DESIGN-PRINCIPLES]</a> says features should
+be detectable, and this one deliberately doesn’t help with that.</p>
+   <h3 class="heading settled" data-level="4.2" id="security-targeting"><span class="secno">4.2. </span><span class="content">Targeting</span><a class="self-link" href="#security-targeting"></a></h3>
+   <p>A page can show different content to users of one platform, such as an attack that tells Windows users to press a
+key combination that runs a command. Attackers already do this from the server, using the
+<code>User-Agent</code> header, so the feature adds no reach. What it adds is that the variation can happen
+entirely in a style sheet, so a service that checks the page by fetching it once, from one platform, sees only one
+version. Checking services should render pages as more than one platform.</p>
+   <h3 class="heading settled" data-level="4.3" id="security-not-a-decision"><span class="secno">4.3. </span><span class="content">Not an input to decisions that matter</span><a class="self-link" href="#security-not-a-decision"></a></h3>
+   <p>The user controls the value, through desktop mode, through browser settings, and by choosing a browser that
+normalizes it. Pages must not use it for licensing, entitlement, fraud scoring, or any security decision.</p>
    <h2 class="heading settled" data-level="5" id="alternate-proposals"><span class="secno">5. </span><span class="content">Alternate proposals</span><a class="self-link" href="#alternate-proposals"></a></h2>
-   <h3 class="heading settled" data-level="5.1" id="alt-name"><span class="secno">5.1. </span><span class="content"><span class="css">(power-saver: active)</span></span><a class="self-link" href="#alt-name"></a></h3>
-   <p>A feature named for the mode rather than the preference reads naturally. It was not chosen because
-<a data-link-type="biblio" href="#biblio-mediaqueries-5" title="Media Queries Level 5">[MEDIAQUERIES-5]</a> names features that reflect a user’s choice with <code>prefers-</code>, such as
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data" id="ref-for-descdef-media-prefers-reduced-data①">prefers-reduced-data</a>, and a power-saving mode is a choice even when the device makes it for the
-user at a level they picked.</p>
-   <h3 class="heading settled" data-level="5.2" id="alt-battery"><span class="secno">5.2. </span><span class="content">Battery level and charging features</span><a class="self-link" href="#alt-battery"></a></h3>
-   <p>Features such as <code>(battery-level &lt; 20%)</code> and <code>(power-source: battery)</code> would let
-pages make finer decisions. They were not chosen because the battery level is exactly the value that was
-used to link visits <a data-link-type="biblio" href="#biblio-leaking-battery" title="The leaking battery: A privacy analysis of the HTML5 Battery Status API">[LEAKING-BATTERY]</a>, and because a page that is asked to save power doesn’t need to
-know why.</p>
-   <h3 class="heading settled" data-level="5.3" id="alt-frames"><span class="secno">5.3. </span><span class="content">Restricting the feature in frames</span><a class="self-link" href="#alt-frames"></a></h3>
-   <p>Cross-origin frames could get <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference③">no-preference</a> unless the embedding page allowed
-more. This was not chosen because embedded advertisements and video are the content that uses the most
-energy, and embedding pages rarely change their defaults.</p>
+   <h3 class="heading settled" data-level="5.1" id="alt-conventions"><span class="secno">5.1. </span><span class="content">Features for the conventions themselves</span><a class="self-link" href="#alt-conventions"></a></h3>
+   <p>Instead of naming the platform, CSS could expose each convention: a feature for how the modifier key is written, one
+for the order of dialog buttons, one for the direction of the system back gesture. That would say what authors
+actually need, would survive a platform changing its conventions, and matches how the CSS Working Group has
+handled other requests, by turning "what device is this" into "what does it do". It was not chosen here because the
+list of conventions is long and open-ended, and because assets such as store badges and installer formats aren’t
+conventions the user agent knows about. This is the strongest alternative, and reviewers may prefer it.</p>
+   <h3 class="heading settled" data-level="5.2" id="alt-version"><span class="secno">5.2. </span><span class="content">The operating system version</span><a class="self-link" href="#alt-version"></a></h3>
+   <p>A feature for the version would let a page match the platform’s current design language. It is not proposed:
+the version is where almost all of the fingerprinting value of a user agent string is, Safari froze the macOS
+version in its user agent string in 2020 and now reports <code>Intel Mac OS X 10_15_7</code> permanently,
+Chromium’s User-Agent Reduction froze it too <a data-link-type="biblio" href="#biblio-ua-reduction" title="User-Agent Reduction">[UA-REDUCTION]</a>, and <code>Sec-CH-UA-Platform-Version</code> is a
+high-entropy hint that a site has to ask for. Matching a design language is better served by the features that
+describe it, such as <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency" id="ref-for-descdef-media-prefers-reduced-transparency">prefers-reduced-transparency</a> and <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast" id="ref-for-descdef-media-prefers-contrast">prefers-contrast</a>.</p>
+   <h3 class="heading settled" data-level="5.3" id="alt-model-arch"><span class="secno">5.3. </span><span class="content">The device model, architecture, and bitness</span><a class="self-link" href="#alt-model-arch"></a></h3>
+   <p>A download page would like to offer an Apple Silicon or an Intel build, and <code>Sec-CH-UA-Arch</code> exists for
+that. These are not proposed: they are high-entropy hints that a site must request, the user agent is told to
+report them as empty unless a binary download is likely <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, and choosing a download link is
+something a page can do with script or on the server, where the hint already is.</p>
+   <h3 class="heading settled" data-level="5.4" id="alt-browser"><span class="secno">5.4. </span><span class="content">The browser or its engine</span><a class="self-link" href="#alt-browser"></a></h3>
+   <p>A feature for the browser brand or engine is not proposed. Feature queries answer the question that browser
+sniffing is usually asking, sniffing entrenches the assumptions that break new browsers, and engines have been
+closing the CSS-only browser detection channels that exist rather than opening new ones. A page that needs to work
+around an engine bug can usually detect the bug.</p>
+   <h3 class="heading settled" data-level="5.5" id="alt-media-type"><span class="secno">5.5. </span><span class="content">A media type</span><a class="self-link" href="#alt-media-type"></a></h3>
+   <p>CSS once had media types for device classes, such as <code>@media tv</code> and <code>@media handheld</code>, and
+they were deprecated: they made one keyword stand for a whole bundle of assumptions. This feature deliberately
+stands for one thing, the platform’s conventions, and nothing else. Device classes are handled separately by
+<a data-link-type="biblio" href="#biblio-form-factor-media-query" title="Form Factor Media Query">[FORM-FACTOR-MEDIA-QUERY]</a>.</p>
    <h2 class="heading settled" data-level="6" id="open-issues"><span class="secno">6. </span><span class="content">Open issues</span><a class="self-link" href="#open-issues"></a></h2>
-   <p class="issue" id="issue-0e16690c"><a class="self-link" href="#issue-0e16690c"></a>Is 60 seconds the right maximum delay? A longer delay makes linking harder and adapts
-more slowly.
+   <p class="issue" id="issue-2678b4d0"><a class="self-link" href="#issue-2678b4d0"></a>On iPadOS, Safari presents itself as macOS, so an iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos②">macos</a> and gets macOS
+conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
+specification say anything, given that the alternative is disagreeing with the user agent string?
 
 </p>
-   <p class="issue" id="issue-a0c35425"><a class="self-link" href="#issue-a0c35425"></a>Should there be a <code>Sec-CH-Prefers-Reduced-Power</code> client hint, like the hints
-for other user preference media features, so that servers can send lighter pages? A hint would reveal the
-value to servers, in every request that asks for it, without any of the delays.
+   <p class="issue" id="issue-ef642f66"><a class="self-link" href="#issue-ef642f66"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos" id="ref-for-valdef-media-platform-chromeos①">chromeos</a> exist, or should ChromeOS report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux②">linux</a>? It has its own
+conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
+with a single browser.
 
 </p>
-   <p class="issue" id="issue-be52fe03"><a class="self-link" href="#issue-be52fe03"></a>Should a user agent that reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑨">reduce</a> also match
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion" id="ref-for-descdef-media-prefers-reduced-motion①">prefers-reduced-motion</a>? Saving power often means less animation, but the two are different
-preferences.
+   <p class="issue" id="issue-e266a77e"><a class="self-link" href="#issue-e266a77e"></a>Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
+<a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, on the grounds that they expose system configuration without script. Does the argument in
+<a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given that those features exposed settings that
+the <code>User-Agent</code> header doesn’t carry?
 
 
 </p>
@@ -2521,26 +2611,27 @@ preferences.
    <dl>
     <dt data-md>What information does this feature expose, and for what purposes?
     <dd data-md>
-     <p>Whether a power-saving mode is on, so that pages can use less energy.</p>
+     <p>Which of seven operating system families the user agent presents itself as, so pages can follow that platform’s
+conventions.</p>
     <dt data-md>Do features in your specification expose the minimum amount of information necessary?
     <dd data-md>
-     <p>Yes. One of two values, with no battery level, charging state, or mode name.</p>
+     <p>Yes. A closed list of families, with no version, model, architecture, or browser, and the value must match what
+the <code>User-Agent</code> header already carries.</p>
     <dt data-md>Do the features expose personal information, PII, or information derived from either?
     <dd data-md>
-     <p>No, although changes observed over days reveal charging habits.</p>
+     <p>No. The platform family suggests little about a person, though it correlates weakly with income and occupation.</p>
     <dt data-md>How do the features deal with sensitive information?
     <dd data-md>
-     <p>A low battery can be exploited in pricing. See <a href="#privacy-inference">§ 3.7 Sensitive inferences</a>.</p>
+     <p>They expose none beyond what every request already carries.</p>
     <dt data-md>Does data exposed carry related but distinct information that may not be obvious to users?
     <dd data-md>
-     <p>Yes: that the battery is at a level such as 20%, that the device started charging, and that it has a
-battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</p>
+     <p>Only weakly: that the user chose a desktop mode, since the reported platform then changes.</p>
     <dt data-md>Do the features introduce state that persists across browsing sessions?
     <dd data-md>
      <p>No.</p>
     <dt data-md>Do the features expose information about the underlying platform to origins?
     <dd data-md>
-     <p>Yes, the state of a power-saving mode.</p>
+     <p>Yes, its family, to the same extent as the <code>User-Agent</code> header.</p>
     <dt data-md>Does this specification allow an origin to send data to the underlying platform?
     <dd data-md>
      <p>No.</p>
@@ -2549,7 +2640,7 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>Do features enable new script execution or loading mechanisms?
     <dd data-md>
-     <p>No. As with any media query, a page can load different resources depending on the value.</p>
+     <p>No.</p>
     <dt data-md>Do features allow an origin to access other devices?
     <dd data-md>
      <p>No.</p>
@@ -2558,15 +2649,14 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>What temporary identifiers do the features create or expose to the web?
     <dd data-md>
-     <p>The moment the value changes could act as one. Delayed change delivery limits this; see
-<a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a>.</p>
+     <p>None. The value doesn’t change while a document exists.</p>
     <dt data-md>How does this specification distinguish between behavior in first-party and third-party contexts?
     <dd data-md>
-     <p>It doesn’t, because embedded content uses much of the energy. See <a href="#privacy-third-party">§ 3.6 Embedded content</a>.</p>
+     <p>It doesn’t, because a cross-origin frame’s own requests carry the same header.</p>
     <dt data-md>How do the features work in the context of a browser’s Private Browsing or Incognito mode?
     <dd data-md>
-     <p>Private modes that protect against fingerprinting are reduced-exposure contexts, where the value is
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference④">no-preference</a>.</p>
+     <p>The same as the <code>User-Agent</code> header does in that mode. A user agent that normalizes the platform
+there reports the normalized value here.</p>
     <dt data-md>Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
     <dd data-md>
      <p>Yes.</p>
@@ -2575,20 +2665,20 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>What happens when a document that uses your feature is kept alive in BFCache?
     <dd data-md>
-     <p>When the document is restored, it becomes visible, and it gets the current value at that moment.</p>
+     <p>It keeps the value it was created with, as its <code>User-Agent</code> header would.</p>
     <dt data-md>What happens when a document that uses your feature gets disconnected?
     <dd data-md>
-     <p>Nothing is kept. A document that isn’t fully active gets no updates.</p>
+     <p>Nothing is kept.</p>
     <dt data-md>Does your spec define when and how new kinds of errors should be raised?
     <dd data-md>
-     <p>No. An unknown value makes the query unknown, as for any media feature.</p>
+     <p>No.</p>
     <dt data-md>Does your feature allow sites to learn about the user’s use of assistive technology?
     <dd data-md>
      <p>No.</p>
     <dt data-md>What should this questionnaire have asked?
     <dd data-md>
-     <p>Whether a feature can be read without script, for example by a style sheet in an email, and whether a
-change in its value can link contexts by timing.</p>
+     <p>Whether a feature encourages a practice, such as user-agent sniffing, whose cost falls on browsers and users
+that the author never tested.</p>
    </dl>
   </main>
   <div data-fill-with="conformance">
@@ -2756,10 +2846,15 @@ change in its value can link contexts by timing.</p>
   <h2 class="heading no-num no-ref settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="heading no-num no-ref settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="index">
-   <li><a href="#valdef-media-prefers-reduced-power-no-preference">no-preference</a><span>, in § 2</span>
-   <li><a href="#power-saving-mode">power-saving mode</a><span>, in § 2</span>
-   <li><a href="#descdef-media-prefers-reduced-power">prefers-reduced-power</a><span>, in § 2</span>
-   <li><a href="#valdef-media-prefers-reduced-power-reduce">reduce</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-android">android</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-chromeos">chromeos</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-ios">ios</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-linux">linux</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-macos">macos</a><span>, in § 2</span>
+   <li><a href="#valdef-media-platform-other">other</a><span>, in § 2</span>
+   <li><a href="#descdef-media-platform">platform</a><span>, in § 2</span>
+   <li><a href="#reported-platform">reported platform</a><span>, in § 2.1</span>
+   <li><a href="#valdef-media-platform-windows">windows</a><span>, in § 2</span>
   </ul>
   <h3 class="heading no-num no-ref settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="index">
@@ -2767,6 +2862,7 @@ change in its value can link contexts by timing.</p>
     <a data-link-type="biblio">[CSS-CONDITIONAL-3]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="5f1b7f60">@media</span>
+     <li><span class="dfn-paneled" id="c1ebc639">@supports</span>
     </ul>
    <li>
     <a data-link-type="biblio">[CSS-VALUES-4]</a> defines the following terms:
@@ -2774,22 +2870,25 @@ change in its value can link contexts by timing.</p>
      <li><span class="dfn-paneled" id="6ec67710">|</span>
     </ul>
    <li>
+    <a data-link-type="biblio">[DOM]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="a973e0fe">document</span>
+    </ul>
+   <li>
     <a data-link-type="biblio">[MEDIA-FEATURE-PRIVACY]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="fd6386ba">actual value</span>
-     <li><span class="dfn-paneled" id="34f14525">delayed change delivery</span>
-     <li><span class="dfn-paneled" id="209cb73a">maximum delay</span>
-     <li><span class="dfn-paneled" id="89c69bc5">minimum interval</span>
      <li><span class="dfn-paneled" id="5527ea1d">reduced-exposure context</span>
      <li><span class="dfn-paneled" id="7878bc99">system media feature</span>
-     <li><span class="dfn-paneled" id="dc285ef9">under user control</span>
     </ul>
    <li>
     <a data-link-type="biblio">[MEDIAQUERIES-5]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="2e6703e6">boolean context</span>
-     <li><span class="dfn-paneled" id="afdf1526">prefers-reduced-data</span>
-     <li><span class="dfn-paneled" id="b0f4a94b">prefers-reduced-motion</span>
+     <li><span class="dfn-paneled" id="d078c482">hover</span>
+     <li><span class="dfn-paneled" id="4dba9df7">pointer</span>
+     <li><span class="dfn-paneled" id="9219048b">prefers-contrast</span>
+     <li><span class="dfn-paneled" id="b672b3b4">prefers-reduced-transparency</span>
     </ul>
   </ul>
   <h2 class="heading no-num no-ref settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
@@ -2799,6 +2898,8 @@ change in its value can link contexts by timing.</p>
    <dd>Chris Lilley; David Baron; Elika Etemad. <a href="https://drafts.csswg.org/css-conditional-3/"><cite>CSS Conditional Rules Module Level 3</cite></a>. URL: <a href="https://drafts.csswg.org/css-conditional-3/">https://drafts.csswg.org/css-conditional-3/</a>
    <dt id="biblio-css-values-4">[CSS-VALUES-4]
    <dd>Tab Atkins Jr.; Elika Etemad. <a href="https://drafts.csswg.org/css-values-4/"><cite>CSS Values and Units Module Level 4</cite></a>. URL: <a href="https://drafts.csswg.org/css-values-4/">https://drafts.csswg.org/css-values-4/</a>
+   <dt id="biblio-dom">[DOM]
+   <dd>Anne van Kesteren. <a href="https://dom.spec.whatwg.org/"><cite>DOM Standard</cite></a>. Living Standard. URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
    <dt id="biblio-media-feature-privacy">[MEDIA-FEATURE-PRIVACY]
    <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/"><cite>Privacy Protections for Media Features</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/</a>
    <dt id="biblio-mediaqueries-5">[MEDIAQUERIES-5]
@@ -2808,10 +2909,26 @@ change in its value can link contexts by timing.</p>
   </dl>
   <h3 class="heading no-num no-ref settled" id="informative"><span class="content">Non-Normative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
-   <dt id="biblio-leaking-battery">[LEAKING-BATTERY]
-   <dd>Łukasz Olejnik; et al. <a href="https://eprint.iacr.org/2015/616"><cite>The leaking battery: A privacy analysis of the HTML5 Battery Status API</cite></a>. 2015. URL: <a href="https://eprint.iacr.org/2015/616">https://eprint.iacr.org/2015/616</a>
+   <dt id="biblio-design-principles">[DESIGN-PRINCIPLES]
+   <dd><a href="https://www.w3.org/TR/design-principles/"><cite>Web Platform Design Principles</cite></a>. URL: <a href="https://www.w3.org/TR/design-principles/">https://www.w3.org/TR/design-principles/</a>
+   <dt id="biblio-fingerprint-survey">[FINGERPRINT-SURVEY]
+   <dd>Pierre Laperdrix; et al. <a href="https://arxiv.org/abs/1905.01051"><cite>Browser Fingerprinting: A Survey</cite></a>. 2019. URL: <a href="https://arxiv.org/abs/1905.01051">https://arxiv.org/abs/1905.01051</a>
+   <dt id="biblio-form-factor-media-query">[FORM-FACTOR-MEDIA-QUERY]
+   <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/"><cite>Form Factor Media Query</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/</a>
+   <dt id="biblio-hiding-in-the-crowd">[HIDING-IN-THE-CROWD]
+   <dd>Alejandro Gómez-Boix; Pierre Laperdrix; Benoit Baudry. <a href="https://hal.inria.fr/hal-01718234/document"><cite>Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale</cite></a>. 2018. URL: <a href="https://hal.inria.fr/hal-01718234/document">https://hal.inria.fr/hal-01718234/document</a>
+   <dt id="biblio-moz-787521">[MOZ-787521]
+   <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787521"><cite>Bug 787521: Disable theme-related CSS media queries features when not in chrome context</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787521">https://bugzilla.mozilla.org/show_bug.cgi?id=787521</a>
+   <dt id="biblio-moz-platform">[MOZ-PLATFORM]
+   <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1754547"><cite>Bug 1754547: Provide a @media query to target major platform/toolkits</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1754547">https://bugzilla.mozilla.org/show_bug.cgi?id=1754547</a>
    <dt id="biblio-security-privacy-questionnaire">[SECURITY-PRIVACY-QUESTIONNAIRE]
    <dd>Theresa O'Connor; Peter Snyder; Simone Onofri. <a href="https://w3c.github.io/security-questionnaire/"><cite>Self-Review Questionnaire: Security and Privacy</cite></a>. URL: <a href="https://w3c.github.io/security-questionnaire/">https://w3c.github.io/security-questionnaire/</a>
+   <dt id="biblio-tor-ua-spoofing">[TOR-UA-SPOOFING]
+   <dd><a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467"><cite>Stop spoofing the OS in the User-Agent header (tor-browser#42467)</cite></a>. URL: <a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467">https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467</a>
+   <dt id="biblio-ua-client-hints">[UA-CLIENT-HINTS]
+   <dd><a href="https://wicg.github.io/ua-client-hints/"><cite>User-Agent Client Hints</cite></a>. URL: <a href="https://wicg.github.io/ua-client-hints/">https://wicg.github.io/ua-client-hints/</a>
+   <dt id="biblio-ua-reduction">[UA-REDUCTION]
+   <dd><a href="https://www.chromium.org/updates/ua-reduction/"><cite>User-Agent Reduction</cite></a>. URL: <a href="https://www.chromium.org/updates/ua-reduction/">https://www.chromium.org/updates/ua-reduction/</a>
   </dl>
   <h2 class="heading no-num no-ref settled" id="property-index"><span class="content">Property Index</span><a class="self-link" href="#property-index"></a></h2>
   <p>No properties defined.</p>
@@ -2826,29 +2943,31 @@ change in its value can link contexts by timing.</p>
       <th scope="col">Type
     <tbody>
      <tr>
-      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power③">prefers-reduced-power</a>
-      <td>no-preference | reduce
+      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-platform" id="ref-for-descdef-media-platform④">platform</a>
+      <td>windows | macos | ios | android | linux | chromeos | other
       <td>
       <td>discrete
    </table>
   </div>
   <h2 class="heading no-num no-ref settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">Is 60 seconds the right maximum delay? A longer delay makes linking harder and adapts
-more slowly.
+   <div class="issue">On iPadOS, Safari presents itself as macOS, so an iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos">macos</a> and gets macOS
+conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
+specification say anything, given that the alternative is disagreeing with the user agent string?
 
- <a class="issue-return" href="#issue-0e16690c" title="Jump to section">↵</a></div>
-   <div class="issue">Should there be a <code>Sec-CH-Prefers-Reduced-Power</code> client hint, like the hints
-for other user preference media features, so that servers can send lighter pages? A hint would reveal the
-value to servers, in every request that asks for it, without any of the delays.
+ <a class="issue-return" href="#issue-2678b4d0" title="Jump to section">↵</a></div>
+   <div class="issue">Should <a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos">chromeos</a> exist, or should ChromeOS report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux">linux</a>? It has its own
+conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
+with a single browser.
 
- <a class="issue-return" href="#issue-a0c35425" title="Jump to section">↵</a></div>
-   <div class="issue">Should a user agent that reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce">reduce</a> also match
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion">prefers-reduced-motion</a>? Saving power often means less animation, but the two are different
-preferences.
+ <a class="issue-return" href="#issue-ef642f66" title="Jump to section">↵</a></div>
+   <div class="issue">Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
+<a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, on the grounds that they expose system configuration without script. Does the argument in
+<a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given that those features exposed settings that
+the <code>User-Agent</code> header doesn’t carry?
 
 
- <a class="issue-return" href="#issue-be52fe03" title="Jump to section">↵</a></div>
+ <a class="issue-return" href="#issue-e266a77e" title="Jump to section">↵</a></div>
   </div>
 <script>/* Boilerplate: script-dom-helper */
 "use strict";
@@ -3050,22 +3169,27 @@ function parseHTML(markup) {
 "use strict";
 {
 let dfnPanelData = {
-"209cb73a": {"dfnID":"209cb73a","dfnText":"maximum delay","external":true,"refSections":[{"refs":[{"id":"ref-for-maximum-delay"}],"title":"2.1. Changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay"},
-"2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
-"34f14525": {"dfnID":"34f14525","dfnText":"delayed change delivery","external":true,"refSections":[{"refs":[{"id":"ref-for-delayed-change-delivery"}],"title":"2.1. Changes"},{"refs":[{"id":"ref-for-delayed-change-delivery\u2460"}],"title":"3.4. Linking visits by when the value changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery"},
-"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-reduced-exposure-context\u2460"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-reduced-exposure-context\u2461"}],"title":"3.5. Reading the feature without script"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
-"5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
-"6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
-"7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
-"89c69bc5": {"dfnID":"89c69bc5","dfnText":"minimum interval","external":true,"refSections":[{"refs":[{"id":"ref-for-minimum-interval"}],"title":"2.1. Changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval"},
-"afdf1526": {"dfnID":"afdf1526","dfnText":"prefers-reduced-data","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-data"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-data\u2460"}],"title":"5.1. (power-saver: active)"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data"},
-"b0f4a94b": {"dfnID":"b0f4a94b","dfnText":"prefers-reduced-motion","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-motion"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-motion\u2460"}],"title":"6. Open issues"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion"},
-"dc285ef9": {"dfnID":"dc285ef9","dfnText":"under user control","external":true,"refSections":[{"refs":[{"id":"ref-for-under-user-control"}],"title":"2.2. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
-"descdef-media-prefers-reduced-power": {"dfnID":"descdef-media-prefers-reduced-power","dfnText":"prefers-reduced-power","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-power\u2460"},{"id":"ref-for-descdef-media-prefers-reduced-power\u2461"}],"title":"2. The prefers-reduced-power feature"}],"url":"#descdef-media-prefers-reduced-power"},
-"fd6386ba": {"dfnID":"fd6386ba","dfnText":"actual value","external":true,"refSections":[{"refs":[{"id":"ref-for-actual-value"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
-"power-saving-mode": {"dfnID":"power-saving-mode","dfnText":"power-saving mode","external":false,"refSections":[],"url":"#power-saving-mode"},
-"valdef-media-prefers-reduced-power-no-preference": {"dfnID":"valdef-media-prefers-reduced-power-no-preference","dfnText":"no-preference","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2460"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2461"}],"title":"3.5. Reading the feature without script"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2462"}],"title":"5.3. Restricting the feature in frames"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2463"}],"title":"Appendix: Security and privacy questionnaire"}],"url":"#valdef-media-prefers-reduced-power-no-preference"},
-"valdef-media-prefers-reduced-power-reduce": {"dfnID":"valdef-media-prefers-reduced-power-reduce","dfnText":"reduce","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2460"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2461"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2462"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2463"}],"title":"3.1. What the feature reveals"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2464"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2465"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2466"}],"title":"3.7. Sensitive inferences"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2467"}],"title":"3.8. Remaining risks"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2468"}],"title":"6. Open issues"}],"url":"#valdef-media-prefers-reduced-power-reduce"},
+"2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
+"4dba9df7": {"dfnID":"4dba9df7","dfnText":"pointer","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-pointer"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
+"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.3. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
+"5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
+"6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"},{"id":"ref-for-comb-one\u2460"},{"id":"ref-for-comb-one\u2461"},{"id":"ref-for-comb-one\u2462"},{"id":"ref-for-comb-one\u2463"},{"id":"ref-for-comb-one\u2464"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
+"7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The platform feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
+"9219048b": {"dfnID":"9219048b","dfnText":"prefers-contrast","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-contrast"}],"title":"5.2. The operating system version"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast"},
+"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.2. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
+"b672b3b4": {"dfnID":"b672b3b4","dfnText":"prefers-reduced-transparency","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-transparency"}],"title":"5.2. The operating system version"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency"},
+"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
+"d078c482": {"dfnID":"d078c482","dfnText":"hover","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-hover"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
+"descdef-media-platform": {"dfnID":"descdef-media-platform","dfnText":"platform","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-platform\u2460"},{"id":"ref-for-descdef-media-platform\u2461"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-descdef-media-platform\u2462"}],"title":"2.1. The reported platform"}],"url":"#descdef-media-platform"},
+"fd6386ba": {"dfnID":"fd6386ba","dfnText":"actual value","external":true,"refSections":[{"refs":[{"id":"ref-for-actual-value"}],"title":"2. The platform feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
+"reported-platform": {"dfnID":"reported-platform","dfnText":"reported platform","external":false,"refSections":[{"refs":[{"id":"ref-for-reported-platform"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-reported-platform\u2460"}],"title":"2.3. Reduced exposure"}],"url":"#reported-platform"},
+"valdef-media-platform-android": {"dfnID":"valdef-media-platform-android","dfnText":"android","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-android"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-android"},
+"valdef-media-platform-chromeos": {"dfnID":"valdef-media-platform-chromeos","dfnText":"chromeos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-chromeos"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-chromeos\u2460"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-chromeos"},
+"valdef-media-platform-ios": {"dfnID":"valdef-media-platform-ios","dfnText":"ios","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-ios"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-ios"},
+"valdef-media-platform-linux": {"dfnID":"valdef-media-platform-linux","dfnText":"linux","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-linux"},{"id":"ref-for-valdef-media-platform-linux\u2460"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-linux\u2461"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-linux"},
+"valdef-media-platform-macos": {"dfnID":"valdef-media-platform-macos","dfnText":"macos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-macos"},{"id":"ref-for-valdef-media-platform-macos\u2460"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-macos\u2461"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-macos"},
+"valdef-media-platform-other": {"dfnID":"valdef-media-platform-other","dfnText":"other","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-other"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2460"},{"id":"ref-for-valdef-media-platform-other\u2461"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2462"}],"title":"3.4. The closed list"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2463"}],"title":"3.5. User agents that normalize the platform"}],"url":"#valdef-media-platform-other"},
+"valdef-media-platform-windows": {"dfnID":"valdef-media-platform-windows","dfnText":"windows","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-windows"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-windows"},
 };
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -3454,21 +3578,27 @@ function genLinkingSyntaxes(dfn) {
 "use strict";
 {
 let refsData = {
-"#descdef-media-prefers-reduced-power": {"displayText":"prefers-reduced-power","export":true,"for_":["@media"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"prefers-reduced-power","type":"descriptor","url":"#descdef-media-prefers-reduced-power"},
-"#valdef-media-prefers-reduced-power-no-preference": {"displayText":"no-preference","export":true,"for_":["@media/prefers-reduced-power","prefers-reduced-power"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"no-preference","type":"value","url":"#valdef-media-prefers-reduced-power-no-preference"},
-"#valdef-media-prefers-reduced-power-reduce": {"displayText":"reduce","export":true,"for_":["@media/prefers-reduced-power","prefers-reduced-power"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"reduce","type":"value","url":"#valdef-media-prefers-reduced-power-reduce"},
+"#descdef-media-platform": {"displayText":"platform","export":true,"for_":["@media"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"platform","type":"descriptor","url":"#descdef-media-platform"},
+"#reported-platform": {"displayText":"reported platform","export":true,"for_":[],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"reported platform","type":"dfn","url":"#reported-platform"},
+"#valdef-media-platform-android": {"displayText":"android","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"android","type":"value","url":"#valdef-media-platform-android"},
+"#valdef-media-platform-chromeos": {"displayText":"chromeos","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"chromeos","type":"value","url":"#valdef-media-platform-chromeos"},
+"#valdef-media-platform-ios": {"displayText":"ios","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"ios","type":"value","url":"#valdef-media-platform-ios"},
+"#valdef-media-platform-linux": {"displayText":"linux","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"linux","type":"value","url":"#valdef-media-platform-linux"},
+"#valdef-media-platform-macos": {"displayText":"macos","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"macos","type":"value","url":"#valdef-media-platform-macos"},
+"#valdef-media-platform-other": {"displayText":"other","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"other","type":"value","url":"#valdef-media-platform-other"},
+"#valdef-media-platform-windows": {"displayText":"windows","export":true,"for_":["@media/platform","platform"],"level":"","normative":true,"shortname":"platform-media-query","spec":"platform-media-query","status":"local","text":"windows","type":"value","url":"#valdef-media-platform-windows"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value": {"displayText":"actual value","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"actual value","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery": {"displayText":"delayed change delivery","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"delayed change delivery","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay": {"displayText":"maximum delay","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"maximum delay","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval": {"displayText":"minimum interval","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"minimum interval","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context": {"displayText":"reduced-exposure context","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"reduced-exposure context","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature": {"displayText":"system media feature","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"system media feature","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control": {"displayText":"under user control","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"under user control","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
+"https://dom.spec.whatwg.org/#concept-document": {"displayText":"document","export":true,"for_":[],"level":"1","normative":true,"shortname":"dom","spec":"dom","status":"current","text":"document","type":"dfn","url":"https://dom.spec.whatwg.org/#concept-document"},
 "https://drafts.csswg.org/css-conditional-3/#at-ruledef-media": {"displayText":"@media","export":true,"for_":[],"level":"3","normative":true,"shortname":"css-conditional","spec":"css-conditional-3","status":"current","text":"@media","type":"at-rule","url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
+"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports": {"displayText":"@supports","export":true,"for_":[],"level":"3","normative":true,"shortname":"css-conditional","spec":"css-conditional-3","status":"current","text":"@supports","type":"at-rule","url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
 "https://drafts.csswg.org/css-values-4/#comb-one": {"displayText":"|","export":true,"for_":[],"level":"4","normative":true,"shortname":"css-values","spec":"css-values-4","status":"current","text":"|","type":"grammar","url":"https://drafts.csswg.org/css-values-4/#comb-one"},
 "https://drafts.csswg.org/mediaqueries-5/#boolean-context": {"displayText":"boolean context","export":true,"for_":[],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"boolean context","type":"dfn","url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
-"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data": {"displayText":"prefers-reduced-data","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-data","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data"},
-"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion": {"displayText":"prefers-reduced-motion","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-motion","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover": {"displayText":"hover","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"hover","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer": {"displayText":"pointer","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"pointer","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast": {"displayText":"prefers-contrast","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-contrast","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency": {"displayText":"prefers-reduced-transparency","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-transparency","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency"},
 };
 
 function mkRefHint(link, ref) {

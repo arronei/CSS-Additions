@@ -1,7 +1,8 @@
 # System media queries
 
 Media features that describe the user's system rather than the viewport: power saving, the network, window focus, screen
-capture, keyboards, accessibility settings, and regional preferences. Each is its own proposal, in its own folder.
+capture, keyboards, accessibility settings, regional preferences, the platform, and the kind of device. Each is its own
+proposal, in its own folder.
 
 A media feature is readable without script: a style sheet can load a resource only when a query matches, and so report
 the value to a server from an email, a page with script blocked, or a CSS injection. Every spec here therefore has a
@@ -18,11 +19,13 @@ questionnaire, built on a shared set of protections.
 | [Keyboard](keyboard/) | `(keyboard: physical)`, `(virtual-keyboard: visible)` | Assistive technology excluded; rare values opt-in; frame-scoped; delayed |
 | [Accessibility preferences](accessibility-preferences/) | `prefers-bold-text`, `prefers-button-shapes`, `prefers-differentiate-without-color`, `prefers-on-off-labels`, `prefers-reduced-caret-blink` | Protected unless the user shares; still adapts in private browsing |
 | [Regional preferences](regional-preferences/) | `hour-cycle`, `measurement-system`, `temperature-unit`, `first-day-of-week` | Matches `Intl`; only `Accept-Language` without script; fixed per document |
+| [Platform](platform/) | `(platform: macos)` | Must match the `User-Agent` header, so it adds nothing; closed keyword list; fixed per document |
+| [Form factor](form-factor/) | `(form-factor: tv)` | Frame-scoped by the client hint's own policy; falls back to the mobile bit; closed list; fixed per document |
 
 The specs link to the privacy protections spec for the mechanisms they use. Specs with a polyfill have it in their own
 `polyfill/` folder: [network](network/polyfill/), [window focus](window-focus/polyfill/),
-[keyboard](keyboard/polyfill/), and [regional preferences](regional-preferences/polyfill/). The others describe state
-that page script can't observe.
+[keyboard](keyboard/polyfill/), [regional preferences](regional-preferences/polyfill/), [platform](platform/polyfill/),
+and [form factor](form-factor/polyfill/). The others describe state that page script can't observe.
 
 To build every spec, run this from this folder:
 

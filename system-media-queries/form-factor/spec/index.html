@@ -1,7 +1,7 @@
 <!doctype html><html lang="en">
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  <title>Reduced Power Preference Media Query</title>
+  <title>Form Factor Media Query</title>
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version ac92c2f0d, updated Fri Aug 21 16:01:29 2026 -0700" name="generator">
-  <link href="https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/" rel="canonical">
+  <link href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/" rel="canonical">
   <meta content="47c154e54698fec04cc9dc0067d33bbd7c156ff3" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
@@ -2202,13 +2202,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="no-ref p-name" id="title">Reduced Power Preference Media Query</h1>
+   <h1 class="no-ref p-name" id="title">Form Factor Media Query</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Living Document,
-    <time class="dt-updated" datetime="2026-09-15">15 September 2026</time></span></h2>
+    <time class="dt-updated" datetime="2026-09-16">16 September 2026</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/power-saver/spec/</a>
+     <dd><a class="u-url" href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/</a>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/arronei/CSS-Additions/issues/">GitHub</a>
      <dd><a href="#issues-index">Inline In Spec</a>
@@ -2220,7 +2220,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 15 September 2026,
+In addition, as of 16 September 2026,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2230,11 +2230,13 @@ Parts of this work may be from another specification document.  If so, those par
   </div>
   <div class="p-summary" data-fill-with="abstract">
    <h2 class="heading no-num no-ref no-toc settled" id="abstract"><span class="content">Abstract</span></h2>
-   <p>This specification adds the <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power">prefers-reduced-power</a> media feature, which reports that
-the user’s device is saving power, as it does when Low Power Mode, Battery Saver, or Energy Saver is
-on, so that pages can turn off video backgrounds, heavy animation, and background work. It reports
-whether a power-saving mode is on, never a battery level, and it uses delayed change delivery so that
-a change can’t link the user’s visits to different sites.</p>
+   <p>This specification adds the <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor">form-factor</a> media feature, which reports the kind of device the
+page is shown on, from a closed list: a desktop computer, a phone, a tablet, a television, a watch, a
+headset, an e-ink reader, or a car. Media queries already describe what a device can do, and a page can
+often guess from that, but the guesses are wrong in the cases that matter, and nothing distinguishes a
+television from a laptop. The feature matches the form factors of the User-Agent Client Hint of the same
+name, is limited in cross-origin frames by the same policy that delegates that hint, and falls back to the
+coarse mobile signal that every site already receives where fingerprinting protections apply.</p>
   </div>
   <div data-fill-with="at-risk"></div>
   <nav data-fill-with="table-of-contents" id="toc">
@@ -2242,30 +2244,38 @@ a change can’t link the user’s visits to different sites.</p>
    <ol class="toc">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li>
-     <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">prefers-reduced-power</span> feature</span></a>
+     <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">form-factor</span> feature</span></a>
      <ol class="toc">
-      <li><a href="#changes"><span class="secno">2.1</span> <span class="content">Changes</span></a>
-      <li><a href="#reduced-exposure"><span class="secno">2.2</span> <span class="content">Reduced exposure</span></a>
+      <li><a href="#source"><span class="secno">2.1</span> <span class="content">Where the value comes from</span></a>
+      <li><a href="#tv"><span class="secno">2.2</span> <span class="content">Televisions</span></a>
+      <li><a href="#changes"><span class="secno">2.3</span> <span class="content">Changes</span></a>
+      <li><a href="#frames"><span class="secno">2.4</span> <span class="content">Frames</span></a>
+      <li><a href="#reduced-exposure"><span class="secno">2.5</span> <span class="content">Reduced exposure</span></a>
      </ol>
     <li>
      <a href="#privacy"><span class="secno">3</span> <span class="content">Privacy considerations</span></a>
      <ol class="toc">
       <li><a href="#privacy-exposed"><span class="secno">3.1</span> <span class="content">What the feature reveals</span></a>
-      <li><a href="#privacy-existing"><span class="secno">3.2</span> <span class="content">What is already exposed</span></a>
-      <li><a href="#privacy-fingerprinting"><span class="secno">3.3</span> <span class="content">Fingerprinting</span></a>
-      <li><a href="#privacy-correlation"><span class="secno">3.4</span> <span class="content">Linking visits by when the value changes</span></a>
-      <li><a href="#privacy-without-script"><span class="secno">3.5</span> <span class="content">Reading the feature without script</span></a>
-      <li><a href="#privacy-third-party"><span class="secno">3.6</span> <span class="content">Embedded content</span></a>
-      <li><a href="#privacy-inference"><span class="secno">3.7</span> <span class="content">Sensitive inferences</span></a>
-      <li><a href="#privacy-residual"><span class="secno">3.8</span> <span class="content">Remaining risks</span></a>
+      <li><a href="#privacy-fingerprinting"><span class="secno">3.2</span> <span class="content">Fingerprinting</span></a>
+      <li><a href="#privacy-third-party"><span class="secno">3.3</span> <span class="content">Embedded content</span></a>
+      <li><a href="#privacy-inference"><span class="secno">3.4</span> <span class="content">Sensitive inferences</span></a>
+      <li><a href="#privacy-residual"><span class="secno">3.5</span> <span class="content">Remaining risks</span></a>
      </ol>
-    <li><a href="#security"><span class="secno">4</span> <span class="content">Security considerations</span></a>
+    <li>
+     <a href="#security"><span class="secno">4</span> <span class="content">Security considerations</span></a>
+     <ol class="toc">
+      <li><a href="#security-not-detection"><span class="secno">4.1</span> <span class="content">It is not feature detection</span></a>
+      <li><a href="#security-discrimination"><span class="secno">4.2</span> <span class="content">Refusing to serve devices</span></a>
+      <li><a href="#security-automotive"><span class="secno">4.3</span> <span class="content">Cars</span></a>
+      <li><a href="#security-not-a-decision"><span class="secno">4.4</span> <span class="content">Not an input to decisions that matter</span></a>
+     </ol>
     <li>
      <a href="#alternate-proposals"><span class="secno">5</span> <span class="content">Alternate proposals</span></a>
      <ol class="toc">
-      <li><a href="#alt-name"><span class="secno">5.1</span> <span class="content"><span class="css">(power-saver: active)</span></span></a>
-      <li><a href="#alt-battery"><span class="secno">5.2</span> <span class="content">Battery level and charging features</span></a>
-      <li><a href="#alt-frames"><span class="secno">5.3</span> <span class="content">Restricting the feature in frames</span></a>
+      <li><a href="#alt-capabilities"><span class="secno">5.1</span> <span class="content">Only capability features</span></a>
+      <li><a href="#alt-media-types"><span class="secno">5.2</span> <span class="content">Reviving the media types</span></a>
+      <li><a href="#alt-screen-size"><span class="secno">5.3</span> <span class="content">Physical screen size</span></a>
+      <li><a href="#alt-hint-only"><span class="secno">5.4</span> <span class="content">Leaving it to the client hint</span></a>
      </ol>
     <li><a href="#open-issues"><span class="secno">6</span> <span class="content">Open issues</span></a>
     <li><a href="#questionnaire"><span class="secno"></span> <span class="content">Appendix: Security and privacy questionnaire</span></a>
@@ -2294,224 +2304,259 @@ a change can’t link the user’s visits to different sites.</p>
   <main>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><em>This section is non-normative.</em></p>
-   <p>Phones, tablets, and laptops have modes that save power when the battery is low or when the user asks:
-Low Power Mode on iOS, iPadOS, and macOS, Battery Saver on Android and ChromeOS, and Energy Saver on
-Windows. Browsers have their own, such as the energy saving modes in Chrome and Edge. These modes slow
-down native apps and background work, but a web page can’t tell that one is on. It keeps playing its
-video background, running its WebGL animation, and polling its server.</p>
-   <p>This specification lets a page find out, so it can do less.</p>
+   <p>A page on a television is read from across a room with a remote in hand. A page on a watch has a few seconds of the
+user’s attention. A page in a car must not ask for careful aim. A page on an e-ink reader shouldn’t animate. These
+are different designs, not different sizes.</p>
+   <p><a data-link-type="biblio" href="#biblio-mediaqueries-5" title="Media Queries Level 5">[MEDIAQUERIES-5]</a> describes what a device can do, and a page can guess the kind of device from that: a large
+viewport with a fine pointer is probably a computer, and <span class="css">slow</span> suggests e-ink. The guesses are wrong
+exactly where it matters. A television reports a large viewport and looks like a desktop, though it is used from
+three meters away with a directional pad. A tablet and a touchscreen laptop report the same pointer and hover
+capabilities. A car’s screen reports nothing that distinguishes it from a tablet.</p>
    <div class="example" id="example-intro">
     <a class="self-link" href="#example-intro"></a>
     
-<pre class="highlight"><c- n>@media</c-> <c- p>(</c->prefers-reduced-power: reduce<c- p>)</c-> <c- p>{</c->
-  .hero video <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
-  .hero <c- p>{</c-> <c- k>background-image</c-><c- p>:</c-> <c- nf>url</c-><c- p>(</c-><c- s>hero-still.jpg</c-><c- p>);</c-> <c- p>}</c->
-  .spinner<c- p>,</c-> .confetti <c- p>{</c-> <c- k>animation</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
-  .glass <c- p>{</c-> <c- k>backdrop-filter</c-><c- p>:</c-> none<c- p>;</c-> <c- k>background-color</c-><c- p>:</c-> <c- nf>rgb</c-><c- p>(</c-><c- m>255</c-> <c- m>255</c-> <c- m>255</c-> / <c- m>0.9</c-><c- p>);</c-> <c- p>}</c->
+<pre class="highlight"><c- c>/* A television is read from across the room, and focused with a remote */</c->
+<c- n>@media</c-> <c- p>(</c->form-factor: tv<c- p>)</c-> <c- p>{</c->
+  :root <c- p>{</c-> <c- k>font-size</c-><c- p>:</c-> <c- m>24</c-><c- k>px</c-><c- p>;</c-> <c- p>}</c->
+  :focus-visible <c- p>{</c-> <c- k>outline</c-><c- p>:</c-> <c- m>4</c-><c- k>px</c-> solid<c- p>;</c-> <c- k>outline-offset</c-><c- p>:</c-> <c- m>4</c-><c- k>px</c-><c- p>;</c-> <c- p>}</c->
+  .hover-only-toolbar <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
+<c- p>}</c->
+
+<c- c>/* A watch shows one thing at a time */</c->
+<c- n>@media</c-> <c- p>(</c->form-factor: watch<c- p>)</c-> <c- p>{</c->
+  .sidebar<c- p>,</c-> .related<c- p>,</c-> .footer-links <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
+  .headline <c- p>{</c-> <c- k>font-size</c-><c- p>:</c-> <c- m>1.1</c-><c- k>rem</c-><c- p>;</c-> <c- p>}</c->
+<c- p>}</c->
+
+<c- c>/* A car: bigger targets, less to read, nothing that moves */</c->
+<c- n>@media</c-> <c- p>(</c->form-factor: automotive<c- p>)</c-> <c- p>{</c->
+  button<c- p>,</c-> a.button <c- p>{</c-> <c- k>min-block-size</c-><c- p>:</c-> <c- m>4</c-><c- k>rem</c-><c- p>;</c-> <c- k>font-size</c-><c- p>:</c-> <c- m>1.5</c-><c- k>rem</c-><c- p>;</c-> <c- p>}</c->
+  .marquee <c- p>{</c-> <c- k>animation</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
+<c- p>}</c->
+
+<c- c>/* E-ink: no animation, no gray-on-gray */</c->
+<c- n>@media</c-> <c- p>(</c->form-factor: eink<c- p>)</c-> <c- p>{</c->
+  * <c- p>{</c-> <c- k>animation</c-><c- p>:</c-> none !important<c- p>;</c-> <c- k>transition</c-><c- p>:</c-> none !important<c- p>;</c-> <c- p>}</c->
+  body <c- p>{</c-> <c- k>color</c-><c- p>:</c-> black<c- p>;</c-> <c- k>background</c-><c- p>:</c-> white<c- p>;</c-> <c- p>}</c->
 <c- p>}</c->
 </pre>
-<pre class="highlight"><c- p>&lt;</c-><c- f>picture</c-><c- p>></c->
-  <c- p>&lt;</c-><c- f>source</c-> <c- e>media</c-><c- o>=</c-><c- s>"(prefers-reduced-power: reduce)"</c-> <c- e>srcset</c-><c- o>=</c-><c- s>"logo-still.png"</c-><c- p>></c->
-  <c- p>&lt;</c-><c- f>img</c-> <c- e>src</c-><c- o>=</c-><c- s>"logo-animated.avif"</c-> <c- e>alt</c-><c- o>=</c-><c- s>"Example Inc."</c-><c- p>></c->
-<c- p>&lt;/</c-><c- f>picture</c-><c- p>></c->
-</pre>
-<pre class="highlight"><c- a>const</c-> saving <c- o>=</c-> matchMedia<c- p>(</c-><c- u>"(prefers-reduced-power: reduce)"</c-><c- p>);</c->
-<c- a>const</c-> poll <c- o>=</c-> <c- p>()</c-> <c- p>=></c-> setTimeout<c- p>(</c->refresh<c- p>,</c-> saving<c- p>.</c->matches <c- o>?</c-> <c- mf>60</c->_000 <c- o>:</c-> <c- mf>5</c->_000<c- p>);</c->
-</pre>
    </div>
-   <p>The feature reports that a power-saving mode is on, and nothing more: not the battery level, not whether
-the device is charging, and not which mode. Its value can reveal something about the user’s battery, and a
-change in its value can link visits to different sites, so <a href="#privacy">§ 3 Privacy considerations</a> describes how the feature limits
-both.</p>
-   <h2 class="heading settled" data-level="2" id="feature"><span class="secno">2. </span><span class="content">The <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power①">prefers-reduced-power</a> feature</span><a class="self-link" href="#feature"></a></h2>
+   <p>The kinds of device are the ones that the <code>Sec-CH-UA-Form-Factors</code> client hint already defines
+<a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, with one addition, <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv">tv</a>, which that hint doesn’t have; see <a href="#tv">§ 2.2 Televisions</a>. Unlike the
+platform <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>, this feature does reveal something that a site has to ask for today, so
+<a href="#frames">§ 2.4 Frames</a> and <a href="#reduced-exposure">§ 2.5 Reduced exposure</a> limit who gets it.</p>
+   <h2 class="heading settled" data-level="2" id="feature"><span class="secno">2. </span><span class="content">The <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor①">form-factor</a> feature</span><a class="self-link" href="#feature"></a></h2>
    <table class="def descdef mq">
     <tbody>
      <tr>
       <th>Name:
-      <td><dfn class="css dfn-paneled" data-dfn-for="@media" data-dfn-type="descriptor" data-export id="descdef-media-prefers-reduced-power">prefers-reduced-power</dfn>
+      <td><dfn class="css dfn-paneled" data-dfn-for="@media" data-dfn-type="descriptor" data-export id="descdef-media-form-factor">form-factor</dfn>
      <tr>
       <th>For:
       <td><a class="css" data-link-type="at-rule" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-media" id="ref-for-at-ruledef-media">@media</a>
      <tr>
       <th>Value:
-      <td class="prod">no-preference <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one">|</a> reduce
+      <td class="prod">desktop <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one">|</a> mobile <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one①">|</a> tablet <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one②">|</a> tv <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one③">|</a> watch <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one④">|</a> xr <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one⑤">|</a> eink <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one⑥">|</a> automotive <a data-link-type="grammar" href="https://drafts.csswg.org/css-values-4/#comb-one" id="ref-for-comb-one⑦">|</a> other
      <tr>
       <th>Type:
       <td>discrete
    </table>
-   <p>The <a class="property" data-link-type="propdesc" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power②">prefers-reduced-power</a> media feature is a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature" id="ref-for-system-media-feature">system media feature</a>. Its <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value" id="ref-for-actual-value">actual value</a> is
-one of:</p>
+   <p>The <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor②">form-factor</a> media feature is a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature" id="ref-for-system-media-feature">system media feature</a>. A device can have more than one form factor: a
+watch is also mobile, and a car’s screen can also be a tablet. The feature matches a keyword when that keyword is one
+of the document’s <a data-link-type="dfn" href="#form-factors" id="ref-for-form-factors">form factors</a>, rather than testing a single value.</p>
+   <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="form-factors">form factors</dfn> of a <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document">document</a> are the kinds of device it is shown on, each of which is:</p>
    <dl>
-    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/prefers-reduced-power" data-dfn-type="value" data-export id="valdef-media-prefers-reduced-power-no-preference">no-preference</dfn>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-desktop">desktop</dfn>
     <dd data-md>
-     <p>No power-saving mode is on, or the user agent doesn’t know. This value evaluates to false in a
-<a data-link-type="dfn" href="https://drafts.csswg.org/mediaqueries-5/#boolean-context" id="ref-for-boolean-context">boolean context</a>.</p>
-    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/prefers-reduced-power" data-dfn-type="value" data-export id="valdef-media-prefers-reduced-power-reduce">reduce</dfn>
+     <p>A personal computer.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-mobile">mobile</dfn>
     <dd data-md>
-     <p>A power-saving mode is on.</p>
+     <p>A small, touch-oriented device that the user carries with them.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-tablet">tablet</dfn>
+    <dd data-md>
+     <p>A touch-oriented device larger than a <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile">mobile</a> one, that isn’t typically carried on the person.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-tv">tv</dfn>
+    <dd data-md>
+     <p>A television or set-top device, shown on a distant screen and usually operated with a remote control.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-watch">watch</dfn>
+    <dd data-md>
+     <p>A device worn on the wrist, whose screen is typically less than two inches.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-xr">xr</dfn>
+    <dd data-md>
+     <p>An immersive device that augments or replaces the surroundings.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-eink">eink</dfn>
+    <dd data-md>
+     <p>A device with a screen that updates slowly and has limited or no color.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-automotive">automotive</dfn>
+    <dd data-md>
+     <p>A device built into a vehicle, whose user may be driving it and unable to attend to small details.</p>
+    <dt data-md><dfn class="css dfn-paneled" data-dfn-for="@media/form-factor" data-dfn-type="value" data-export id="valdef-media-form-factor-other">other</dfn>
+    <dd data-md>
+     <p>A kind of device with no keyword here, or one the user agent chooses not to identify. A document whose form
+factors are empty or unknown has <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-other" id="ref-for-valdef-media-form-factor-other">other</a> as its only form factor.</p>
    </dl>
-   <p>A <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="power-saving-mode">power-saving mode</dfn> is a mode that the user, or the device on the user’s behalf, has
-turned on to use less energy at the cost of performance or features. The user agent reports
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce">reduce</a> when any of these is on:</p>
-   <ul>
-    <li data-md>
-     <p>A power-saving mode of the operating system. A mode that the operating system turns on by itself when
-the battery reaches a level the user has chosen, or has agreed to, counts.</p>
-    <li data-md>
-     <p>A power-saving mode of the user agent.</p>
-    <li data-md>
-     <p>A setting in the user agent that asks pages to use less power.</p>
-   </ul>
-   <p>The user agent must not report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce①">reduce</a> because the device is running on battery,
-because of the battery level, or because of the device’s temperature or load, unless a power-saving mode
-is on because of it.</p>
+   <p>In a <a data-link-type="dfn" href="https://drafts.csswg.org/mediaqueries-5/#boolean-context" id="ref-for-boolean-context">boolean context</a>, the feature is always true.</p>
+   <p>The list of keywords is closed. A user agent must report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-other" id="ref-for-valdef-media-form-factor-other①">other</a> for a kind of device with no keyword,
+and must not invent keywords. New keywords are added by revising this specification.</p>
+   <div class="example" id="example-multiple">
+    <a class="self-link" href="#example-multiple"></a>
+    On a watch, both of these match, because the device’s form factors are <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-watch" id="ref-for-valdef-media-form-factor-watch">watch</a> and
+    <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile①">mobile</a>:
+
+    
+<pre class="highlight"><c- n>@media</c-> <c- p>(</c->form-factor: watch<c- p>)</c-> <c- p>{</c-> … <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->form-factor: mobile<c- p>)</c-> <c- p>{</c-> … <c- p>}</c->
+</pre>
+    <p>A page that wants phones but not watches says so:</p>
+<pre class="highlight"><c- n>@media</c-> <c- p>(</c->form-factor: mobile<c- p>)</c-> and <c- p>(</c->not <c- p>(</c->form-factor: watch<c- p>))</c-> <c- p>{</c-> … <c- p>}</c->
+</pre>
+   </div>
+   <h3 class="heading settled" data-level="2.1" id="source"><span class="secno">2.1. </span><span class="content">Where the value comes from</span><a class="self-link" href="#source"></a></h3>
+   <p>A user agent that implements <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a> must report the same form factors that it reports in
+<code>Sec-CH-UA-Form-Factors</code> and in <code>navigator.userAgentData.getHighEntropyValues(["formFactors"])</code>
+for the document, lowercased, plus <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv①">tv</a> where <a href="#tv">§ 2.2 Televisions</a> applies.</p>
+   <p>A user agent that doesn’t implement those must report the kinds of device that match the definitions above.</p>
+   <p>The form factors must agree with the platform the user agent presents <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>. If the user agent
+presents itself as a desktop system, as browsers do in a "request desktop site" mode, the document’s form factors are
+<a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop">desktop</a>.</p>
+   <h3 class="heading settled" data-level="2.2" id="tv"><span class="secno">2.2. </span><span class="content">Televisions</span><a class="self-link" href="#tv"></a></h3>
+   <p><code>Sec-CH-UA-Form-Factors</code> has no value for a television, so a television browser that implements it reports
+something else, usually <code>"Desktop"</code>. A user agent must report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv②">tv</a> for a television or
+set-top device even so.</p>
    <div class="note" role="note">
-    The feature doesn’t change what the user agent does itself. A user agent can slow down timers or
-    lower frame rates in a power-saving mode whether or not pages use this feature. The feature is
-    independent of <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion" id="ref-for-descdef-media-prefers-reduced-motion">prefers-reduced-motion</a> and <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data" id="ref-for-descdef-media-prefers-reduced-data">prefers-reduced-data</a>: saving power
-    doesn’t mean the user wants less motion, and it doesn’t mean the network is expensive.
+    This is the one place where the feature and the client hint can disagree, and it should be fixed in the hint
+    rather than here: a page on a television needs to know, and the client hint’s own rule is that a value is added
+    "when there is a compelling use-case". See <a href="#open-issues">§ 6 Open issues</a>.
 </div>
-   <h3 class="heading settled" data-level="2.1" id="changes"><span class="secno">2.1. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
-   <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery" id="ref-for-delayed-change-delivery">delayed change delivery</a> <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a>, with a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay" id="ref-for-maximum-delay">maximum delay</a> of
-60 seconds and a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval" id="ref-for-minimum-interval">minimum interval</a> of 10 minutes.</p>
+   <h3 class="heading settled" data-level="2.3" id="changes"><span class="secno">2.3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
+   <p>The value is determined when the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document①">document</a> is created, and doesn’t change while the document exists.</p>
+   <h3 class="heading settled" data-level="2.4" id="frames"><span class="secno">2.4. </span><span class="content">Frames</span><a class="self-link" href="#frames"></a></h3>
+   <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure" id="ref-for-frame-scoped-exposure">frame-scoped exposure</a> <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a>. Its policy-controlled feature is
+"<code>ch-ua-form-factors</code>", the one that already delegates the client hint <a data-link-type="biblio" href="#biblio-client-hints-infrastructure" title="Client Hints Infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]</a>,
+whose default allowlist is <code>'self'</code>.</p>
+   <p>In a document that isn’t <a data-link-type="dfn" href="https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use" id="ref-for-allowed-to-use">allowed to use</a> it, the feature takes its <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value" id="ref-for-restricted-value">restricted value</a>, which is the
+<a data-link-type="dfn" href="#coarse-form-factor" id="ref-for-coarse-form-factor">coarse form factor</a>.</p>
    <div class="note" role="note">
-    A power-saving mode saves energy over minutes and hours, so a page that adapts up to a minute late
-    loses little. <a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a> explains the values.
+    A site that delegates the client hint to a frame, so that the frame’s server can adapt, gives the frame’s style
+    sheets the same information: <code>Permissions-Policy: ch-ua-form-factors=(self "widgets.example")</code>.
 </div>
-   <h3 class="heading settled" data-level="2.2" id="reduced-exposure"><span class="secno">2.2. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
-   <p>The feature is <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control" id="ref-for-under-user-control">under user control</a>. In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, the feature is
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference">no-preference</a>.</p>
-   <p>The user agent may also let the user choose to report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce②">reduce</a> at all times,
-which saves power on every page and reveals nothing, because the value never changes.</p>
+   <h3 class="heading settled" data-level="2.5" id="reduced-exposure"><span class="secno">2.5. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
+   <p>The feature is <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control" id="ref-for-under-user-control">under user control</a>. In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, and when the user turns the feature off, it
+is the <a data-link-type="dfn" href="#coarse-form-factor" id="ref-for-coarse-form-factor①">coarse form factor</a>.</p>
+   <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="coarse-form-factor">coarse form factor</dfn> of a document is <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile②">mobile</a> if the user agent reports itself as
+mobile, in the <code>Sec-CH-UA-Mobile</code> client hint, in <code>navigator.userAgentData.mobile</code>, or with a
+"Mobile" token in its <code>User-Agent</code> header, and <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop①">desktop</a> otherwise.</p>
+   <div class="note" role="note">
+    The coarse form factor is the bit that every site already receives on every request, so a document that gets only
+    it learns nothing new. A watch or a car falls back to <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile③">mobile</a>, and a television to
+    <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop②">desktop</a>, which is what a page assumes today.
+</div>
    <h2 class="heading settled" data-level="3" id="privacy"><span class="secno">3. </span><span class="content">Privacy considerations</span><a class="self-link" href="#privacy"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="privacy-exposed"><span class="secno">3.1. </span><span class="content">What the feature reveals</span><a class="self-link" href="#privacy-exposed"></a></h3>
-   <p>Directly, the feature reveals whether a power-saving mode is on. Less obviously, it can also reveal:</p>
+   <p>The feature reveals which kinds of device, from a closed list of nine, the page is being shown on. It doesn’t reveal
+the device’s model, manufacturer, screen size, operating system version, or price.</p>
+   <p>Unlike the platform <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>, this is more than every site receives today. Of the signals it
+corresponds to, only the mobile bit is sent to every site by default; the rest of
+<code>Sec-CH-UA-Form-Factors</code> is a hint a site must ask for, and which isn’t shared with cross-origin frames
+unless the top-level site delegates it. This specification keeps both of those limits: <a href="#frames">§ 2.4 Frames</a> uses the same
+policy, and <a href="#reduced-exposure">§ 2.5 Reduced exposure</a> falls back to the mobile bit.</p>
+   <h3 class="heading settled" data-level="3.2" id="privacy-fingerprinting"><span class="secno">3.2. </span><span class="content">Fingerprinting</span><a class="self-link" href="#privacy-fingerprinting"></a></h3>
+   <p>Most users are on a phone, a tablet, or a computer, so for most users the feature reveals little more than the
+mobile bit does. The users it identifies are the ones on uncommon devices: a watch, a headset, an e-ink reader, or a
+car. If one user in a thousand browses from a watch, the feature tells a site about 10 bits about that user.</p>
+   <p>Two things limit the cost:</p>
    <ul>
     <li data-md>
-     <p><strong>That the battery is low.</strong> Most power-saving modes turn on, or offer to, when the battery reaches a
-level such as 20%. A change to <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce③">reduce</a> on a device where the user usually
-doesn’t turn the mode on by hand suggests that the battery just reached that level.</p>
+     <p>Those devices are already recognizable without this feature. A watch has a tiny viewport and often round safe-area
+insets; an e-ink reader reports <span class="css">slow</span> and often <span class="css">0</span>; a headset reports <span class="css">environment-blending</span>
+other than <span class="css">opaque</span>; a car’s browser has a distinctive user agent string. The feature
+mostly saves authors from guessing, rather than revealing something new.</p>
     <li data-md>
-     <p><strong>That the device started charging.</strong> Some modes turn off when the device is plugged in, or when it
-has charged past a level such as 80%.</p>
-    <li data-md>
-     <p><strong>That the device has a battery.</strong> This distinguishes laptops from desktop computers, which the
-user-agent string doesn’t.</p>
-    <li data-md>
-     <p><strong>Habits.</strong> Over days, the times at which the mode turns on show when the user is away from a charger.</p>
+     <p>The list is closed, so an unusual device reports <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-other" id="ref-for-valdef-media-form-factor-other②">other</a> rather than naming itself, and the value is
+restricted in frames and in reduced-exposure contexts.</p>
    </ul>
-   <p>The feature doesn’t reveal the battery level, whether the device is charging, how long the battery will
-last, or which mode is on, and the user agent never reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce④">reduce</a> because of
-the battery level alone.</p>
-   <h3 class="heading settled" data-level="3.2" id="privacy-existing"><span class="secno">3.2. </span><span class="content">What is already exposed</span><a class="self-link" href="#privacy-existing"></a></h3>
-   <p>In browsers that support it, the Battery Status API reveals the battery level and charging state to
-script. Firefox and Safari removed that API because of the linking attack described in
-<a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a>.</p>
-   <p>Some browsers lower the rate of <code>requestAnimationFrame()</code> callbacks in a power-saving mode, and
-script can measure that rate. Where they do, script can often already tell that a mode is on. What this
-feature adds is that style sheets can tell without script, and that browsers that don’t throttle reveal
-it too.</p>
-   <h3 class="heading settled" data-level="3.3" id="privacy-fingerprinting"><span class="secno">3.3. </span><span class="content">Fingerprinting</span><a class="self-link" href="#privacy-fingerprinting"></a></h3>
-   <p>The feature has two values, and a device’s value changes, often daily. It is a poor stable identifier,
-but while the mode is on it adds −log<sub>2</sub>(<var>p</var>) bits to a fingerprint, where <var>p</var> is the fraction of
-users whose mode is on at that moment. If 10% of users have a power-saving mode on at a given time, a
-user whose mode is on reveals 3.3 bits, and a user whose mode is off reveals 0.15 bits.</p>
-   <p>Mitigations:</p>
+   <p>The value never changes while a document exists, so it can’t link two documents by the moment it changed.</p>
+   <h3 class="heading settled" data-level="3.3" id="privacy-third-party"><span class="secno">3.3. </span><span class="content">Embedded content</span><a class="self-link" href="#privacy-third-party"></a></h3>
+   <p>Cross-origin frames get the <a data-link-type="dfn" href="#coarse-form-factor" id="ref-for-coarse-form-factor②">coarse form factor</a> unless the embedding page delegates
+<code>ch-ua-form-factors</code> to them, which is exactly the rule the client hint already follows. A tracker
+embedded across many sites therefore learns the same bit it already gets from the <code>User-Agent</code> header.</p>
+   <h3 class="heading settled" data-level="3.4" id="privacy-inference"><span class="secno">3.4. </span><span class="content">Sensitive inferences</span><a class="self-link" href="#privacy-inference"></a></h3>
+   <p>A device can suggest things about its owner. A car’s browser says the user is in a vehicle; a headset says they are
+wearing one; an e-ink reader or a watch suggests what someone bought. None of this is precise, and none of it
+approaches what the same page learns from its own content and the user’s IP address, but a site can use the value to
+decide who is worth serving: to charge differently, or to send an unusable page to devices its author didn’t like.
+See <a href="#security-discrimination">§ 4.2 Refusing to serve devices</a>.</p>
+   <h3 class="heading settled" data-level="3.5" id="privacy-residual"><span class="secno">3.5. </span><span class="content">Remaining risks</span><a class="self-link" href="#privacy-residual"></a></h3>
    <ul>
     <li data-md>
-     <p>Two values only; no levels or mode names.</p>
+     <p>A user on an uncommon device is identified by the value in any document the value reaches, which is the top-level
+document and frames that the site delegates to.</p>
     <li data-md>
-     <p><a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference①">no-preference</a> in <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context①">reduced-exposure contexts</a>.</p>
-    <li data-md>
-     <p>The option to report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑤">reduce</a> at all times, which makes the value constant.</p>
-   </ul>
-   <h3 class="heading settled" data-level="3.4" id="privacy-correlation"><span class="secno">3.4. </span><span class="content">Linking visits by when the value changes</span><a class="self-link" href="#privacy-correlation"></a></h3>
-   <p>When the mode turns on, every open document could learn of it at the same moment. A tracker present on two
-sites the user has open would see the change at the same moment in both and conclude that the two visits
-belong to one user. This is how the battery level was used to link visits <a data-link-type="biblio" href="#biblio-leaking-battery" title="The leaking battery: A privacy analysis of the HTML5 Battery Status API">[LEAKING-BATTERY]</a>, and a
-power-saving mode that turns on at a battery level has the same weakness.</p>
-   <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery" id="ref-for-delayed-change-delivery①">delayed change delivery</a>, so:</p>
-   <ul>
-    <li data-md>
-     <p>A document that is hidden when the mode changes learns of the change only when it becomes visible.
-That moment is already revealed by the <code>visibilitychange</code> event, so the document learns
-nothing about when the mode changed. On phones, where power-saving modes matter most, usually only
-one document is visible at a time.</p>
-    <li data-md>
-     <p>A document that is visible learns of the change after a random delay of up to 60 seconds, chosen for
-each document. Two visible documents learn of the same change up to a minute apart.</p>
-    <li data-md>
-     <p>A document learns of at most one change every 10 minutes, so a mode that keeps turning on and off,
-such as while a laptop is plugged in and unplugged, reveals fewer moments.</p>
-   </ul>
-   <p>Together these mean that a tracker needs two of its documents to be visible when the mode changes, on
-several separate occasions, to link visits with confidence. <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a> works through the
-numbers. This is a real cost to a tracker but not a guarantee, which is why the feature also reveals so
-little: a mode, not a level.</p>
-   <h3 class="heading settled" data-level="3.5" id="privacy-without-script"><span class="secno">3.5. </span><span class="content">Reading the feature without script</span><a class="self-link" href="#privacy-without-script"></a></h3>
-   <p>A style sheet can report the value to a server by loading a resource under the query, including in HTML
-email and on pages with script blocked, and a rule that loads a resource only after the value changes
-reports roughly when it changed. The value is one bit, and documents where script is disabled for privacy
-reasons are <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context②">reduced-exposure contexts</a>, where the feature is always
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference②">no-preference</a>.</p>
-   <h3 class="heading settled" data-level="3.6" id="privacy-third-party"><span class="secno">3.6. </span><span class="content">Embedded content</span><a class="self-link" href="#privacy-third-party"></a></h3>
-   <p>The feature has the same value in cross-origin frames as in the top-level document. Advertisements and
-embedded video account for much of the energy that pages use, and they are the content that most needs to
-do less, so restricting the feature in frames would defeat its purpose. The feature is not restricted in
-frames; the delays above apply there too.</p>
-   <h3 class="heading settled" data-level="3.7" id="privacy-inference"><span class="secno">3.7. </span><span class="content">Sensitive inferences</span><a class="self-link" href="#privacy-inference"></a></h3>
-   <p>A low battery can be exploited. Businesses have observed that people whose battery is about to run out are
-more willing to accept a higher price or a worse offer, because they can’t shop around. A page could use
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑥">reduce</a> as a sign of a low battery and change its offers.</p>
-   <p>Mitigations: the value is not a battery level, many users turn the mode on by hand, and changes arrive late.
-Users who are concerned can turn the feature off, or report <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑦">reduce</a> at all times.</p>
-   <h3 class="heading settled" data-level="3.8" id="privacy-residual"><span class="secno">3.8. </span><span class="content">Remaining risks</span><a class="self-link" href="#privacy-residual"></a></h3>
-   <ul>
-    <li data-md>
-     <p>A tracker that sees the same user’s documents visible during several changes can still link them.</p>
-    <li data-md>
-     <p>Where a user rarely turns the mode on by hand, a change to <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑧">reduce</a> still
-suggests a battery level of about 20%.</p>
+     <p>The fallback for reduced-exposure contexts is a real loss of function for those same users: a watch in a private
+window gets the phone layout.</p>
    </ul>
    <h2 class="heading settled" data-level="4" id="security"><span class="secno">4. </span><span class="content">Security considerations</span><a class="self-link" href="#security"></a></h2>
-   <ul>
-    <li data-md>
-     <p>The feature can’t change whether a power-saving mode is on.</p>
-    <li data-md>
-     <p>A page can do more work when no power-saving mode is on, for example to run a cryptocurrency miner
-only when the user is less likely to notice. Pages can already do this with the Battery Status API or
-by measuring frame rates. The user agent’s own limits on background work are the protection against it.</p>
-    <li data-md>
-     <p>The feature is a hint for efficiency. Pages must not use it to decide anything that matters for security.</p>
-   </ul>
+   <h3 class="heading settled" data-level="4.1" id="security-not-detection"><span class="secno">4.1. </span><span class="content">It is not feature detection</span><a class="self-link" href="#security-not-detection"></a></h3>
+   <p>The kind of device doesn’t say which features work, how large the viewport is, or whether there is a pointer. Pages
+should keep using <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer" id="ref-for-descdef-media-pointer">pointer</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover" id="ref-for-descdef-media-hover">hover</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update" id="ref-for-descdef-media-update">update</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block" id="ref-for-descdef-media-overflow-block">overflow-block</a>,
+<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending" id="ref-for-descdef-media-environment-blending">environment-blending</a>, the viewport features, and <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a> for those, and use this feature for the
+things they can’t express: how far away the screen is, how much attention the user can spare, and what kind of
+control the user holds.</p>
+   <h3 class="heading settled" data-level="4.2" id="security-discrimination"><span class="secno">4.2. </span><span class="content">Refusing to serve devices</span><a class="self-link" href="#security-discrimination"></a></h3>
+   <p>The clearest misuse is a page that decides some devices don’t deserve content: a site that shows a television or an
+e-ink reader a "please use a supported device" message rather than a page that works. This has a long history with
+user agent sniffing, and it is the reason CSS deprecated its device-class media types. Authors should treat the
+feature as a way to adapt, never as a way to exclude, and the fallbacks in this specification are designed so that an
+unrecognized device gets a usable layout rather than nothing.</p>
+   <h3 class="heading settled" data-level="4.3" id="security-automotive"><span class="secno">4.3. </span><span class="content">Cars</span><a class="self-link" href="#security-automotive"></a></h3>
+   <p><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-automotive" id="ref-for-valdef-media-form-factor-automotive">automotive</a> exists so a page can be safer to use while driving: larger targets, less text, no
+animation. A page could do the opposite. Nothing in CSS can prevent that, and vehicle systems restrict what browsers
+may show while moving; this feature doesn’t change those restrictions, and must not be treated as permission to show
+anything.</p>
+   <h3 class="heading settled" data-level="4.4" id="security-not-a-decision"><span class="secno">4.4. </span><span class="content">Not an input to decisions that matter</span><a class="self-link" href="#security-not-a-decision"></a></h3>
+   <p>The user controls the value: desktop mode changes it, and so does turning the feature off. Pages must not use it for
+entitlement, fraud scoring, or any security decision.</p>
    <h2 class="heading settled" data-level="5" id="alternate-proposals"><span class="secno">5. </span><span class="content">Alternate proposals</span><a class="self-link" href="#alternate-proposals"></a></h2>
-   <h3 class="heading settled" data-level="5.1" id="alt-name"><span class="secno">5.1. </span><span class="content"><span class="css">(power-saver: active)</span></span><a class="self-link" href="#alt-name"></a></h3>
-   <p>A feature named for the mode rather than the preference reads naturally. It was not chosen because
-<a data-link-type="biblio" href="#biblio-mediaqueries-5" title="Media Queries Level 5">[MEDIAQUERIES-5]</a> names features that reflect a user’s choice with <code>prefers-</code>, such as
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data" id="ref-for-descdef-media-prefers-reduced-data①">prefers-reduced-data</a>, and a power-saving mode is a choice even when the device makes it for the
-user at a level they picked.</p>
-   <h3 class="heading settled" data-level="5.2" id="alt-battery"><span class="secno">5.2. </span><span class="content">Battery level and charging features</span><a class="self-link" href="#alt-battery"></a></h3>
-   <p>Features such as <code>(battery-level &lt; 20%)</code> and <code>(power-source: battery)</code> would let
-pages make finer decisions. They were not chosen because the battery level is exactly the value that was
-used to link visits <a data-link-type="biblio" href="#biblio-leaking-battery" title="The leaking battery: A privacy analysis of the HTML5 Battery Status API">[LEAKING-BATTERY]</a>, and because a page that is asked to save power doesn’t need to
-know why.</p>
-   <h3 class="heading settled" data-level="5.3" id="alt-frames"><span class="secno">5.3. </span><span class="content">Restricting the feature in frames</span><a class="self-link" href="#alt-frames"></a></h3>
-   <p>Cross-origin frames could get <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference③">no-preference</a> unless the embedding page allowed
-more. This was not chosen because embedded advertisements and video are the content that uses the most
-energy, and embedding pages rarely change their defaults.</p>
+   <h3 class="heading settled" data-level="5.1" id="alt-capabilities"><span class="secno">5.1. </span><span class="content">Only capability features</span><a class="self-link" href="#alt-capabilities"></a></h3>
+   <p>CSS could keep describing capabilities and let pages infer the rest, adding features for the qualities that are
+missing, such as viewing distance or the kind of control the user holds. That is how the CSS Working Group has
+handled similar requests, turning "what device is this" into "what does it do", as the Device Posture API did by
+exposing <span class="css">folded</span> rather than a device model <a data-link-type="biblio" href="#biblio-device-posture" title="Device Posture API">[DEVICE-POSTURE]</a>. It was not chosen because the
+missing qualities are many and correlated, and because every browser already computes exactly this classification
+for <code>Sec-CH-UA-Form-Factors</code>: authors would be inferring something the user agent already knows. A
+reviewer may still prefer this direction, and <a href="#open-issues">§ 6 Open issues</a> asks the question.</p>
+   <h3 class="heading settled" data-level="5.2" id="alt-media-types"><span class="secno">5.2. </span><span class="content">Reviving the media types</span><a class="self-link" href="#alt-media-types"></a></h3>
+   <p>CSS had <code>@media tv</code>, <code>@media handheld</code>, and <code>@media projection</code>, and deprecated
+them. They failed because each keyword stood for a bundle of assumptions about size, input, and capability, and
+authors used them for layout, which viewport queries do better. This feature is narrower: the device class alone,
+with capabilities and sizes left to the features that describe them, and with rules that keep an unrecognized device
+working.</p>
+   <h3 class="heading settled" data-level="5.3" id="alt-screen-size"><span class="secno">5.3. </span><span class="content">Physical screen size</span><a class="self-link" href="#alt-screen-size"></a></h3>
+   <p>A feature for the physical size of the display would separate a television from a laptop, and a watch from a phone.
+It was not chosen because it is a continuous value, and therefore a much larger fingerprinting surface than a closed
+list of nine keywords, and because <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor③">form-factor</a> answers the question that authors actually ask.</p>
+   <h3 class="heading settled" data-level="5.4" id="alt-hint-only"><span class="secno">5.4. </span><span class="content">Leaving it to the client hint</span><a class="self-link" href="#alt-hint-only"></a></h3>
+   <p>Sites can already request <code>Sec-CH-UA-Form-Factors</code> and serve different CSS. That works only for pages
+built on a server that varies its response, doesn’t work for static files, caches badly, and doesn’t work at all
+where script and server negotiation aren’t available, such as an HTML email or a document opened from disk.</p>
    <h2 class="heading settled" data-level="6" id="open-issues"><span class="secno">6. </span><span class="content">Open issues</span><a class="self-link" href="#open-issues"></a></h2>
-   <p class="issue" id="issue-0e16690c"><a class="self-link" href="#issue-0e16690c"></a>Is 60 seconds the right maximum delay? A longer delay makes linking harder and adapts
-more slowly.
+   <p class="issue" id="issue-ae00b4b1"><a class="self-link" href="#issue-ae00b4b1"></a><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv③">tv</a> has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
+specification requires a value the client hint can’t express. The right fix is to add "TV" to the hint. Until then,
+should the feature report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv④">tv</a> at all, or wait?
 
 </p>
-   <p class="issue" id="issue-a0c35425"><a class="self-link" href="#issue-a0c35425"></a>Should there be a <code>Sec-CH-Prefers-Reduced-Power</code> client hint, like the hints
-for other user preference media features, so that servers can send lighter pages? A hint would reveal the
-value to servers, in every request that asks for it, without any of the delays.
+   <p class="issue" id="issue-68cb725e"><a class="self-link" href="#issue-68cb725e"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-eink" id="ref-for-valdef-media-form-factor-eink">eink</a> exist when <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update" id="ref-for-descdef-media-update①">update</a> already reports <span class="css">slow</span>? They aren’t
+the same thing, since a slow-updating LCD isn’t e-ink, but they overlap more than the other values do.
 
 </p>
-   <p class="issue" id="issue-be52fe03"><a class="self-link" href="#issue-be52fe03"></a>Should a user agent that reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce" id="ref-for-valdef-media-prefers-reduced-power-reduce⑨">reduce</a> also match
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion" id="ref-for-descdef-media-prefers-reduced-motion①">prefers-reduced-motion</a>? Saving power often means less animation, but the two are different
-preferences.
+   <p class="issue" id="issue-af2dfd9b"><a class="self-link" href="#issue-af2dfd9b"></a>Is matching against a set the right model for a discrete media feature? Every other discrete feature
+in <a data-link-type="biblio" href="#biblio-mediaqueries-5" title="Media Queries Level 5">[MEDIAQUERIES-5]</a> has one value at a time, and a set makes <span class="css">(form-factor: mobile)</span> true on a watch, which
+some authors will not expect.
+
+</p>
+   <p class="issue" id="issue-a520d4cf"><a class="self-link" href="#issue-a520d4cf"></a>Should the restricted value in frames be the <a data-link-type="dfn" href="#coarse-form-factor" id="ref-for-coarse-form-factor③">coarse form factor</a>, or should a frame see nothing at
+all? The coarse value is what the frame’s own requests already carry, but it also means a frame always gets an
+answer that looks authoritative.
 
 
 </p>
@@ -2521,26 +2566,27 @@ preferences.
    <dl>
     <dt data-md>What information does this feature expose, and for what purposes?
     <dd data-md>
-     <p>Whether a power-saving mode is on, so that pages can use less energy.</p>
+     <p>Which kinds of device, from a closed list of nine, the page is shown on, so pages can adapt their design to the
+device rather than guess from its capabilities.</p>
     <dt data-md>Do features in your specification expose the minimum amount of information necessary?
     <dd data-md>
-     <p>Yes. One of two values, with no battery level, charging state, or mode name.</p>
+     <p>Yes. A closed list, with no model, size, or version, limited in frames and reduced to the mobile bit where
+fingerprinting protections apply.</p>
     <dt data-md>Do the features expose personal information, PII, or information derived from either?
     <dd data-md>
-     <p>No, although changes observed over days reveal charging habits.</p>
+     <p>The kind of device can suggest what someone owns or that they are in a vehicle. See <a href="#privacy-inference">§ 3.4 Sensitive inferences</a>.</p>
     <dt data-md>How do the features deal with sensitive information?
     <dd data-md>
-     <p>A low battery can be exploited in pricing. See <a href="#privacy-inference">§ 3.7 Sensitive inferences</a>.</p>
+     <p>The same limits as the client hint it mirrors, plus a fallback to the bit every site already receives.</p>
     <dt data-md>Does data exposed carry related but distinct information that may not be obvious to users?
     <dd data-md>
-     <p>Yes: that the battery is at a level such as 20%, that the device started charging, and that it has a
-battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</p>
+     <p>Yes: owning a watch, a headset, or an e-ink reader, and being in a car.</p>
     <dt data-md>Do the features introduce state that persists across browsing sessions?
     <dd data-md>
      <p>No.</p>
     <dt data-md>Do the features expose information about the underlying platform to origins?
     <dd data-md>
-     <p>Yes, the state of a power-saving mode.</p>
+     <p>Yes, the device class the user agent already computes for <code>Sec-CH-UA-Form-Factors</code>.</p>
     <dt data-md>Does this specification allow an origin to send data to the underlying platform?
     <dd data-md>
      <p>No.</p>
@@ -2549,7 +2595,7 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>Do features enable new script execution or loading mechanisms?
     <dd data-md>
-     <p>No. As with any media query, a page can load different resources depending on the value.</p>
+     <p>No.</p>
     <dt data-md>Do features allow an origin to access other devices?
     <dd data-md>
      <p>No.</p>
@@ -2558,15 +2604,15 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>What temporary identifiers do the features create or expose to the web?
     <dd data-md>
-     <p>The moment the value changes could act as one. Delayed change delivery limits this; see
-<a href="#privacy-correlation">§ 3.4 Linking visits by when the value changes</a>.</p>
+     <p>None. The value doesn’t change while a document exists.</p>
     <dt data-md>How does this specification distinguish between behavior in first-party and third-party contexts?
     <dd data-md>
-     <p>It doesn’t, because embedded content uses much of the energy. See <a href="#privacy-third-party">§ 3.6 Embedded content</a>.</p>
+     <p>Cross-origin frames get the coarse form factor unless the embedding page delegates
+<code>ch-ua-form-factors</code>, the same rule the client hint follows.</p>
     <dt data-md>How do the features work in the context of a browser’s Private Browsing or Incognito mode?
     <dd data-md>
-     <p>Private modes that protect against fingerprinting are reduced-exposure contexts, where the value is
-<a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-no-preference" id="ref-for-valdef-media-prefers-reduced-power-no-preference④">no-preference</a>.</p>
+     <p>Modes that protect against fingerprinting are reduced-exposure contexts, where the feature is the coarse form
+factor.</p>
     <dt data-md>Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
     <dd data-md>
      <p>Yes.</p>
@@ -2575,20 +2621,20 @@ battery. See <a href="#privacy-exposed">§ 3.1 What the feature reveals</a>.</
      <p>No.</p>
     <dt data-md>What happens when a document that uses your feature is kept alive in BFCache?
     <dd data-md>
-     <p>When the document is restored, it becomes visible, and it gets the current value at that moment.</p>
+     <p>It keeps the value it was created with.</p>
     <dt data-md>What happens when a document that uses your feature gets disconnected?
     <dd data-md>
-     <p>Nothing is kept. A document that isn’t fully active gets no updates.</p>
+     <p>Nothing is kept.</p>
     <dt data-md>Does your spec define when and how new kinds of errors should be raised?
     <dd data-md>
-     <p>No. An unknown value makes the query unknown, as for any media feature.</p>
+     <p>No.</p>
     <dt data-md>Does your feature allow sites to learn about the user’s use of assistive technology?
     <dd data-md>
-     <p>No.</p>
+     <p>No. A device used as an accessibility aid, such as a switch-controlled tablet, reports the same value as any other
+tablet.</p>
     <dt data-md>What should this questionnaire have asked?
     <dd data-md>
-     <p>Whether a feature can be read without script, for example by a style sheet in an email, and whether a
-change in its value can link contexts by timing.</p>
+     <p>Whether a feature lets a site decide that some users' devices aren’t worth serving.</p>
    </dl>
   </main>
   <div data-fill-with="conformance">
@@ -2756,10 +2802,18 @@ change in its value can link contexts by timing.</p>
   <h2 class="heading no-num no-ref settled" id="index"><span class="content">Index</span><a class="self-link" href="#index"></a></h2>
   <h3 class="heading no-num no-ref settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="index">
-   <li><a href="#valdef-media-prefers-reduced-power-no-preference">no-preference</a><span>, in § 2</span>
-   <li><a href="#power-saving-mode">power-saving mode</a><span>, in § 2</span>
-   <li><a href="#descdef-media-prefers-reduced-power">prefers-reduced-power</a><span>, in § 2</span>
-   <li><a href="#valdef-media-prefers-reduced-power-reduce">reduce</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-automotive">automotive</a><span>, in § 2</span>
+   <li><a href="#coarse-form-factor">coarse form factor</a><span>, in § 2.5</span>
+   <li><a href="#valdef-media-form-factor-desktop">desktop</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-eink">eink</a><span>, in § 2</span>
+   <li><a href="#descdef-media-form-factor">form-factor</a><span>, in § 2</span>
+   <li><a href="#form-factors">form factors</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-mobile">mobile</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-other">other</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-tablet">tablet</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-tv">tv</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-watch">watch</a><span>, in § 2</span>
+   <li><a href="#valdef-media-form-factor-xr">xr</a><span>, in § 2</span>
   </ul>
   <h3 class="heading no-num no-ref settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
   <ul class="index">
@@ -2767,6 +2821,7 @@ change in its value can link contexts by timing.</p>
     <a data-link-type="biblio">[CSS-CONDITIONAL-3]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="5f1b7f60">@media</span>
+     <li><span class="dfn-paneled" id="c1ebc639">@supports</span>
     </ul>
    <li>
     <a data-link-type="biblio">[CSS-VALUES-4]</a> defines the following terms:
@@ -2774,13 +2829,21 @@ change in its value can link contexts by timing.</p>
      <li><span class="dfn-paneled" id="6ec67710">|</span>
     </ul>
    <li>
+    <a data-link-type="biblio">[DOM]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="a973e0fe">document</span>
+    </ul>
+   <li>
+    <a data-link-type="biblio">[HTML]</a> defines the following terms:
+    <ul>
+     <li><span class="dfn-paneled" id="3610bd67">allowed to use</span>
+    </ul>
+   <li>
     <a data-link-type="biblio">[MEDIA-FEATURE-PRIVACY]</a> defines the following terms:
     <ul>
-     <li><span class="dfn-paneled" id="fd6386ba">actual value</span>
-     <li><span class="dfn-paneled" id="34f14525">delayed change delivery</span>
-     <li><span class="dfn-paneled" id="209cb73a">maximum delay</span>
-     <li><span class="dfn-paneled" id="89c69bc5">minimum interval</span>
+     <li><span class="dfn-paneled" id="bf5567cf">frame-scoped exposure</span>
      <li><span class="dfn-paneled" id="5527ea1d">reduced-exposure context</span>
+     <li><span class="dfn-paneled" id="ce815f50">restricted value</span>
      <li><span class="dfn-paneled" id="7878bc99">system media feature</span>
      <li><span class="dfn-paneled" id="dc285ef9">under user control</span>
     </ul>
@@ -2788,8 +2851,11 @@ change in its value can link contexts by timing.</p>
     <a data-link-type="biblio">[MEDIAQUERIES-5]</a> defines the following terms:
     <ul>
      <li><span class="dfn-paneled" id="2e6703e6">boolean context</span>
-     <li><span class="dfn-paneled" id="afdf1526">prefers-reduced-data</span>
-     <li><span class="dfn-paneled" id="b0f4a94b">prefers-reduced-motion</span>
+     <li><span class="dfn-paneled" id="5c01eb94">environment-blending</span>
+     <li><span class="dfn-paneled" id="d078c482">hover</span>
+     <li><span class="dfn-paneled" id="92c8a448">overflow-block</span>
+     <li><span class="dfn-paneled" id="4dba9df7">pointer</span>
+     <li><span class="dfn-paneled" id="ba7479b5">update</span>
     </ul>
   </ul>
   <h2 class="heading no-num no-ref settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
@@ -2799,6 +2865,10 @@ change in its value can link contexts by timing.</p>
    <dd>Chris Lilley; David Baron; Elika Etemad. <a href="https://drafts.csswg.org/css-conditional-3/"><cite>CSS Conditional Rules Module Level 3</cite></a>. URL: <a href="https://drafts.csswg.org/css-conditional-3/">https://drafts.csswg.org/css-conditional-3/</a>
    <dt id="biblio-css-values-4">[CSS-VALUES-4]
    <dd>Tab Atkins Jr.; Elika Etemad. <a href="https://drafts.csswg.org/css-values-4/"><cite>CSS Values and Units Module Level 4</cite></a>. URL: <a href="https://drafts.csswg.org/css-values-4/">https://drafts.csswg.org/css-values-4/</a>
+   <dt id="biblio-dom">[DOM]
+   <dd>Anne van Kesteren. <a href="https://dom.spec.whatwg.org/"><cite>DOM Standard</cite></a>. Living Standard. URL: <a href="https://dom.spec.whatwg.org/">https://dom.spec.whatwg.org/</a>
+   <dt id="biblio-html">[HTML]
+   <dd>Anne van Kesteren; et al. <a href="https://html.spec.whatwg.org/multipage/"><cite>HTML Standard</cite></a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
    <dt id="biblio-media-feature-privacy">[MEDIA-FEATURE-PRIVACY]
    <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/"><cite>Privacy Protections for Media Features</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/</a>
    <dt id="biblio-mediaqueries-5">[MEDIAQUERIES-5]
@@ -2808,10 +2878,16 @@ change in its value can link contexts by timing.</p>
   </dl>
   <h3 class="heading no-num no-ref settled" id="informative"><span class="content">Non-Normative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
-   <dt id="biblio-leaking-battery">[LEAKING-BATTERY]
-   <dd>Łukasz Olejnik; et al. <a href="https://eprint.iacr.org/2015/616"><cite>The leaking battery: A privacy analysis of the HTML5 Battery Status API</cite></a>. 2015. URL: <a href="https://eprint.iacr.org/2015/616">https://eprint.iacr.org/2015/616</a>
+   <dt id="biblio-client-hints-infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]
+   <dd><a href="https://wicg.github.io/client-hints-infrastructure/"><cite>Client Hints Infrastructure</cite></a>. URL: <a href="https://wicg.github.io/client-hints-infrastructure/">https://wicg.github.io/client-hints-infrastructure/</a>
+   <dt id="biblio-device-posture">[DEVICE-POSTURE]
+   <dd><a href="https://www.w3.org/TR/device-posture/"><cite>Device Posture API</cite></a>. URL: <a href="https://www.w3.org/TR/device-posture/">https://www.w3.org/TR/device-posture/</a>
+   <dt id="biblio-platform-media-query">[PLATFORM-MEDIA-QUERY]
+   <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/"><cite>Platform Media Query</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/</a>
    <dt id="biblio-security-privacy-questionnaire">[SECURITY-PRIVACY-QUESTIONNAIRE]
    <dd>Theresa O'Connor; Peter Snyder; Simone Onofri. <a href="https://w3c.github.io/security-questionnaire/"><cite>Self-Review Questionnaire: Security and Privacy</cite></a>. URL: <a href="https://w3c.github.io/security-questionnaire/">https://w3c.github.io/security-questionnaire/</a>
+   <dt id="biblio-ua-client-hints">[UA-CLIENT-HINTS]
+   <dd><a href="https://wicg.github.io/ua-client-hints/"><cite>User-Agent Client Hints</cite></a>. URL: <a href="https://wicg.github.io/ua-client-hints/">https://wicg.github.io/ua-client-hints/</a>
   </dl>
   <h2 class="heading no-num no-ref settled" id="property-index"><span class="content">Property Index</span><a class="self-link" href="#property-index"></a></h2>
   <p>No properties defined.</p>
@@ -2826,29 +2902,34 @@ change in its value can link contexts by timing.</p>
       <th scope="col">Type
     <tbody>
      <tr>
-      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-prefers-reduced-power" id="ref-for-descdef-media-prefers-reduced-power③">prefers-reduced-power</a>
-      <td>no-preference | reduce
+      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor④">form-factor</a>
+      <td>desktop | mobile | tablet | tv | watch | xr | eink | automotive | other
       <td>
       <td>discrete
    </table>
   </div>
   <h2 class="heading no-num no-ref settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">Is 60 seconds the right maximum delay? A longer delay makes linking harder and adapts
-more slowly.
+   <div class="issue"><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv">tv</a> has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
+specification requires a value the client hint can’t express. The right fix is to add "TV" to the hint. Until then,
+should the feature report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv">tv</a> at all, or wait?
 
- <a class="issue-return" href="#issue-0e16690c" title="Jump to section">↵</a></div>
-   <div class="issue">Should there be a <code>Sec-CH-Prefers-Reduced-Power</code> client hint, like the hints
-for other user preference media features, so that servers can send lighter pages? A hint would reveal the
-value to servers, in every request that asks for it, without any of the delays.
+ <a class="issue-return" href="#issue-ae00b4b1" title="Jump to section">↵</a></div>
+   <div class="issue">Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-eink">eink</a> exist when <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update">update</a> already reports <span class="css">slow</span>? They aren’t
+the same thing, since a slow-updating LCD isn’t e-ink, but they overlap more than the other values do.
 
- <a class="issue-return" href="#issue-a0c35425" title="Jump to section">↵</a></div>
-   <div class="issue">Should a user agent that reports <a class="css" data-link-type="maybe" href="#valdef-media-prefers-reduced-power-reduce">reduce</a> also match
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion">prefers-reduced-motion</a>? Saving power often means less animation, but the two are different
-preferences.
+ <a class="issue-return" href="#issue-68cb725e" title="Jump to section">↵</a></div>
+   <div class="issue">Is matching against a set the right model for a discrete media feature? Every other discrete feature
+in <a data-link-type="biblio" href="#biblio-mediaqueries-5" title="Media Queries Level 5">[MEDIAQUERIES-5]</a> has one value at a time, and a set makes <span class="css">(form-factor: mobile)</span> true on a watch, which
+some authors will not expect.
+
+ <a class="issue-return" href="#issue-af2dfd9b" title="Jump to section">↵</a></div>
+   <div class="issue">Should the restricted value in frames be the <a data-link-type="dfn" href="#coarse-form-factor">coarse form factor</a>, or should a frame see nothing at
+all? The coarse value is what the frame’s own requests already carry, but it also means a frame always gets an
+answer that looks authoritative.
 
 
- <a class="issue-return" href="#issue-be52fe03" title="Jump to section">↵</a></div>
+ <a class="issue-return" href="#issue-a520d4cf" title="Jump to section">↵</a></div>
   </div>
 <script>/* Boilerplate: script-dom-helper */
 "use strict";
@@ -3050,22 +3131,34 @@ function parseHTML(markup) {
 "use strict";
 {
 let dfnPanelData = {
-"209cb73a": {"dfnID":"209cb73a","dfnText":"maximum delay","external":true,"refSections":[{"refs":[{"id":"ref-for-maximum-delay"}],"title":"2.1. Changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay"},
-"2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
-"34f14525": {"dfnID":"34f14525","dfnText":"delayed change delivery","external":true,"refSections":[{"refs":[{"id":"ref-for-delayed-change-delivery"}],"title":"2.1. Changes"},{"refs":[{"id":"ref-for-delayed-change-delivery\u2460"}],"title":"3.4. Linking visits by when the value changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery"},
-"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-reduced-exposure-context\u2460"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-reduced-exposure-context\u2461"}],"title":"3.5. Reading the feature without script"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
-"5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
-"6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
-"7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
-"89c69bc5": {"dfnID":"89c69bc5","dfnText":"minimum interval","external":true,"refSections":[{"refs":[{"id":"ref-for-minimum-interval"}],"title":"2.1. Changes"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval"},
-"afdf1526": {"dfnID":"afdf1526","dfnText":"prefers-reduced-data","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-data"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-data\u2460"}],"title":"5.1. (power-saver: active)"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data"},
-"b0f4a94b": {"dfnID":"b0f4a94b","dfnText":"prefers-reduced-motion","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-motion"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-motion\u2460"}],"title":"6. Open issues"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion"},
-"dc285ef9": {"dfnID":"dc285ef9","dfnText":"under user control","external":true,"refSections":[{"refs":[{"id":"ref-for-under-user-control"}],"title":"2.2. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
-"descdef-media-prefers-reduced-power": {"dfnID":"descdef-media-prefers-reduced-power","dfnText":"prefers-reduced-power","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-power\u2460"},{"id":"ref-for-descdef-media-prefers-reduced-power\u2461"}],"title":"2. The prefers-reduced-power feature"}],"url":"#descdef-media-prefers-reduced-power"},
-"fd6386ba": {"dfnID":"fd6386ba","dfnText":"actual value","external":true,"refSections":[{"refs":[{"id":"ref-for-actual-value"}],"title":"2. The prefers-reduced-power feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
-"power-saving-mode": {"dfnID":"power-saving-mode","dfnText":"power-saving mode","external":false,"refSections":[],"url":"#power-saving-mode"},
-"valdef-media-prefers-reduced-power-no-preference": {"dfnID":"valdef-media-prefers-reduced-power-no-preference","dfnText":"no-preference","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2460"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2461"}],"title":"3.5. Reading the feature without script"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2462"}],"title":"5.3. Restricting the feature in frames"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-no-preference\u2463"}],"title":"Appendix: Security and privacy questionnaire"}],"url":"#valdef-media-prefers-reduced-power-no-preference"},
-"valdef-media-prefers-reduced-power-reduce": {"dfnID":"valdef-media-prefers-reduced-power-reduce","dfnText":"reduce","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2460"}],"title":"2. The prefers-reduced-power feature"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2461"}],"title":"2.2. Reduced exposure"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2462"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2463"}],"title":"3.1. What the feature reveals"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2464"}],"title":"3.3. Fingerprinting"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2465"},{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2466"}],"title":"3.7. Sensitive inferences"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2467"}],"title":"3.8. Remaining risks"},{"refs":[{"id":"ref-for-valdef-media-prefers-reduced-power-reduce\u2468"}],"title":"6. Open issues"}],"url":"#valdef-media-prefers-reduced-power-reduce"},
+"2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
+"3610bd67": {"dfnID":"3610bd67","dfnText":"allowed to use","external":true,"refSections":[{"refs":[{"id":"ref-for-allowed-to-use"}],"title":"2.4. Frames"}],"url":"https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use"},
+"4dba9df7": {"dfnID":"4dba9df7","dfnText":"pointer","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-pointer"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
+"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.5. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
+"5c01eb94": {"dfnID":"5c01eb94","dfnText":"environment-blending","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-environment-blending"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending"},
+"5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
+"6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"},{"id":"ref-for-comb-one\u2460"},{"id":"ref-for-comb-one\u2461"},{"id":"ref-for-comb-one\u2462"},{"id":"ref-for-comb-one\u2463"},{"id":"ref-for-comb-one\u2464"},{"id":"ref-for-comb-one\u2465"},{"id":"ref-for-comb-one\u2466"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
+"7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The form-factor feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
+"92c8a448": {"dfnID":"92c8a448","dfnText":"overflow-block","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-overflow-block"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block"},
+"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.3. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
+"ba7479b5": {"dfnID":"ba7479b5","dfnText":"update","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-update"}],"title":"4.1. It is not feature detection"},{"refs":[{"id":"ref-for-descdef-media-update\u2460"}],"title":"6. Open issues"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-update"},
+"bf5567cf": {"dfnID":"bf5567cf","dfnText":"frame-scoped exposure","external":true,"refSections":[{"refs":[{"id":"ref-for-frame-scoped-exposure"}],"title":"2.4. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure"},
+"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
+"ce815f50": {"dfnID":"ce815f50","dfnText":"restricted value","external":true,"refSections":[{"refs":[{"id":"ref-for-restricted-value"}],"title":"2.4. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value"},
+"coarse-form-factor": {"dfnID":"coarse-form-factor","dfnText":"coarse form factor","external":false,"refSections":[{"refs":[{"id":"ref-for-coarse-form-factor"}],"title":"2.4. Frames"},{"refs":[{"id":"ref-for-coarse-form-factor\u2460"}],"title":"2.5. Reduced exposure"},{"refs":[{"id":"ref-for-coarse-form-factor\u2461"}],"title":"3.3. Embedded content"},{"refs":[{"id":"ref-for-coarse-form-factor\u2462"}],"title":"6. Open issues"}],"url":"#coarse-form-factor"},
+"d078c482": {"dfnID":"d078c482","dfnText":"hover","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-hover"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
+"dc285ef9": {"dfnID":"dc285ef9","dfnText":"under user control","external":true,"refSections":[{"refs":[{"id":"ref-for-under-user-control"}],"title":"2.5. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
+"descdef-media-form-factor": {"dfnID":"descdef-media-form-factor","dfnText":"form-factor","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-form-factor\u2460"},{"id":"ref-for-descdef-media-form-factor\u2461"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-descdef-media-form-factor\u2462"}],"title":"5.3. Physical screen size"}],"url":"#descdef-media-form-factor"},
+"form-factors": {"dfnID":"form-factors","dfnText":"form factors","external":false,"refSections":[{"refs":[{"id":"ref-for-form-factors"}],"title":"2. The form-factor feature"}],"url":"#form-factors"},
+"valdef-media-form-factor-automotive": {"dfnID":"valdef-media-form-factor-automotive","dfnText":"automotive","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-automotive"}],"title":"4.3. Cars"}],"url":"#valdef-media-form-factor-automotive"},
+"valdef-media-form-factor-desktop": {"dfnID":"valdef-media-form-factor-desktop","dfnText":"desktop","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop"}],"title":"2.1. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop\u2460"},{"id":"ref-for-valdef-media-form-factor-desktop\u2461"}],"title":"2.5. Reduced exposure"}],"url":"#valdef-media-form-factor-desktop"},
+"valdef-media-form-factor-eink": {"dfnID":"valdef-media-form-factor-eink","dfnText":"eink","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-eink"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-eink"},
+"valdef-media-form-factor-mobile": {"dfnID":"valdef-media-form-factor-mobile","dfnText":"mobile","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile"},{"id":"ref-for-valdef-media-form-factor-mobile\u2460"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile\u2461"},{"id":"ref-for-valdef-media-form-factor-mobile\u2462"}],"title":"2.5. Reduced exposure"}],"url":"#valdef-media-form-factor-mobile"},
+"valdef-media-form-factor-other": {"dfnID":"valdef-media-form-factor-other","dfnText":"other","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-other"},{"id":"ref-for-valdef-media-form-factor-other\u2460"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-valdef-media-form-factor-other\u2461"}],"title":"3.2. Fingerprinting"}],"url":"#valdef-media-form-factor-other"},
+"valdef-media-form-factor-tablet": {"dfnID":"valdef-media-form-factor-tablet","dfnText":"tablet","external":false,"refSections":[],"url":"#valdef-media-form-factor-tablet"},
+"valdef-media-form-factor-tv": {"dfnID":"valdef-media-form-factor-tv","dfnText":"tv","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-tv"}],"title":"1. Introduction"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2460"}],"title":"2.1. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2461"}],"title":"2.2. Televisions"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2462"},{"id":"ref-for-valdef-media-form-factor-tv\u2463"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-tv"},
+"valdef-media-form-factor-watch": {"dfnID":"valdef-media-form-factor-watch","dfnText":"watch","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-watch"}],"title":"2. The form-factor feature"}],"url":"#valdef-media-form-factor-watch"},
+"valdef-media-form-factor-xr": {"dfnID":"valdef-media-form-factor-xr","dfnText":"xr","external":false,"refSections":[],"url":"#valdef-media-form-factor-xr"},
 };
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -3454,21 +3547,32 @@ function genLinkingSyntaxes(dfn) {
 "use strict";
 {
 let refsData = {
-"#descdef-media-prefers-reduced-power": {"displayText":"prefers-reduced-power","export":true,"for_":["@media"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"prefers-reduced-power","type":"descriptor","url":"#descdef-media-prefers-reduced-power"},
-"#valdef-media-prefers-reduced-power-no-preference": {"displayText":"no-preference","export":true,"for_":["@media/prefers-reduced-power","prefers-reduced-power"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"no-preference","type":"value","url":"#valdef-media-prefers-reduced-power-no-preference"},
-"#valdef-media-prefers-reduced-power-reduce": {"displayText":"reduce","export":true,"for_":["@media/prefers-reduced-power","prefers-reduced-power"],"level":"","normative":true,"shortname":"prefers-reduced-power","spec":"prefers-reduced-power","status":"local","text":"reduce","type":"value","url":"#valdef-media-prefers-reduced-power-reduce"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value": {"displayText":"actual value","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"actual value","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery": {"displayText":"delayed change delivery","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"delayed change delivery","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#delayed-change-delivery"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay": {"displayText":"maximum delay","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"maximum delay","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#maximum-delay"},
-"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval": {"displayText":"minimum interval","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"minimum interval","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#minimum-interval"},
+"#coarse-form-factor": {"displayText":"coarse form factor","export":true,"for_":[],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"coarse form factor","type":"dfn","url":"#coarse-form-factor"},
+"#descdef-media-form-factor": {"displayText":"form-factor","export":true,"for_":["@media"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"form-factor","type":"descriptor","url":"#descdef-media-form-factor"},
+"#form-factors": {"displayText":"form factors","export":true,"for_":[],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"form factors","type":"dfn","url":"#form-factors"},
+"#valdef-media-form-factor-automotive": {"displayText":"automotive","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"automotive","type":"value","url":"#valdef-media-form-factor-automotive"},
+"#valdef-media-form-factor-desktop": {"displayText":"desktop","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"desktop","type":"value","url":"#valdef-media-form-factor-desktop"},
+"#valdef-media-form-factor-eink": {"displayText":"eink","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"eink","type":"value","url":"#valdef-media-form-factor-eink"},
+"#valdef-media-form-factor-mobile": {"displayText":"mobile","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"mobile","type":"value","url":"#valdef-media-form-factor-mobile"},
+"#valdef-media-form-factor-other": {"displayText":"other","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"other","type":"value","url":"#valdef-media-form-factor-other"},
+"#valdef-media-form-factor-tv": {"displayText":"tv","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"tv","type":"value","url":"#valdef-media-form-factor-tv"},
+"#valdef-media-form-factor-watch": {"displayText":"watch","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"watch","type":"value","url":"#valdef-media-form-factor-watch"},
+"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure": {"displayText":"frame-scoped exposure","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"frame-scoped exposure","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context": {"displayText":"reduced-exposure context","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"reduced-exposure context","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
+"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value": {"displayText":"restricted value","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"restricted value","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature": {"displayText":"system media feature","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"system media feature","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control": {"displayText":"under user control","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"under user control","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
+"https://dom.spec.whatwg.org/#concept-document": {"displayText":"document","export":true,"for_":[],"level":"1","normative":true,"shortname":"dom","spec":"dom","status":"current","text":"document","type":"dfn","url":"https://dom.spec.whatwg.org/#concept-document"},
 "https://drafts.csswg.org/css-conditional-3/#at-ruledef-media": {"displayText":"@media","export":true,"for_":[],"level":"3","normative":true,"shortname":"css-conditional","spec":"css-conditional-3","status":"current","text":"@media","type":"at-rule","url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
+"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports": {"displayText":"@supports","export":true,"for_":[],"level":"3","normative":true,"shortname":"css-conditional","spec":"css-conditional-3","status":"current","text":"@supports","type":"at-rule","url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
 "https://drafts.csswg.org/css-values-4/#comb-one": {"displayText":"|","export":true,"for_":[],"level":"4","normative":true,"shortname":"css-values","spec":"css-values-4","status":"current","text":"|","type":"grammar","url":"https://drafts.csswg.org/css-values-4/#comb-one"},
 "https://drafts.csswg.org/mediaqueries-5/#boolean-context": {"displayText":"boolean context","export":true,"for_":[],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"boolean context","type":"dfn","url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
-"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data": {"displayText":"prefers-reduced-data","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-data","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-data"},
-"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion": {"displayText":"prefers-reduced-motion","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-motion","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-motion"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending": {"displayText":"environment-blending","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"environment-blending","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover": {"displayText":"hover","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"hover","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block": {"displayText":"overflow-block","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"overflow-block","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer": {"displayText":"pointer","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"pointer","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-update": {"displayText":"update","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"update","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-update"},
+"https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use": {"displayText":"allowed to use","export":true,"for_":[],"level":"1","normative":true,"shortname":"html","spec":"html","status":"current","text":"allowed to use","type":"dfn","url":"https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use"},
 };
 
 function mkRefHint(link, ref) {
