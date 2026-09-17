@@ -57,7 +57,8 @@ All 8 tests pass in Chrome 152.
 
 ## Notes for browser engines
 
-- The engine already computes this list for `Sec-CH-UA-Form-Factors`. Use the same list, add `tv` for television and
-  set-top devices, and map anything else to `other`.
+- An engine that implements `Sec-CH-UA-Form-Factors` already computes this list. Use the same list, add `tv` for
+  television and set-top devices, and map anything else to `other`. Chromium currently derives the hint from the
+  mobile bit, so the feature will be as coarse as the hint until the engine classifies devices further.
 - Apply the `ch-ua-form-factors` permissions policy, the one that already delegates the hint, and fall back to the
   coarse form factor where it isn't allowed.

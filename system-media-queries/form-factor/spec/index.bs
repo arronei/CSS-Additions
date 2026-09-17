@@ -58,6 +58,61 @@ spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/
         "href": "https://wicg.github.io/client-hints-infrastructure/",
         "publisher": "WICG"
     },
+    "UA-CH-338": {
+        "title": "Add a Sec-CH-UA-Form-Factor hint (WICG/ua-client-hints#338)",
+        "href": "https://github.com/WICG/ua-client-hints/pull/338",
+        "publisher": "WICG",
+        "date": "2023-03-30"
+    },
+    "UA-CH-344": {
+        "title": "Make Sec-CH-UA-Form-Factor a future proof way of selecting content (WICG/ua-client-hints#344), comment by Dustin Mitchell",
+        "href": "https://github.com/WICG/ua-client-hints/issues/344#issuecomment-1690624761",
+        "publisher": "WICG",
+        "date": "2023-08-23"
+    },
+    "UA-CH-343": {
+        "title": "Make Sec-CH-UA-Form-Factor a list, add meanings (WICG/ua-client-hints#343)",
+        "href": "https://github.com/WICG/ua-client-hints/pull/343",
+        "publisher": "WICG",
+        "date": "2023-09-06"
+    },
+    "ME-IG-47": {
+        "title": "User-Agent string in embedded TV browsers (w3c/media-and-entertainment#47)",
+        "href": "https://github.com/w3c/media-and-entertainment/issues/47",
+        "publisher": "W3C Media and Entertainment Interest Group"
+    },
+    "CHROMIUM-UA-UTILS": {
+        "title": "components/embedder_support/user_agent_utils.cc",
+        "href": "https://source.chromium.org/chromium/chromium/src/+/main:components/embedder_support/user_agent_utils.cc",
+        "publisher": "The Chromium Projects"
+    },
+    "CHROME-DESKTOP-MODE": {
+        "title": "Chrome enables desktop mode by default on premium tablets",
+        "href": "https://developer.chrome.com/blog/desktop-mode",
+        "publisher": "Chrome for Developers",
+        "date": "2023"
+    },
+    "WEBKIT-SAFARI-13": {
+        "title": "New WebKit Features in Safari 13",
+        "href": "https://webkit.org/blog/9674/new-webkit-features-in-safari-13/",
+        "publisher": "WebKit",
+        "date": "2019"
+    },
+    "CSSWG-7696": {
+        "title": "[mediaqueries] Consider exposing \"mobileness\" as a media query (w3c/csswg-drafts#7696)",
+        "href": "https://github.com/w3c/csswg-drafts/issues/7696",
+        "publisher": "CSS Working Group"
+    },
+    "CSSWG-9701": {
+        "title": "[mediaqueries-5] Media query for enclosed screens (w3c/csswg-drafts#9701)",
+        "href": "https://github.com/w3c/csswg-drafts/issues/9701",
+        "publisher": "CSS Working Group"
+    },
+    "CSSWG-13398": {
+        "title": "Need for detecting the typical viewing distance in media queries (w3c/csswg-drafts#13398)",
+        "href": "https://github.com/w3c/csswg-drafts/issues/13398",
+        "publisher": "CSS Working Group"
+    },
     "DEVICE-POSTURE": {
         "title": "Device Posture API",
         "href": "https://www.w3.org/TR/device-posture/",
@@ -111,7 +166,7 @@ capabilities. A car's screen reports nothing that distinguishes it from a tablet
 </div>
 
 The kinds of device are the ones that the <code>Sec-CH-UA-Form-Factors</code> client hint already defines
-[[UA-CLIENT-HINTS]], with one addition, ''form-factor/tv'', which that hint doesn't have; see [[#tv]]. Unlike the
+[[UA-CLIENT-HINTS]], with one addition, ''form-factor/tv'', which that hint had and then dropped; see [[#tv]]. Unlike the
 platform [[PLATFORM-MEDIA-QUERY]], this feature does reveal something that a site has to ask for today, so
 [[#frames]] and [[#reduced-exposure]] limit who gets it.
 
@@ -172,28 +227,84 @@ and must not invent keywords. New keywords are added by revising this specificat
     </pre>
 </div>
 
+<h3 id=new-keywords>Adding keywords</h3>
+
+A keyword added in a later revision is an unknown value to a user agent that implements an earlier one, and a media
+query that evaluates to unknown because of it is replaced with ''not all'' [[MEDIAQUERIES-4]]. That includes a query
+that negates it, so <code>not (form-factor: projector)</code> would match nothing in such a user agent.
+
+<div class=note>
+    A new keyword is safest in its own media query in a comma-separated list, where only that query is dropped:
+
+    <pre highlight=css>
+    @media (form-factor: tv), (form-factor: projector) { … }
+    </pre>
+</div>
+
+A page can't test for a keyword with ''@supports'', but script can:
+<code>matchMedia("(form-factor: projector), not all and (form-factor: projector)").matches</code> is true when the
+user agent knows the keyword, and false when it doesn't, including when it doesn't support '@media/form-factor' at
+all. Keeping the list closed means that each new keyword arrives through a revision that authors can track, rather
+than differing between user agents indefinitely.
+
 <h3 id=source>Where the value comes from</h3>
 
 A user agent that implements [[UA-CLIENT-HINTS]] must report the same form factors that it reports in
 <code>Sec-CH-UA-Form-Factors</code> and in <code>navigator.userAgentData.getHighEntropyValues(["formFactors"])</code>
 for the document, lowercased, plus ''form-factor/tv'' where [[#tv]] applies.
 
-A user agent that doesn't implement those must report the kinds of device that match the definitions above.
+A user agent that doesn't implement those must report the kinds of device that match the definitions above, except
+that its form factors must agree with the platform it presents [[PLATFORM-MEDIA-QUERY]], and this takes precedence
+over the definitions: if the user agent presents itself as a desktop system, as browsers do in a "request desktop
+site" mode, the document's form factors are ''form-factor/desktop'', plus ''form-factor/tv'' where [[#tv]] applies.
 
-The form factors must agree with the platform the user agent presents [[PLATFORM-MEDIA-QUERY]]. If the user agent
-presents itself as a desktop system, as browsers do in a "request desktop site" mode, the document's form factors are
-''form-factor/desktop''.
+<div class=note>
+    A user agent that implements the client hint already applies its own presentation to the hint, so the first rule
+    covers it.
+</div>
+
+<div class=example id=example-desktop-tablets>
+    At the time of writing, Safari on iPads other than iPad mini presents itself as macOS by default
+    [[WEBKIT-SAFARI-13]], so those iPads report ''form-factor/desktop'' rather than ''form-factor/tablet''. Chrome on
+    Android doesn't set the mobile bit on tablet-sized screens, so its client hint reports "Desktop" there
+    [[CHROMIUM-UA-UTILS]], and on premium tablets it also presents itself as Linux by default
+    [[CHROME-DESKTOP-MODE]]; those tablets report ''form-factor/desktop'' too.
+</div>
+
+<div class=note>
+    The feature can only be as detailed as the user agent's own classification, and today that is coarse. Only
+    Chromium implements <code>Sec-CH-UA-Form-Factors</code>, and by default it reports "Mobile" or "Desktop" from
+    the mobile bit, adding "XR" on Android XR devices [[CHROMIUM-UA-UTILS]]. Chromium's own browser reports "Tablet"
+    only in ChromeOS's "request tablet site" mode (Android apps that embed its WebView can set any value), and no
+    default code path reports "Automotive", "EInk", or "Watch". Together with the desktop presentation of most
+    tablets, this means ''form-factor/tablet'' would match almost nowhere in current browsers. The keywords are
+    worth defining anyway, so that a user agent that does classify devices has one way to say so, but authors
+    should expect ''form-factor/mobile'' and ''form-factor/desktop'' to be most of what they see.
+</div>
 
 <h3 id=tv>Televisions</h3>
 
 <code>Sec-CH-UA-Form-Factors</code> has no value for a television, so a television browser that implements it reports
-something else, usually <code>"Desktop"</code>. A user agent must report ''form-factor/tv'' for a television or
+something else; one built on Chromium reports "Mobile" or "Desktop" from the same mobile bit as any other device,
+unless its maker changes that [[CHROMIUM-UA-UTILS]]. A user agent must report ''form-factor/tv'' for a television or
 set-top device even so.
 
 <div class=note>
     This is the one place where the feature and the client hint can disagree, and it should be fixed in the hint
-    rather than here: a page on a television needs to know, and the client hint's own rule is that a value is added
-    "when there is a compelling use-case". See [[#open-issues]].
+    rather than here. The hint had a television value: when it was first added, in March 2023, its values were
+    "Automobile", "Mobile", "Tablet", "TV", "VR", "XR", and "Unknown" [[UA-CH-338]], and the W3C Media and
+    Entertainment Interest Group's issue on how television browsers should identify themselves was updated to note
+    that the new hint allowed "TV" [[ME-IG-47]]. In the discussion that followed, "TV" was dropped "in the absence
+    of use-cases for it identified so far in this conversation" [[UA-CH-344]], and in September 2023 the hint became
+    a list without it [[UA-CH-343]].
+
+    The hint's own criteria for adding a value are "a new form-factor that users interact with in a meaningfully
+    different way; a compelling use-case where sites would like to change how they interact with users on that
+    device; and no reliable way to identify that new form-factor using existing hints" [[UA-CLIENT-HINTS]]. A
+    television meets all three: it is used from across a room with a remote control, [[#intro]] gives the use case,
+    and no client hint identifies it. Among media features, only ''pointer/none'' hints at it, and not on
+    televisions whose remotes act as pointers. Otherwise, television browsers can often be recognized only from
+    unstandardized <code>User-Agent</code> tokens. See [[#open-issues]].
 </div>
 
 <h3 id=changes>Changes</h3>
@@ -251,10 +362,11 @@ car. If one user in a thousand browses from a watch, the feature tells a site ab
 
 Two things limit the cost:
 
-* Those devices are already recognizable without this feature. A watch has a tiny viewport and often round safe-area
-    insets; an e-ink reader reports ''update/slow'' and often ''color/0''; a headset reports ''environment-blending''
-    other than ''environment-blending/opaque''; a car's browser has a distinctive user agent string. The feature
-    mostly saves authors from guessing, rather than revealing something new.
+* Some of those devices are already recognizable without this feature: a watch has a tiny viewport and often round
+    safe-area insets, and an e-ink reader reports ''update/slow'' and often ''color/0''. For those, the feature
+    mostly saves authors from guessing. A headset would be recognizable from ''environment-blending'', but no
+    browser implements that feature yet, and a car has no such signal, so for users of those devices this feature
+    does reveal something new.
 * The list is closed, so an unusual device reports ''form-factor/other'' rather than naming itself, and the value is
     restricted in frames and in reduced-exposure contexts.
 
@@ -320,18 +432,27 @@ entitlement, fraud scoring, or any security decision.
 CSS could keep describing capabilities and let pages infer the rest, adding features for the qualities that are
 missing, such as viewing distance or the kind of control the user holds. That is how the CSS Working Group has
 handled similar requests, turning "what device is this" into "what does it do", as the Device Posture API did by
-exposing ''device-posture/folded'' rather than a device model [[DEVICE-POSTURE]]. It was not chosen because the
-missing qualities are many and correlated, and because every browser already computes exactly this classification
-for <code>Sec-CH-UA-Form-Factors</code>: authors would be inferring something the user agent already knows. A
-reviewer may still prefer this direction, and [[#open-issues]] asks the question.
+exposing ''device-posture/folded'' rather than a device model [[DEVICE-POSTURE]]. The Working Group has open
+issues in this direction, for enclosed screens [[CSSWG-9701]] and for typical viewing distance [[CSSWG-13398]].
+When the Working Group was asked to expose whether a device is mobile [[CSSWG-7696]], Tab Atkins, an editor of
+Media Queries, answered that the media types were deprecated and not reproduced as a media query "precisely
+*because* it's an incoherent concept and never what you *actually* want". That issue is still open.
+
+It was not chosen because the missing qualities are many and correlated, and because a user agent is better placed
+to classify its device than a page is, which is why <code>Sec-CH-UA-Form-Factors</code> exists. That argument is
+weaker than it looks: only Chromium implements the hint, and it classifies little beyond mobile and desktop
+([[#source]]). A reviewer may well prefer this direction, and [[#open-issues]] asks the question.
 
 <h3 id=alt-media-types>Reviving the media types</h3>
 
 CSS had <code>@media tv</code>, <code>@media handheld</code>, and <code>@media projection</code>, and deprecated
-them. They failed because each keyword stood for a bundle of assumptions about size, input, and capability, and
-authors used them for layout, which viewport queries do better. This feature is narrower: the device class alone,
-with capabilities and sizes left to the features that describe them, and with rules that keep an unrecognized device
-working.
+them, because media types "have proven insufficient as a way of discriminating between devices with different
+styling needs" [[MEDIAQUERIES-4]]; user agents must now make them match nothing. Media Queries explains that
+categories such as <code>screen</code> and <code>handheld</code> blended over time, and that media types were
+mutually exclusive, so a device could be only one of them. Authors also used them for layout, which viewport queries
+do better. This is the first objection this feature will meet. The feature is narrower: a device can have several
+form factors, capabilities and sizes are left to the features that describe them, and the rules keep an
+unrecognized device working.
 
 <h3 id=alt-screen-size>Physical screen size</h3>
 
@@ -341,7 +462,8 @@ list of nine keywords, and because '@media/form-factor' answers the question tha
 
 <h3 id=alt-hint-only>Leaving it to the client hint</h3>
 
-Sites can already request <code>Sec-CH-UA-Form-Factors</code> and serve different CSS. That works only for pages
+Sites can already request <code>Sec-CH-UA-Form-Factors</code>, which Chrome has supported since version 124, and serve
+different CSS. That works only in Chromium-based browsers, only for pages
 built on a server that varies its response, doesn't work for static files, caches badly, and doesn't work at all
 where script and server negotiation aren't available, such as an HTML email or a document opened from disk.
 
@@ -349,8 +471,18 @@ where script and server negotiation aren't available, such as an HTML email or a
 <h2 id=open-issues>Open issues</h2>
 
 <p class=issue>''form-factor/tv'' has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
-specification requires a value the client hint can't express. The right fix is to add "TV" to the hint. Until then,
-should the feature report ''form-factor/tv'' at all, or wait?
+specification requires a value the client hint can't express. The right fix is to add "TV" back to the hint, which
+dropped it because no one in that discussion had identified a use case for it ([[#tv]]). Until then, should the feature report
+''form-factor/tv'' at all, or wait?
+
+<p class=issue>Should ''form-factor/tablet'' exist? Safari on most iPads presents itself as a desktop computer by
+default, Chrome's client hint reports "Desktop" on Android tablets, and Chromium's own browser reports "Tablet" only
+in one ChromeOS mode ([[#source]]), so the keyword would match almost nowhere today. Keeping it costs little, and removing it would leave
+no way to say "tablet" if user agents start reporting it.
+
+<p class=issue>The CSS Working Group has already been asked for a "mobileness" media query, and participants
+including a Media Queries editor pushed back in that issue, which is still open [[CSSWG-7696]]. Does a closed list of device classes answer that objection, or should this proposal become the
+capability features that issue and [[CSSWG-13398]] point toward?
 
 <p class=issue>Should ''form-factor/eink'' exist when '@media/update' already reports ''update/slow''? They aren't
 the same thing, since a slow-updating LCD isn't e-ink, but they overlap more than the other values do.
@@ -384,7 +516,8 @@ answer that looks authoritative.
 : Do the features introduce state that persists across browsing sessions?
 :: No.
 : Do the features expose information about the underlying platform to origins?
-:: Yes, the device class the user agent already computes for <code>Sec-CH-UA-Form-Factors</code>.
+:: Yes, the device class, which user agents that implement <code>Sec-CH-UA-Form-Factors</code> already compute for
+    that hint.
 : Does this specification allow an origin to send data to the underlying platform?
 :: No.
 : Do features enable access to device sensors?

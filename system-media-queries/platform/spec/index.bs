@@ -10,7 +10,7 @@ Abstract: This specification adds the '@media/platform' media feature, which rep
     operating system from a closed list of keywords, so that a style sheet can follow that platform's
     conventions: writing a shortcut as ⌘K or Ctrl+K, ordering the buttons of a dialog, offering the right
     download, or showing the right app store badge. The value must be the same platform the user agent
-    already reveals in its <code>User-Agent</code> string and <code>navigator.userAgentData</code>, including
+    already reveals in its <code>User-Agent</code> header and, where it has them, its client hints, including
     when the user agent deliberately reports a platform it isn't running on, so the feature adds no
     information to any context. It never reports the version of the operating system, the device model, the
     architecture, or the browser.
@@ -50,10 +50,74 @@ spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/
         "href": "https://wicg.github.io/ua-client-hints/",
         "publisher": "WICG"
     },
+    "CLIENT-HINTS-INFRASTRUCTURE": {
+        "title": "Client Hints Infrastructure",
+        "href": "https://wicg.github.io/client-hints-infrastructure/",
+        "publisher": "WICG"
+    },
     "UA-REDUCTION": {
         "title": "User-Agent Reduction",
         "href": "https://www.chromium.org/updates/ua-reduction/",
         "publisher": "The Chromium Projects"
+    },
+    "CHROME-DESKTOP-MODE": {
+        "title": "Chrome enables desktop mode by default on premium tablets",
+        "href": "https://developer.chrome.com/blog/desktop-mode",
+        "publisher": "Chrome for Developers",
+        "date": "2023"
+    },
+    "CHROMIUM-IOS-UA": {
+        "title": "ios/web/common/user_agent.mm",
+        "href": "https://source.chromium.org/chromium/chromium/src/+/main:ios/web/common/user_agent.mm",
+        "publisher": "The Chromium Projects"
+    },
+    "WEBKIT-SAFARI-13": {
+        "title": "New WebKit Features in Safari 13",
+        "href": "https://webkit.org/blog/9674/new-webkit-features-in-safari-13/",
+        "publisher": "WebKit",
+        "date": "2019"
+    },
+    "WEBKIT-241322": {
+        "title": "Bug 241322: Mobile Safari desktop mode user agent reports a different macOS version than Safari on Mac",
+        "href": "https://bugs.webkit.org/show_bug.cgi?id=241322",
+        "publisher": "WebKit"
+    },
+    "WEBKIT-261185": {
+        "title": "Bug 261185: [iOS] svh/dvh units are unexpectedly equal when Safari tab bar is not visible",
+        "href": "https://bugs.webkit.org/show_bug.cgi?id=261185",
+        "publisher": "WebKit"
+    },
+    "HARMONYOS-UA": {
+        "title": "Developing User-Agent (ArkWeb)",
+        "href": "https://github.com/openharmony/docs/blob/master/en/application-dev/web/web-default-userAgent.md",
+        "publisher": "OpenHarmony"
+    },
+    "ARKWEB-WEBVIEW-API": {
+        "title": "@ohos.web.webview API declarations (getPlatform, setUserAgentClientHintsEnabled)",
+        "href": "https://github.com/openharmony/interface_sdk-js/blob/master/api/@ohos.web.webview.d.ts",
+        "publisher": "OpenHarmony"
+    },
+    "COMPATIBILITY": {
+        "title": "Compatibility Standard",
+        "href": "https://compat.spec.whatwg.org/",
+        "publisher": "WHATWG"
+    },
+    "TAG-UA-CH-REVIEW": {
+        "title": "User-Agent Client Hints & UA Reduction (w3ctag/design-reviews#640), comment by Henri Sivonen",
+        "href": "https://github.com/w3ctag/design-reviews/issues/640#issuecomment-880496675",
+        "publisher": "W3C TAG",
+        "date": "2021-07-15"
+    },
+    "TAG-UA-FREEZE-REVIEW": {
+        "title": "Partial freezing of the User-Agent string (w3ctag/design-reviews#467), comment by Michael Catanzaro",
+        "href": "https://github.com/w3ctag/design-reviews/issues/467#issuecomment-583104002",
+        "publisher": "W3C TAG",
+        "date": "2020-02-06"
+    },
+    "RFP-SERVICE": {
+        "title": "toolkit/components/resistfingerprinting/nsRFPService.h",
+        "href": "https://searchfox.org/mozilla-central/source/toolkit/components/resistfingerprinting/nsRFPService.h",
+        "publisher": "Mozilla"
     },
     "FINGERPRINT-SURVEY": {
         "title": "Browser Fingerprinting: A Survey",
@@ -68,9 +132,30 @@ spec: media-feature-privacy; urlPrefix: https://arronei.github.io/CSS-Additions/
         "date": "2018"
     },
     "TOR-UA-SPOOFING": {
-        "title": "Stop spoofing the OS in the User-Agent header (tor-browser#42467)",
-        "href": "https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467",
+        "title": "New Alpha Release: Tor Browser 14.0a4",
+        "href": "https://blog.torproject.org/new-alpha-release-tor-browser-140a4/",
+        "publisher": "The Tor Project",
+        "date": "2024-09-06"
+    },
+    "TOR-43189": {
+        "title": "Remove privacy.resistFingerprinting.spoofOsInUserAgentHeader machinery entirely (tor-browser#43189)",
+        "href": "https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/43189",
         "publisher": "The Tor Project"
+    },
+    "MOZ-1396066": {
+        "title": "Bug 1396066: Avoid exposing :-moz-system-metric stuff in content pages",
+        "href": "https://bugzilla.mozilla.org/show_bug.cgi?id=1396066",
+        "publisher": "Mozilla"
+    },
+    "MOZ-1840385": {
+        "title": "Bug 1840385: kasada.io anti-bot protected sites (eg nike.com, twitch.tv) fail login with RFP due to UA missing oscpu token or reporting different OS",
+        "href": "https://bugzilla.mozilla.org/show_bug.cgi?id=1840385",
+        "publisher": "Mozilla"
+    },
+    "MOZ-787296": {
+        "title": "Bug 787296: Kill all web access to screen/chrome metrics and theme information",
+        "href": "https://bugzilla.mozilla.org/show_bug.cgi?id=787296",
+        "publisher": "Mozilla"
     },
     "MOZ-787521": {
         "title": "Bug 787521: Disable theme-related CSS media queries features when not in chrome context",
@@ -107,10 +192,10 @@ and opposite shortcut labels. Feature queries can't help either, because the que
 supports something, it's what the user's platform calls it and expects it to look like.
 
 So pages work around it. They detect the platform once in script and write a class onto the root element, which is
-what Visual Studio Code does, and what the user agent parsing libraries exist to feed: in one week of September
-2026, <code>bowser</code> was downloaded about 42 million times and <code>ua-parser-js</code> about 23 million.
-Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature
-[[MOZ-PLATFORM]] that only its internal style sheets can use.
+what Visual Studio Code does, and what user agent parsing libraries such as <code>bowser</code> and
+<code>ua-parser-js</code> exist to feed.
+Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature in
+Firefox 99 [[MOZ-PLATFORM]] that only its own style sheets can use.
 
 This specification gives style sheets the same thing, in a form that reveals nothing that the user agent doesn't
 already send to every server in its <code>User-Agent</code> header.
@@ -133,7 +218,8 @@ already send to every server in its <code>User-Agent</code> header.
     .download-dmg, .download-deb, .badge-app-store, .badge-play { display: none; }
     @media (platform: macos) { .download-exe { display: none; } .download-dmg { display: inline; } }
     @media (platform: linux) { .download-exe { display: none; } .download-deb { display: inline; } }
-    @media (platform: ios) { .badge-play { display: none; } .badge-app-store { display: inline; } }
+    @media (platform: ios) { .download-exe { display: none; } .badge-app-store { display: inline; } }
+    @media (platform: android) { .download-exe { display: none; } .badge-play { display: inline; } }
     </pre>
 </div>
 
@@ -180,6 +266,38 @@ and must not invent keywords. New keywords are added by revising this specificat
     an author can't design for a platform they have never seen. See [[#privacy-closed-list]].
 </div>
 
+<h3 id=new-keywords>Adding keywords</h3>
+
+A keyword added in a later revision is an unknown value to a user agent that implements an earlier one, and a media
+query that evaluates to unknown because of it is replaced with ''not all'' [[MEDIAQUERIES-4]]. The negation of an
+unknown value is also unknown, so both of these match nothing in such a user agent, on any platform:
+
+<pre highlight=css>
+@media (platform: harmonyos) { … }
+@media not (platform: harmonyos) { … }
+</pre>
+
+<div class=note>
+    A new keyword is safest in its own media query in a comma-separated list, because only the query that
+    evaluates to unknown is dropped, with the default styles outside any query.
+</div>
+
+<div class=example id=example-new-keyword>
+    <pre highlight=css>
+    .store-badge { display: none; }
+    @media (platform: android), (platform: harmonyos) {
+      .store-badge { display: inline; }
+    }
+    </pre>
+
+    In a user agent that knows ''platform/android'' but not <code>harmonyos</code>, the rule still applies on
+    Android.
+</div>
+
+A page can't test for a keyword with ''@supports'', which doesn't accept media queries. Script can:
+<code>matchMedia("(platform: harmonyos), not all and (platform: harmonyos)").matches</code> is true when the user
+agent knows the keyword, and false when it doesn't, including when it doesn't support '@media/platform' at all.
+
 <h3 id=platform-source>The reported platform</h3>
 
 The <dfn export>reported platform</dfn> of a [=document=] is the platform that the user agent presents to that
@@ -188,7 +306,8 @@ document's origin elsewhere. It is not necessarily the platform the user agent i
 A user agent must determine the reported platform as follows:
 
 1. If the user agent implements <code>navigator.userAgentData</code> [[UA-CLIENT-HINTS]], the reported platform is
-    the value of its <code>platform</code> property for the document, mapped with the table below.
+    the value its <code>platform</code> property has, or would have if the document were a secure context, mapped
+    with the table below.
 1. Otherwise, the reported platform is the platform identified by the <code>User-Agent</code> header the user agent
     would send with a request for the document.
 
@@ -201,24 +320,46 @@ A user agent must determine the reported platform as follows:
         <tr><td>"Linux"<td>''platform/linux''
         <tr><td>"macOS"<td>''platform/macos''
         <tr><td>"Windows"<td>''platform/windows''
-        <tr><td>Any other value, including "Unknown" and "Fuchsia"<td>''platform/other''
+        <tr><td>Any other value, including "Unknown", "Fuchsia", and "OpenHarmony"<td>''platform/other''
 </table>
 
 The feature must agree with what the user agent reports elsewhere, even when that isn't the platform it is running
 on. In particular:
 
-* If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode, the
-    feature reports that other platform. On iPadOS, Safari's desktop-class browsing presents itself as macOS, so
-    the feature is ''platform/macos''. In Chrome on Android, desktop mode presents itself as Linux, so the feature
-    is ''platform/linux''.
+* If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode and some
+    do by default, the feature reports that other platform.
 * If the user agent normalizes or hides the platform to protect the user from fingerprinting, the feature reports
     the normalized platform, and reports ''platform/other'' if the user agent identifies no platform.
 
+<div class=example id=example-disguises>
+    At the time of writing:
+
+    * Safari on iPad, other than iPad mini, sends the same <code>User-Agent</code> string as Safari on a Mac by
+        default [[WEBKIT-SAFARI-13]], so the feature is ''platform/macos''. In 2019, WebKit said that a page loaded
+        while Safari took up a third of the screen in multitasking got an iOS <code>User-Agent</code> string
+        instead; a document loaded that way would report ''platform/ios''.
+    * Chrome on iPad presents itself as iOS, with an <code>iPad</code> token, unless the user requests the desktop
+        site, when it presents itself as macOS [[CHROMIUM-IOS-UA]]. The same iPad can therefore report
+        ''platform/macos'' in Safari and ''platform/ios'' in Chrome.
+    * Chrome on Android presents itself as Linux in desktop mode, which it turns on by default on premium tablets
+        [[CHROME-DESKTOP-MODE]], so the feature is ''platform/linux'' there.
+</div>
+
 <div class=note>
-    This rule is what makes the feature safe: it can't disagree with the <code>User-Agent</code> header, with
-    <code>navigator.userAgentData.platform</code>, or with the user's choice of desktop mode, so it never tells
-    anyone anything they couldn't already learn. It also means the feature is wrong exactly when the user agent is
-    already wrong, which authors can't do anything about, and users have asked for.
+    This rule is what makes the feature safe: it follows the platform that the user agent already reports in
+    <code>navigator.userAgentData.platform</code> or, without that, in its <code>User-Agent</code> header,
+    including the user's choice of desktop mode, so it tells no one anything the user agent doesn't already report.
+    A user agent that reports different platforms in different places exposes the one this rule selects.
+    <code>navigator.platform</code> is coarser than the feature, and reports Android and ChromeOS as Linux. The rule
+    also means the feature is wrong exactly when the user agent is already wrong, which authors can't do anything
+    about, and which users and user agents have chosen.
+
+    The web platform already allows this. [[HTML]] lets <code>navigator.platform</code> return "a string that is
+    commonly returned on another platform" "for privacy and compatibility", and [[MEDIAQUERIES-4]] records that for
+    the legacy device size features, "for the sake of privacy and security, UAs have been allowed to report
+    inaccurate information". The same section notes that "UA string spoofing does not affect Media Queries, making
+    this a somewhat more robust detection technique". This rule exists so that the platform feature is not that
+    technique.
 </div>
 
 <h3 id=changes>Changes</h3>
@@ -226,8 +367,12 @@ on. In particular:
 The value is determined when the [=document=] is created, and doesn't change while the document exists.
 
 <div class=note>
-    Turning "request desktop site" on or off reloads the page, so there is no need for the value to change, and
-    nothing that could link two documents by the moment it changed.
+    User agents choose the platform to present when they load a page. Turning "request desktop site" on or off in
+    Chrome requires reloading the page, and WebKit described Safari on iPad as choosing between macOS and iOS when a
+    page is loaded or reloaded, not when its window is resized [[WEBKIT-SAFARI-13]]. So there is no need for the
+    value to change, and
+    nothing that could link two documents by the moment it changed. Two documents shown one after the other in the
+    same tab can have different values, just as their requests had different <code>User-Agent</code> headers.
 </div>
 
 <h3 id=reduced-exposure>Reduced exposure</h3>
@@ -262,13 +407,21 @@ The platform is already available to everyone who can see a request or run scrip
     model, the header still identifies the family: <code>Windows NT 10.0; Win64; x64</code>,
     <code>Macintosh; Intel Mac OS X 10_15_7</code>, <code>X11; Linux x86_64</code>,
     <code>X11; CrOS x86_64 14541.0.0</code>, or <code>Linux; Android 10; K</code> [[UA-REDUCTION]].
-* <code>Sec-CH-UA-Platform</code> is one of the three client hints that user agents implementing
-    [[UA-CLIENT-HINTS]] send on every request by default, because the platform name on its own is low entropy.
-* Script can read <code>navigator.userAgentData.platform</code> and <code>navigator.platform</code>.
+* User agents that implement [[UA-CLIENT-HINTS]] send <code>Sec-CH-UA-Platform</code> by default on requests to
+    secure origins, because it is in the low-entropy hint table [[CLIENT-HINTS-INFRASTRUCTURE]]. Safari implements
+    neither the client hint headers nor, for web pages in general, <code>navigator.userAgentData</code>, so its
+    <code>User-Agent</code> header is where it reports the platform.
+* Script can read <code>navigator.userAgent</code>, and <code>navigator.userAgentData.platform</code> where it
+    exists.
 
-Because [[#platform-source]] requires the feature to agree with those, it reaches no context that they don't.
-This includes documents where script is disabled, such as messages in an email client: the request that fetched the
-message, and the request a style sheet would make to report the value, both carry the same header.
+Because [[#platform-source]] ties the feature to the platform the user agent reports in those, it reaches no
+context that they don't. This includes documents where script is disabled, such as messages in an email client: the
+request that fetched the message, and the request a style sheet would make to report the value, both carry the same
+<code>User-Agent</code> header.
+
+The rule also means the feature doesn't make the platform harder to stop exposing. A user agent that stops
+revealing the platform in its header and client hints, or reveals a different one, changes this feature's value with
+it.
 
 <h3 id=privacy-fingerprinting>Fingerprinting</h3>
 
@@ -276,8 +429,10 @@ The platform family is one of the cheapest parts of the user agent string. Measu
 collections, the whole <code>User-Agent</code> string carries about 10 bits of identifying information in
 Panopticlick's 2010 data, 9.8 bits in AmIUnique's 2016 data, and 7.2 bits in the 2018 "Hiding in the Crowd"
 data set of over two million fingerprints; <code>navigator.platform</code>, on its own, carries 2.3 bits and 1.2
-bits in the last two [[FINGERPRINT-SURVEY]] [[HIDING-IN-THE-CROWD]]. Almost all of the entropy of a user agent
-string is in versions and device models, which this feature doesn't report.
+bits in the last two [[FINGERPRINT-SURVEY]] [[HIDING-IN-THE-CROWD]]. Those studies don't measure the operating
+system family separately, and <code>navigator.platform</code> is only a rough stand-in for it: it reports Android
+and ChromeOS as Linux, and on Unix-like systems it has at times included the processor architecture. Almost all of
+the entropy of a user agent string is in versions and device models, which this feature doesn't report.
 
 The value is also stable, changes only when the user changes platforms, and is the same for large numbers of users.
 It adds nothing to a fingerprint that the same page's requests didn't already carry.
@@ -291,11 +446,21 @@ when it doesn't want to identify the platform at all.
 
 <h3 id=privacy-normalization>User agents that normalize the platform</h3>
 
-Tor Browser normalizes rather than randomizes: all Windows users appear as one Windows version, all macOS users as
-one macOS version, and all Linux and BSD systems as one. It used to disguise the family itself, and stopped,
-because the benefit was "a negligible amount of benefit to the user in terms of additional linkability
-protections" against real site breakage [[TOR-UA-SPOOFING]]. Firefox's resist-fingerprinting mode likewise reports
-the latest release version but doesn't spoof the operating system.
+Firefox's resist-fingerprinting mode, which Tor Browser uses, normalizes rather than hides. Its user agent string
+reports all Windows users as <code>Windows NT 10.0</code>, all macOS users as <code>Intel Mac OS X 10.15</code>, all
+Android users as <code>Android 10</code>, and Linux, the BSDs, and other Unix-like systems all as
+<code>X11; Linux x86_64</code>. Its source explains why script sees the family: "it is easy to detect the real
+platform. So there is no benefit for hiding the platform: it only brings breakages, like keyboard shortcuts won't
+work in macOS if we spoof it as a Windows platform" [[RFP-SERVICE]].
+
+The HTTP header used to go further. Until Firefox 136, the mode sent a Windows <code>User-Agent</code> header from
+macOS and Linux while script reported the real family [[MOZ-1840385]]. Tor Browser, which inherited this, stopped it
+in its 14.0 series, having concluded that the practice caused site breakage and gave "only a negligible amount of
+benefit to the user in terms of additional linkability (i.e. cross-site tracking, fingerprinting) protections, and
+only then when JavaScript is disabled" [[TOR-UA-SPOOFING]]. It removed the option entirely in Tor Browser 14.5,
+released in April 2025 [[TOR-43189]], and Firefox stopped in version 136. The case both gave up on, a document with
+script disabled, is the case this feature is most often questioned about, and both now send the normalized family
+in that case too.
 
 This feature inherits whatever the user agent decides, including a decision to report ''platform/other'' everywhere.
 
@@ -311,6 +476,13 @@ carry the same <code>User-Agent</code> header and its script can read the same v
 * **Style-only contexts.** A style sheet can report the value without script. It reports a fact the same server
     already received in a header, but it does so without the page's script being involved, which a site's own
     content security policy might otherwise have limited.
+* **Surface.** "Already available" is not by itself a reason to expose something again. In the review of
+    User-Agent Client Hints, Henri Sivonen wrote that exposing available information another way "adds more bytes
+    on the wire / more API surface / more complexity to the Web Platform, in which case the harm is the data waste
+    or increased platform complexity and not the identifying bits exposed" [[TAG-UA-CH-REVIEW]]. That cost applies
+    here. This specification's answer is that pages already get the same information by parsing the
+    <code>User-Agent</code> string in script, as [[#intro]] describes, and a single keyword supplied by the user
+    agent is less complexity than a parser in every page.
 
 
 <h2 id=security>Security considerations</h2>
@@ -367,33 +539,76 @@ something a page can do with script or on the server, where the hint already is.
 
 <h3 id=alt-browser>The browser or its engine</h3>
 
-A feature for the browser brand or engine is not proposed. Feature queries answer the question that browser
-sniffing is usually asking, sniffing entrenches the assumptions that break new browsers, and engines have been
-closing the CSS-only browser detection channels that exist rather than opening new ones. A page that needs to work
-around an engine bug can usually detect the bug.
+A feature for the browser brand or engine is not proposed, though the case for it is real. ''@supports'' tells a
+page whether the user agent parses something, not whether it works [[CSS-CONDITIONAL-3]], so it can't see an engine
+that parses a feature and gets it wrong: iOS Safari once resolved ''svh'' and ''dvh'' to the same length when its tab bar was hidden,
+which no feature query could detect [[WEBKIT-261185]].
+
+It is not proposed because the web's experience with engine detection in CSS is that it can't be undone, and that
+the engines it targets end up lying:
+
+* Content written for WebKit's prefixed features became so common that the Compatibility Standard now tells every
+    engine to treat <code>-webkit-device-pixel-ratio</code> as an alias of '@media/resolution', and defines
+    <code>-webkit-transform-3d</code> for all of them [[COMPATIBILITY]]. An engine-named media feature has already
+    had to be implemented by the engines it didn't name.
+* User-Agent Client Hints explains its brand lists with the observation that "History has shown us that there are real
+    incentives for user agents to lie about their branding in order to thread the needle of sites' sniffing
+    scripts", and responds by requiring that "User agents MUST include more than a single value in brands, where one
+    of these values is an arbitrary value" [[UA-CLIENT-HINTS]].
+* For a smaller browser, as Michael Catanzaro put it, "it is absolutely essential to send a user agent that matches
+    a dominant browser as closely as possible. A small browser cannot be web compatible otherwise"
+    [[TAG-UA-FREEZE-REVIEW]].
+
+A browser media feature would therefore be answered the same way: the browsers it is meant to identify would report
+a dominant browser's value, and it would stop meaning anything. The platform feature accepts that outcome by design,
+because it follows whatever platform the user agent chooses to present ([[#platform-source]]); it is useful only
+because most user agents present their real platform family, which is not true of their brand.
+
+Engines have also been closing CSS detection channels rather than opening them: Firefox 58 hid its system-metric
+media features from web pages [[MOZ-1396066]], and Firefox never exposed its own platform media feature to them
+[[MOZ-PLATFORM]], which is a precedent this specification has to answer (see [[#open-issues]]). A page that needs
+to work around an engine bug should report the bug, and detect its symptom in script where it can.
 
 <h3 id=alt-media-type>A media type</h3>
 
 CSS once had media types for device classes, such as <code>@media tv</code> and <code>@media handheld</code>, and
-they were deprecated: they made one keyword stand for a whole bundle of assumptions. This feature deliberately
-stands for one thing, the platform's conventions, and nothing else. Device classes are handled separately by
+they were deprecated because they "have proven insufficient as a way of discriminating between devices with
+different styling needs" [[MEDIAQUERIES-4]]: they made one keyword stand for a whole bundle of assumptions. This
+feature deliberately stands for one thing, the platform's conventions, and nothing else. Device classes are handled separately by
 [[FORM-FACTOR-MEDIA-QUERY]].
 
 
 <h2 id=open-issues>Open issues</h2>
 
-<p class=issue>On iPadOS, Safari presents itself as macOS, so an iPad reports ''platform/macos'' and gets macOS
-conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
-specification say anything, given that the alternative is disagreeing with the user agent string?
+<p class=issue>Safari on iPad presents itself as macOS by default, so an iPad in Safari reports
+''platform/macos'' and gets macOS conventions, including a ⌘ label that matches an attached keyboard but not the
+on-screen one, and a Mac download where an App Store badge was wanted. Reporting the real platform is not an option:
+in 2022 WebKit accepted a fix that made the two user agent strings identical, because the one-digit difference
+"could make it easier for a website to detect whether the visitor is using Mac Safari or is using Mobile Safari,
+defeating the purpose of desktop mode" [[WEBKIT-241322]]. Should the specification say anything more to authors,
+given that the same iPad reports ''platform/ios'' in Chrome?
+
+<p class=issue>Chrome on Android requests desktop sites by default on premium tablets and reports Linux there
+[[CHROME-DESKTOP-MODE]], so those tablets report ''platform/linux'' and get a Linux download rather than a Google
+Play badge. Chromium has features, disabled by default, that report Android or ChromeOS instead on Android devices
+that run in desktop mode. This specification follows whichever Chromium ships; is that the right outcome for
+authors?
 
 <p class=issue>Should ''platform/chromeos'' exist, or should ChromeOS report ''platform/linux''? It has its own
 conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
-with a single browser.
+with a single browser. ChromeOS also has a "request tablet site" mode that presents it as Android.
 
-<p class=issue>Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
-[[MOZ-787521]], on the grounds that they expose system configuration without script. Does the argument in
-[[#privacy-nothing-new]] answer that objection for this feature, given that those features exposed settings that
-the <code>User-Agent</code> header doesn't carry?
+<p class=issue>HarmonyOS NEXT's web engine identifies itself by default in the <code>User-Agent</code> string as
+<code>OpenHarmony</code>, with no Android token, though some browsers built on it add other system names
+[[HARMONYOS-UA]]. It reports "OpenHarmony" as its client hint platform when the app showing the page turns client
+hints on [[ARKWEB-WEBVIEW-API]]. Either way it reports ''platform/other''. Should HarmonyOS have a
+keyword? [[#new-keywords]] describes what adding one would mean for existing user agents.
+
+<p class=issue>Firefox hid its theme-related media features from web pages in Firefox 58 [[MOZ-1396066]] (the
+older bug that asked for it, [[MOZ-787521]], was closed in Firefox 87). That older bug came from a 2012 report asking
+Firefox to stop exposing screen and theme information [[MOZ-787296]], which singled out media queries because they
+work even with scripting disabled. Does the argument in [[#privacy-nothing-new]] answer that objection for this feature, given
+that those features exposed settings that the <code>User-Agent</code> header doesn't carry?
 
 
 <h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
@@ -412,7 +627,7 @@ the <code>User-Agent</code> header doesn't carry?
 : How do the features deal with sensitive information?
 :: They expose none beyond what every request already carries.
 : Does data exposed carry related but distinct information that may not be obvious to users?
-:: Only weakly: that the user chose a desktop mode, since the reported platform then changes.
+:: Only weakly: on a phone or tablet, a desktop platform can mean that the user or the browser chose a desktop mode.
 : Do the features introduce state that persists across browsing sessions?
 :: No.
 : Do the features expose information about the underlying platform to origins?

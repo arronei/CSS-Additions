@@ -25,7 +25,7 @@
   function guessFor(ua) {
     const guesses = [];
     if (/SmartTV|Smart-TV|SMART-TV|GoogleTV|AppleTV|HbbTV|NetCast|Web0S|WebOS|Tizen|BRAVIA|Roku|CrKey/i.test(ua)) guesses.push('tv');
-    if (/OculusBrowser|Quest|Pico|VisionOS/i.test(ua)) guesses.push('xr');
+    if (/OculusBrowser|Quest|Pico/i.test(ua)) guesses.push('xr');
     if (/Watch/i.test(ua)) guesses.push('watch');
     if (/Kobo|reMarkable|Boox|Kindle/i.test(ua)) guesses.push('eink');
     return guesses;

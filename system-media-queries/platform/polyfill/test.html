@@ -64,7 +64,7 @@
     if (wrong.length) throw new Error(wrong.map(([ua, e]) => `${ua.slice(0, 40)}… should be ${e}`).join('; '));
   });
 
-  test('an iPad in desktop mode reports macos, as its User-Agent string does', () => {
+  test('Safari on an iPad reports macos, as its User-Agent string does', () => {
     const ipadDesktop = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
     if (PlatformMediaQuery.platformFor(ipadDesktop) !== 'macos') throw new Error('should follow the User-Agent string');
   });

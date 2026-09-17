@@ -21,9 +21,9 @@ header and in `navigator.userAgentData.platform`, even when that isn't the platf
 
 | Risk | Protection |
 | --- | --- |
-| Adding to a fingerprint | Nothing is added. Every request already carries the platform in its header, and script can read it. Measured separately, the whole user-agent string is worth 7 to 10 bits of identifying information, while the platform alone is 1.2 to 2.3 bits. |
+| Adding to a fingerprint | Nothing is added. Every request already carries the platform in its header, and script can read it. In large studies, the whole user-agent string is worth 7 to 10 bits of identifying information, while `navigator.platform`, a rough stand-in for the platform family, is 1.2 to 2.3 bits. |
 | Identifying users of unusual systems | The closed list. A system with no keyword reports `other`, along with browsers that decline to say. |
-| Fighting the browser's own disguises | An iPad in desktop mode reports `macos`, Chrome on Android in desktop mode reports `linux`, and a browser that normalizes the platform for privacy gets the same normalization here. |
+| Fighting the browser's own disguises | Safari on an iPad reports `macos`, as its user-agent string does by default. Chrome on Android in desktop mode reports `linux`, and a browser that normalizes the platform for privacy gets the same normalization here. |
 | Linking visits by a change | The value is fixed when the page loads. |
 | Encouraging user-agent sniffing | The spec says plainly that this isn't feature detection, that `@supports` and capability features are, and that sites which gate features on it break browsers. |
 

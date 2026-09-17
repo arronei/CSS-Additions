@@ -1490,7 +1490,7 @@ Possible extra rowspan handling
 </style>
   <meta content="Bikeshed version ac92c2f0d, updated Fri Aug 21 16:01:29 2026 -0700" name="generator">
   <link href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/" rel="canonical">
-  <meta content="47c154e54698fec04cc9dc0067d33bbd7c156ff3" name="revision">
+  <meta content="b9f7f5ec8504f03022962b2ea07aac55b7116107" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2204,7 +2204,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="no-ref p-name" id="title">Form Factor Media Query</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Living Document,
-    <time class="dt-updated" datetime="2026-09-16">16 September 2026</time></span></h2>
+    <time class="dt-updated" datetime="2026-09-17">17 September 2026</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2220,7 +2220,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 16 September 2026,
+In addition, as of 17 September 2026,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2246,11 +2246,12 @@ coarse mobile signal that every site already receives where fingerprinting prote
     <li>
      <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">form-factor</span> feature</span></a>
      <ol class="toc">
-      <li><a href="#source"><span class="secno">2.1</span> <span class="content">Where the value comes from</span></a>
-      <li><a href="#tv"><span class="secno">2.2</span> <span class="content">Televisions</span></a>
-      <li><a href="#changes"><span class="secno">2.3</span> <span class="content">Changes</span></a>
-      <li><a href="#frames"><span class="secno">2.4</span> <span class="content">Frames</span></a>
-      <li><a href="#reduced-exposure"><span class="secno">2.5</span> <span class="content">Reduced exposure</span></a>
+      <li><a href="#new-keywords"><span class="secno">2.1</span> <span class="content">Adding keywords</span></a>
+      <li><a href="#source"><span class="secno">2.2</span> <span class="content">Where the value comes from</span></a>
+      <li><a href="#tv"><span class="secno">2.3</span> <span class="content">Televisions</span></a>
+      <li><a href="#changes"><span class="secno">2.4</span> <span class="content">Changes</span></a>
+      <li><a href="#frames"><span class="secno">2.5</span> <span class="content">Frames</span></a>
+      <li><a href="#reduced-exposure"><span class="secno">2.6</span> <span class="content">Reduced exposure</span></a>
      </ol>
     <li>
      <a href="#privacy"><span class="secno">3</span> <span class="content">Privacy considerations</span></a>
@@ -2342,9 +2343,9 @@ capabilities. A car’s screen reports nothing that distinguishes it from a tabl
 </pre>
    </div>
    <p>The kinds of device are the ones that the <code>Sec-CH-UA-Form-Factors</code> client hint already defines
-<a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, with one addition, <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv">tv</a>, which that hint doesn’t have; see <a href="#tv">§ 2.2 Televisions</a>. Unlike the
+<a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, with one addition, <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv">tv</a>, which that hint had and then dropped; see <a href="#tv">§ 2.3 Televisions</a>. Unlike the
 platform <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>, this feature does reveal something that a site has to ask for today, so
-<a href="#frames">§ 2.4 Frames</a> and <a href="#reduced-exposure">§ 2.5 Reduced exposure</a> limit who gets it.</p>
+<a href="#frames">§ 2.5 Frames</a> and <a href="#reduced-exposure">§ 2.6 Reduced exposure</a> limit who gets it.</p>
    <h2 class="heading settled" data-level="2" id="feature"><span class="secno">2. </span><span class="content">The <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor①">form-factor</a> feature</span><a class="self-link" href="#feature"></a></h2>
    <table class="def descdef mq">
     <tbody>
@@ -2411,26 +2412,79 @@ and must not invent keywords. New keywords are added by revising this specificat
 <pre class="highlight"><c- n>@media</c-> <c- p>(</c->form-factor: mobile<c- p>)</c-> and <c- p>(</c->not <c- p>(</c->form-factor: watch<c- p>))</c-> <c- p>{</c-> … <c- p>}</c->
 </pre>
    </div>
-   <h3 class="heading settled" data-level="2.1" id="source"><span class="secno">2.1. </span><span class="content">Where the value comes from</span><a class="self-link" href="#source"></a></h3>
+   <h3 class="heading settled" data-level="2.1" id="new-keywords"><span class="secno">2.1. </span><span class="content">Adding keywords</span><a class="self-link" href="#new-keywords"></a></h3>
+   <p>A keyword added in a later revision is an unknown value to a user agent that implements an earlier one, and a media
+query that evaluates to unknown because of it is replaced with <span class="css">not all</span> <a data-link-type="biblio" href="#biblio-mediaqueries-4" title="Media Queries Level 4">[MEDIAQUERIES-4]</a>. That includes a query
+that negates it, so <code>not (form-factor: projector)</code> would match nothing in such a user agent.</p>
+   <div class="note" role="note">
+    
+    A new keyword is safest in its own media query in a comma-separated list, where only that query is dropped:
+
+    
+<pre class="highlight"><c- n>@media</c-> <c- p>(</c->form-factor: tv<c- p>),</c-> <c- p>(</c->form-factor: projector<c- p>)</c-> <c- p>{</c-> … <c- p>}</c->
+</pre>
+   </div>
+   <p>A page can’t test for a keyword with <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a>, but script can:
+<code>matchMedia("(form-factor: projector), not all and (form-factor: projector)").matches</code> is true when the
+user agent knows the keyword, and false when it doesn’t, including when it doesn’t support <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor③">form-factor</a> at
+all. Keeping the list closed means that each new keyword arrives through a revision that authors can track, rather
+than differing between user agents indefinitely.</p>
+   <h3 class="heading settled" data-level="2.2" id="source"><span class="secno">2.2. </span><span class="content">Where the value comes from</span><a class="self-link" href="#source"></a></h3>
    <p>A user agent that implements <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a> must report the same form factors that it reports in
 <code>Sec-CH-UA-Form-Factors</code> and in <code>navigator.userAgentData.getHighEntropyValues(["formFactors"])</code>
-for the document, lowercased, plus <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv①">tv</a> where <a href="#tv">§ 2.2 Televisions</a> applies.</p>
-   <p>A user agent that doesn’t implement those must report the kinds of device that match the definitions above.</p>
-   <p>The form factors must agree with the platform the user agent presents <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>. If the user agent
-presents itself as a desktop system, as browsers do in a "request desktop site" mode, the document’s form factors are
-<a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop">desktop</a>.</p>
-   <h3 class="heading settled" data-level="2.2" id="tv"><span class="secno">2.2. </span><span class="content">Televisions</span><a class="self-link" href="#tv"></a></h3>
+for the document, lowercased, plus <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv①">tv</a> where <a href="#tv">§ 2.3 Televisions</a> applies.</p>
+   <p>A user agent that doesn’t implement those must report the kinds of device that match the definitions above, except
+that its form factors must agree with the platform it presents <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>, and this takes precedence
+over the definitions: if the user agent presents itself as a desktop system, as browsers do in a "request desktop
+site" mode, the document’s form factors are <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop">desktop</a>, plus <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv②">tv</a> where <a href="#tv">§ 2.3 Televisions</a> applies.</p>
+   <div class="note" role="note">
+    A user agent that implements the client hint already applies its own presentation to the hint, so the first rule
+    covers it.
+</div>
+   <div class="example" id="example-desktop-tablets"><a class="self-link" href="#example-desktop-tablets"></a>
+    At the time of writing, Safari on iPads other than iPad mini presents itself as macOS by default
+    <a data-link-type="biblio" href="#biblio-webkit-safari-13" title="New WebKit Features in Safari 13">[WEBKIT-SAFARI-13]</a>, so those iPads report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop①">desktop</a> rather than <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tablet" id="ref-for-valdef-media-form-factor-tablet">tablet</a>. Chrome on
+    Android doesn’t set the mobile bit on tablet-sized screens, so its client hint reports "Desktop" there
+    <a data-link-type="biblio" href="#biblio-chromium-ua-utils" title="components/embedder_support/user_agent_utils.cc">[CHROMIUM-UA-UTILS]</a>, and on premium tablets it also presents itself as Linux by default
+    <a data-link-type="biblio" href="#biblio-chrome-desktop-mode" title="Chrome enables desktop mode by default on premium tablets">[CHROME-DESKTOP-MODE]</a>; those tablets report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop②">desktop</a> too.
+</div>
+   <div class="note" role="note">
+    The feature can only be as detailed as the user agent’s own classification, and today that is coarse. Only
+    Chromium implements <code>Sec-CH-UA-Form-Factors</code>, and by default it reports "Mobile" or "Desktop" from
+    the mobile bit, adding "XR" on Android XR devices <a data-link-type="biblio" href="#biblio-chromium-ua-utils" title="components/embedder_support/user_agent_utils.cc">[CHROMIUM-UA-UTILS]</a>. Chromium’s own browser reports "Tablet"
+    only in ChromeOS’s "request tablet site" mode (Android apps that embed its WebView can set any value), and no
+    default code path reports "Automotive", "EInk", or "Watch". Together with the desktop presentation of most
+    tablets, this means <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tablet" id="ref-for-valdef-media-form-factor-tablet①">tablet</a> would match almost nowhere in current browsers. The keywords are
+    worth defining anyway, so that a user agent that does classify devices has one way to say so, but authors
+    should expect <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile②">mobile</a> and <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop③">desktop</a> to be most of what they see.
+</div>
+   <h3 class="heading settled" data-level="2.3" id="tv"><span class="secno">2.3. </span><span class="content">Televisions</span><a class="self-link" href="#tv"></a></h3>
    <p><code>Sec-CH-UA-Form-Factors</code> has no value for a television, so a television browser that implements it reports
-something else, usually <code>"Desktop"</code>. A user agent must report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv②">tv</a> for a television or
+something else; one built on Chromium reports "Mobile" or "Desktop" from the same mobile bit as any other device,
+unless its maker changes that <a data-link-type="biblio" href="#biblio-chromium-ua-utils" title="components/embedder_support/user_agent_utils.cc">[CHROMIUM-UA-UTILS]</a>. A user agent must report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv③">tv</a> for a television or
 set-top device even so.</p>
    <div class="note" role="note">
+    
     This is the one place where the feature and the client hint can disagree, and it should be fixed in the hint
-    rather than here: a page on a television needs to know, and the client hint’s own rule is that a value is added
-    "when there is a compelling use-case". See <a href="#open-issues">§ 6 Open issues</a>.
-</div>
-   <h3 class="heading settled" data-level="2.3" id="changes"><span class="secno">2.3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
+    rather than here. The hint had a television value: when it was first added, in March 2023, its values were
+    "Automobile", "Mobile", "Tablet", "TV", "VR", "XR", and "Unknown" <a data-link-type="biblio" href="#biblio-ua-ch-338" title="Add a Sec-CH-UA-Form-Factor hint (WICG/ua-client-hints#338)">[UA-CH-338]</a>, and the W3C Media and
+    Entertainment Interest Group’s issue on how television browsers should identify themselves was updated to note
+    that the new hint allowed "TV" <a data-link-type="biblio" href="#biblio-me-ig-47" title="User-Agent string in embedded TV browsers (w3c/media-and-entertainment#47)">[ME-IG-47]</a>. In the discussion that followed, "TV" was dropped "in the absence
+    of use-cases for it identified so far in this conversation" <a data-link-type="biblio" href="#biblio-ua-ch-344" title="Make Sec-CH-UA-Form-Factor a future proof way of selecting content (WICG/ua-client-hints#344), comment by Dustin Mitchell">[UA-CH-344]</a>, and in September 2023 the hint became
+    a list without it <a data-link-type="biblio" href="#biblio-ua-ch-343" title="Make Sec-CH-UA-Form-Factor a list, add meanings (WICG/ua-client-hints#343)">[UA-CH-343]</a>.
+
+
+    <p>The hint’s own criteria for adding a value are "a new form-factor that users interact with in a meaningfully
+    different way; a compelling use-case where sites would like to change how they interact with users on that
+    device; and no reliable way to identify that new form-factor using existing hints" <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>. A
+    television meets all three: it is used from across a room with a remote control, <a href="#intro">§ 1 Introduction</a> gives the use case,
+    and no client hint identifies it. Among media features, only <span class="css">none</span> hints at it, and not on
+    televisions whose remotes act as pointers. Otherwise, television browsers can often be recognized only from
+    unstandardized <code>User-Agent</code> tokens. See <a href="#open-issues">§ 6 Open issues</a>.</p>
+   </div>
+   <h3 class="heading settled" data-level="2.4" id="changes"><span class="secno">2.4. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
    <p>The value is determined when the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document①">document</a> is created, and doesn’t change while the document exists.</p>
-   <h3 class="heading settled" data-level="2.4" id="frames"><span class="secno">2.4. </span><span class="content">Frames</span><a class="self-link" href="#frames"></a></h3>
+   <h3 class="heading settled" data-level="2.5" id="frames"><span class="secno">2.5. </span><span class="content">Frames</span><a class="self-link" href="#frames"></a></h3>
    <p>The feature uses <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure" id="ref-for-frame-scoped-exposure">frame-scoped exposure</a> <a data-link-type="biblio" href="#biblio-media-feature-privacy" title="Privacy Protections for Media Features">[MEDIA-FEATURE-PRIVACY]</a>. Its policy-controlled feature is
 "<code>ch-ua-form-factors</code>", the one that already delegates the client hint <a data-link-type="biblio" href="#biblio-client-hints-infrastructure" title="Client Hints Infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]</a>,
 whose default allowlist is <code>'self'</code>.</p>
@@ -2440,16 +2494,16 @@ whose default allowlist is <code>'self'</code>.</p>
     A site that delegates the client hint to a frame, so that the frame’s server can adapt, gives the frame’s style
     sheets the same information: <code>Permissions-Policy: ch-ua-form-factors=(self "widgets.example")</code>.
 </div>
-   <h3 class="heading settled" data-level="2.5" id="reduced-exposure"><span class="secno">2.5. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
+   <h3 class="heading settled" data-level="2.6" id="reduced-exposure"><span class="secno">2.6. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
    <p>The feature is <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control" id="ref-for-under-user-control">under user control</a>. In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, and when the user turns the feature off, it
 is the <a data-link-type="dfn" href="#coarse-form-factor" id="ref-for-coarse-form-factor①">coarse form factor</a>.</p>
-   <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="coarse-form-factor">coarse form factor</dfn> of a document is <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile②">mobile</a> if the user agent reports itself as
+   <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="coarse-form-factor">coarse form factor</dfn> of a document is <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile③">mobile</a> if the user agent reports itself as
 mobile, in the <code>Sec-CH-UA-Mobile</code> client hint, in <code>navigator.userAgentData.mobile</code>, or with a
-"Mobile" token in its <code>User-Agent</code> header, and <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop①">desktop</a> otherwise.</p>
+"Mobile" token in its <code>User-Agent</code> header, and <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop④">desktop</a> otherwise.</p>
    <div class="note" role="note">
     The coarse form factor is the bit that every site already receives on every request, so a document that gets only
-    it learns nothing new. A watch or a car falls back to <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile③">mobile</a>, and a television to
-    <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop②">desktop</a>, which is what a page assumes today.
+    it learns nothing new. A watch or a car falls back to <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-mobile" id="ref-for-valdef-media-form-factor-mobile④">mobile</a>, and a television to
+    <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-desktop" id="ref-for-valdef-media-form-factor-desktop⑤">desktop</a>, which is what a page assumes today.
 </div>
    <h2 class="heading settled" data-level="3" id="privacy"><span class="secno">3. </span><span class="content">Privacy considerations</span><a class="self-link" href="#privacy"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="privacy-exposed"><span class="secno">3.1. </span><span class="content">What the feature reveals</span><a class="self-link" href="#privacy-exposed"></a></h3>
@@ -2458,8 +2512,8 @@ the device’s model, manufacturer, screen size, operating system version, or pr
    <p>Unlike the platform <a data-link-type="biblio" href="#biblio-platform-media-query" title="Platform Media Query">[PLATFORM-MEDIA-QUERY]</a>, this is more than every site receives today. Of the signals it
 corresponds to, only the mobile bit is sent to every site by default; the rest of
 <code>Sec-CH-UA-Form-Factors</code> is a hint a site must ask for, and which isn’t shared with cross-origin frames
-unless the top-level site delegates it. This specification keeps both of those limits: <a href="#frames">§ 2.4 Frames</a> uses the same
-policy, and <a href="#reduced-exposure">§ 2.5 Reduced exposure</a> falls back to the mobile bit.</p>
+unless the top-level site delegates it. This specification keeps both of those limits: <a href="#frames">§ 2.5 Frames</a> uses the same
+policy, and <a href="#reduced-exposure">§ 2.6 Reduced exposure</a> falls back to the mobile bit.</p>
    <h3 class="heading settled" data-level="3.2" id="privacy-fingerprinting"><span class="secno">3.2. </span><span class="content">Fingerprinting</span><a class="self-link" href="#privacy-fingerprinting"></a></h3>
    <p>Most users are on a phone, a tablet, or a computer, so for most users the feature reveals little more than the
 mobile bit does. The users it identifies are the ones on uncommon devices: a watch, a headset, an e-ink reader, or a
@@ -2467,10 +2521,11 @@ car. If one user in a thousand browses from a watch, the feature tells a site ab
    <p>Two things limit the cost:</p>
    <ul>
     <li data-md>
-     <p>Those devices are already recognizable without this feature. A watch has a tiny viewport and often round safe-area
-insets; an e-ink reader reports <span class="css">slow</span> and often <span class="css">0</span>; a headset reports <span class="css">environment-blending</span>
-other than <span class="css">opaque</span>; a car’s browser has a distinctive user agent string. The feature
-mostly saves authors from guessing, rather than revealing something new.</p>
+     <p>Some of those devices are already recognizable without this feature: a watch has a tiny viewport and often round
+safe-area insets, and an e-ink reader reports <span class="css">slow</span> and often <span class="css">0</span>. For those, the feature
+mostly saves authors from guessing. A headset would be recognizable from <span class="css">environment-blending</span>, but no
+browser implements that feature yet, and a car has no such signal, so for users of those devices this feature
+does reveal something new.</p>
     <li data-md>
      <p>The list is closed, so an unusual device reports <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-other" id="ref-for-valdef-media-form-factor-other②">other</a> rather than naming itself, and the value is
 restricted in frames and in reduced-exposure contexts.</p>
@@ -2499,7 +2554,7 @@ window gets the phone layout.</p>
    <h3 class="heading settled" data-level="4.1" id="security-not-detection"><span class="secno">4.1. </span><span class="content">It is not feature detection</span><a class="self-link" href="#security-not-detection"></a></h3>
    <p>The kind of device doesn’t say which features work, how large the viewport is, or whether there is a pointer. Pages
 should keep using <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer" id="ref-for-descdef-media-pointer">pointer</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover" id="ref-for-descdef-media-hover">hover</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update" id="ref-for-descdef-media-update">update</a>, <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block" id="ref-for-descdef-media-overflow-block">overflow-block</a>,
-<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending" id="ref-for-descdef-media-environment-blending">environment-blending</a>, the viewport features, and <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a> for those, and use this feature for the
+<a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending" id="ref-for-descdef-media-environment-blending">environment-blending</a>, the viewport features, and <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports①">@supports</a> for those, and use this feature for the
 things they can’t express: how far away the screen is, how much attention the user can spare, and what kind of
 control the user holds.</p>
    <h3 class="heading settled" data-level="4.2" id="security-discrimination"><span class="secno">4.2. </span><span class="content">Refusing to serve devices</span><a class="self-link" href="#security-discrimination"></a></h3>
@@ -2521,28 +2576,49 @@ entitlement, fraud scoring, or any security decision.</p>
    <p>CSS could keep describing capabilities and let pages infer the rest, adding features for the qualities that are
 missing, such as viewing distance or the kind of control the user holds. That is how the CSS Working Group has
 handled similar requests, turning "what device is this" into "what does it do", as the Device Posture API did by
-exposing <span class="css">folded</span> rather than a device model <a data-link-type="biblio" href="#biblio-device-posture" title="Device Posture API">[DEVICE-POSTURE]</a>. It was not chosen because the
-missing qualities are many and correlated, and because every browser already computes exactly this classification
-for <code>Sec-CH-UA-Form-Factors</code>: authors would be inferring something the user agent already knows. A
-reviewer may still prefer this direction, and <a href="#open-issues">§ 6 Open issues</a> asks the question.</p>
+exposing <span class="css">folded</span> rather than a device model <a data-link-type="biblio" href="#biblio-device-posture" title="Device Posture API">[DEVICE-POSTURE]</a>. The Working Group has open
+issues in this direction, for enclosed screens <a data-link-type="biblio" href="#biblio-csswg-9701" title="[mediaqueries-5] Media query for enclosed screens (w3c/csswg-drafts#9701)">[CSSWG-9701]</a> and for typical viewing distance <a data-link-type="biblio" href="#biblio-csswg-13398" title="Need for detecting the typical viewing distance in media queries (w3c/csswg-drafts#13398)">[CSSWG-13398]</a>.
+When the Working Group was asked to expose whether a device is mobile <a data-link-type="biblio" href="#biblio-csswg-7696" title="[mediaqueries] Consider exposing &quot;mobileness&quot; as a media query (w3c/csswg-drafts#7696)">[CSSWG-7696]</a>, Tab Atkins, an editor of
+Media Queries, answered that the media types were deprecated and not reproduced as a media query "precisely
+<em>because</em> it’s an incoherent concept and never what you <em>actually</em> want". That issue is still open.</p>
+   <p>It was not chosen because the missing qualities are many and correlated, and because a user agent is better placed
+to classify its device than a page is, which is why <code>Sec-CH-UA-Form-Factors</code> exists. That argument is
+weaker than it looks: only Chromium implements the hint, and it classifies little beyond mobile and desktop
+(<a href="#source">§ 2.2 Where the value comes from</a>). A reviewer may well prefer this direction, and <a href="#open-issues">§ 6 Open issues</a> asks the question.</p>
    <h3 class="heading settled" data-level="5.2" id="alt-media-types"><span class="secno">5.2. </span><span class="content">Reviving the media types</span><a class="self-link" href="#alt-media-types"></a></h3>
    <p>CSS had <code>@media tv</code>, <code>@media handheld</code>, and <code>@media projection</code>, and deprecated
-them. They failed because each keyword stood for a bundle of assumptions about size, input, and capability, and
-authors used them for layout, which viewport queries do better. This feature is narrower: the device class alone,
-with capabilities and sizes left to the features that describe them, and with rules that keep an unrecognized device
-working.</p>
+them, because media types "have proven insufficient as a way of discriminating between devices with different
+styling needs" <a data-link-type="biblio" href="#biblio-mediaqueries-4" title="Media Queries Level 4">[MEDIAQUERIES-4]</a>; user agents must now make them match nothing. Media Queries explains that
+categories such as <code>screen</code> and <code>handheld</code> blended over time, and that media types were
+mutually exclusive, so a device could be only one of them. Authors also used them for layout, which viewport queries
+do better. This is the first objection this feature will meet. The feature is narrower: a device can have several
+form factors, capabilities and sizes are left to the features that describe them, and the rules keep an
+unrecognized device working.</p>
    <h3 class="heading settled" data-level="5.3" id="alt-screen-size"><span class="secno">5.3. </span><span class="content">Physical screen size</span><a class="self-link" href="#alt-screen-size"></a></h3>
    <p>A feature for the physical size of the display would separate a television from a laptop, and a watch from a phone.
 It was not chosen because it is a continuous value, and therefore a much larger fingerprinting surface than a closed
-list of nine keywords, and because <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor③">form-factor</a> answers the question that authors actually ask.</p>
+list of nine keywords, and because <a class="property" data-link-type="propdesc" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor④">form-factor</a> answers the question that authors actually ask.</p>
    <h3 class="heading settled" data-level="5.4" id="alt-hint-only"><span class="secno">5.4. </span><span class="content">Leaving it to the client hint</span><a class="self-link" href="#alt-hint-only"></a></h3>
-   <p>Sites can already request <code>Sec-CH-UA-Form-Factors</code> and serve different CSS. That works only for pages
+   <p>Sites can already request <code>Sec-CH-UA-Form-Factors</code>, which Chrome has supported since version 124, and serve
+different CSS. That works only in Chromium-based browsers, only for pages
 built on a server that varies its response, doesn’t work for static files, caches badly, and doesn’t work at all
 where script and server negotiation aren’t available, such as an HTML email or a document opened from disk.</p>
    <h2 class="heading settled" data-level="6" id="open-issues"><span class="secno">6. </span><span class="content">Open issues</span><a class="self-link" href="#open-issues"></a></h2>
-   <p class="issue" id="issue-ae00b4b1"><a class="self-link" href="#issue-ae00b4b1"></a><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv③">tv</a> has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
-specification requires a value the client hint can’t express. The right fix is to add "TV" to the hint. Until then,
-should the feature report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv④">tv</a> at all, or wait?
+   <p class="issue" id="issue-4679d560"><a class="self-link" href="#issue-4679d560"></a><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv④">tv</a> has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
+specification requires a value the client hint can’t express. The right fix is to add "TV" back to the hint, which
+dropped it because no one in that discussion had identified a use case for it (<a href="#tv">§ 2.3 Televisions</a>). Until then, should the feature report
+<a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv" id="ref-for-valdef-media-form-factor-tv⑤">tv</a> at all, or wait?
+
+</p>
+   <p class="issue" id="issue-c4f037f0"><a class="self-link" href="#issue-c4f037f0"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tablet" id="ref-for-valdef-media-form-factor-tablet②">tablet</a> exist? Safari on most iPads presents itself as a desktop computer by
+default, Chrome’s client hint reports "Desktop" on Android tablets, and Chromium’s own browser reports "Tablet" only
+in one ChromeOS mode (<a href="#source">§ 2.2 Where the value comes from</a>), so the keyword would match almost nowhere today. Keeping it costs little, and removing it would leave
+no way to say "tablet" if user agents start reporting it.
+
+</p>
+   <p class="issue" id="issue-7ff62251"><a class="self-link" href="#issue-7ff62251"></a>The CSS Working Group has already been asked for a "mobileness" media query, and participants
+including a Media Queries editor pushed back in that issue, which is still open <a data-link-type="biblio" href="#biblio-csswg-7696" title="[mediaqueries] Consider exposing &quot;mobileness&quot; as a media query (w3c/csswg-drafts#7696)">[CSSWG-7696]</a>. Does a closed list of device classes answer that objection, or should this proposal become the
+capability features that issue and <a data-link-type="biblio" href="#biblio-csswg-13398" title="Need for detecting the typical viewing distance in media queries (w3c/csswg-drafts#13398)">[CSSWG-13398]</a> point toward?
 
 </p>
    <p class="issue" id="issue-68cb725e"><a class="self-link" href="#issue-68cb725e"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-eink" id="ref-for-valdef-media-form-factor-eink">eink</a> exist when <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update" id="ref-for-descdef-media-update①">update</a> already reports <span class="css">slow</span>? They aren’t
@@ -2586,7 +2662,8 @@ fingerprinting protections apply.</p>
      <p>No.</p>
     <dt data-md>Do the features expose information about the underlying platform to origins?
     <dd data-md>
-     <p>Yes, the device class the user agent already computes for <code>Sec-CH-UA-Form-Factors</code>.</p>
+     <p>Yes, the device class, which user agents that implement <code>Sec-CH-UA-Form-Factors</code> already compute for
+that hint.</p>
     <dt data-md>Does this specification allow an origin to send data to the underlying platform?
     <dd data-md>
      <p>No.</p>
@@ -2803,7 +2880,7 @@ tablet.</p>
   <h3 class="heading no-num no-ref settled" id="index-defined-here"><span class="content">Terms defined by this specification</span><a class="self-link" href="#index-defined-here"></a></h3>
   <ul class="index">
    <li><a href="#valdef-media-form-factor-automotive">automotive</a><span>, in § 2</span>
-   <li><a href="#coarse-form-factor">coarse form factor</a><span>, in § 2.5</span>
+   <li><a href="#coarse-form-factor">coarse form factor</a><span>, in § 2.6</span>
    <li><a href="#valdef-media-form-factor-desktop">desktop</a><span>, in § 2</span>
    <li><a href="#valdef-media-form-factor-eink">eink</a><span>, in § 2</span>
    <li><a href="#descdef-media-form-factor">form-factor</a><span>, in § 2</span>
@@ -2878,16 +2955,38 @@ tablet.</p>
   </dl>
   <h3 class="heading no-num no-ref settled" id="informative"><span class="content">Non-Normative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-chrome-desktop-mode">[CHROME-DESKTOP-MODE]
+   <dd><a href="https://developer.chrome.com/blog/desktop-mode"><cite>Chrome enables desktop mode by default on premium tablets</cite></a>. 2023. URL: <a href="https://developer.chrome.com/blog/desktop-mode">https://developer.chrome.com/blog/desktop-mode</a>
+   <dt id="biblio-chromium-ua-utils">[CHROMIUM-UA-UTILS]
+   <dd><a href="https://source.chromium.org/chromium/chromium/src/+/main:components/embedder_support/user_agent_utils.cc"><cite>components/embedder_support/user_agent_utils.cc</cite></a>. URL: <a href="https://source.chromium.org/chromium/chromium/src/+/main:components/embedder_support/user_agent_utils.cc">https://source.chromium.org/chromium/chromium/src/+/main:components/embedder_support/user_agent_utils.cc</a>
    <dt id="biblio-client-hints-infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]
    <dd><a href="https://wicg.github.io/client-hints-infrastructure/"><cite>Client Hints Infrastructure</cite></a>. URL: <a href="https://wicg.github.io/client-hints-infrastructure/">https://wicg.github.io/client-hints-infrastructure/</a>
+   <dt id="biblio-csswg-13398">[CSSWG-13398]
+   <dd><a href="https://github.com/w3c/csswg-drafts/issues/13398"><cite>Need for detecting the typical viewing distance in media queries (w3c/csswg-drafts#13398)</cite></a>. URL: <a href="https://github.com/w3c/csswg-drafts/issues/13398">https://github.com/w3c/csswg-drafts/issues/13398</a>
+   <dt id="biblio-csswg-7696">[CSSWG-7696]
+   <dd><a href="https://github.com/w3c/csswg-drafts/issues/7696"><cite>[mediaqueries] Consider exposing "mobileness" as a media query (w3c/csswg-drafts#7696)</cite></a>. URL: <a href="https://github.com/w3c/csswg-drafts/issues/7696">https://github.com/w3c/csswg-drafts/issues/7696</a>
+   <dt id="biblio-csswg-9701">[CSSWG-9701]
+   <dd><a href="https://github.com/w3c/csswg-drafts/issues/9701"><cite>[mediaqueries-5] Media query for enclosed screens (w3c/csswg-drafts#9701)</cite></a>. URL: <a href="https://github.com/w3c/csswg-drafts/issues/9701">https://github.com/w3c/csswg-drafts/issues/9701</a>
    <dt id="biblio-device-posture">[DEVICE-POSTURE]
    <dd><a href="https://www.w3.org/TR/device-posture/"><cite>Device Posture API</cite></a>. URL: <a href="https://www.w3.org/TR/device-posture/">https://www.w3.org/TR/device-posture/</a>
+   <dt id="biblio-me-ig-47">[ME-IG-47]
+   <dd><a href="https://github.com/w3c/media-and-entertainment/issues/47"><cite>User-Agent string in embedded TV browsers (w3c/media-and-entertainment#47)</cite></a>. URL: <a href="https://github.com/w3c/media-and-entertainment/issues/47">https://github.com/w3c/media-and-entertainment/issues/47</a>
+   <dt id="biblio-mediaqueries-4">[MEDIAQUERIES-4]
+   <dd>Tab Atkins Jr.; Florian Rivoal. <a href="https://drafts.csswg.org/mediaqueries-4/"><cite>Media Queries Level 4</cite></a>. URL: <a href="https://drafts.csswg.org/mediaqueries-4/">https://drafts.csswg.org/mediaqueries-4/</a>
    <dt id="biblio-platform-media-query">[PLATFORM-MEDIA-QUERY]
    <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/"><cite>Platform Media Query</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/</a>
    <dt id="biblio-security-privacy-questionnaire">[SECURITY-PRIVACY-QUESTIONNAIRE]
    <dd>Theresa O'Connor; Peter Snyder; Simone Onofri. <a href="https://w3c.github.io/security-questionnaire/"><cite>Self-Review Questionnaire: Security and Privacy</cite></a>. URL: <a href="https://w3c.github.io/security-questionnaire/">https://w3c.github.io/security-questionnaire/</a>
+   <dt id="biblio-ua-ch-338">[UA-CH-338]
+   <dd><a href="https://github.com/WICG/ua-client-hints/pull/338"><cite>Add a Sec-CH-UA-Form-Factor hint (WICG/ua-client-hints#338)</cite></a>. 2023-03-30. URL: <a href="https://github.com/WICG/ua-client-hints/pull/338">https://github.com/WICG/ua-client-hints/pull/338</a>
+   <dt id="biblio-ua-ch-343">[UA-CH-343]
+   <dd><a href="https://github.com/WICG/ua-client-hints/pull/343"><cite>Make Sec-CH-UA-Form-Factor a list, add meanings (WICG/ua-client-hints#343)</cite></a>. 2023-09-06. URL: <a href="https://github.com/WICG/ua-client-hints/pull/343">https://github.com/WICG/ua-client-hints/pull/343</a>
+   <dt id="biblio-ua-ch-344">[UA-CH-344]
+   <dd><a href="https://github.com/WICG/ua-client-hints/issues/344#issuecomment-1690624761"><cite>Make Sec-CH-UA-Form-Factor a future proof way of selecting content (WICG/ua-client-hints#344), comment by Dustin Mitchell</cite></a>. 2023-08-23. URL: <a href="https://github.com/WICG/ua-client-hints/issues/344#issuecomment-1690624761">https://github.com/WICG/ua-client-hints/issues/344#issuecomment-1690624761</a>
    <dt id="biblio-ua-client-hints">[UA-CLIENT-HINTS]
    <dd><a href="https://wicg.github.io/ua-client-hints/"><cite>User-Agent Client Hints</cite></a>. URL: <a href="https://wicg.github.io/ua-client-hints/">https://wicg.github.io/ua-client-hints/</a>
+   <dt id="biblio-webkit-safari-13">[WEBKIT-SAFARI-13]
+   <dd><a href="https://webkit.org/blog/9674/new-webkit-features-in-safari-13/"><cite>New WebKit Features in Safari 13</cite></a>. 2019. URL: <a href="https://webkit.org/blog/9674/new-webkit-features-in-safari-13/">https://webkit.org/blog/9674/new-webkit-features-in-safari-13/</a>
   </dl>
   <h2 class="heading no-num no-ref settled" id="property-index"><span class="content">Property Index</span><a class="self-link" href="#property-index"></a></h2>
   <p>No properties defined.</p>
@@ -2902,7 +3001,7 @@ tablet.</p>
       <th scope="col">Type
     <tbody>
      <tr>
-      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor④">form-factor</a>
+      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-form-factor" id="ref-for-descdef-media-form-factor⑤">form-factor</a>
       <td>desktop | mobile | tablet | tv | watch | xr | eink | automotive | other
       <td>
       <td>discrete
@@ -2911,10 +3010,22 @@ tablet.</p>
   <h2 class="heading no-num no-ref settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
    <div class="issue"><a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv">tv</a> has no matching value in <code>Sec-CH-UA-Form-Factors</code>, so this
-specification requires a value the client hint can’t express. The right fix is to add "TV" to the hint. Until then,
-should the feature report <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv">tv</a> at all, or wait?
+specification requires a value the client hint can’t express. The right fix is to add "TV" back to the hint, which
+dropped it because no one in that discussion had identified a use case for it (<a href="#tv">§ 2.3 Televisions</a>). Until then, should the feature report
+<a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tv">tv</a> at all, or wait?
 
- <a class="issue-return" href="#issue-ae00b4b1" title="Jump to section">↵</a></div>
+ <a class="issue-return" href="#issue-4679d560" title="Jump to section">↵</a></div>
+   <div class="issue">Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-tablet">tablet</a> exist? Safari on most iPads presents itself as a desktop computer by
+default, Chrome’s client hint reports "Desktop" on Android tablets, and Chromium’s own browser reports "Tablet" only
+in one ChromeOS mode (<a href="#source">§ 2.2 Where the value comes from</a>), so the keyword would match almost nowhere today. Keeping it costs little, and removing it would leave
+no way to say "tablet" if user agents start reporting it.
+
+ <a class="issue-return" href="#issue-c4f037f0" title="Jump to section">↵</a></div>
+   <div class="issue">The CSS Working Group has already been asked for a "mobileness" media query, and participants
+including a Media Queries editor pushed back in that issue, which is still open <a data-link-type="biblio" href="#biblio-csswg-7696" title="[mediaqueries] Consider exposing &quot;mobileness&quot; as a media query (w3c/csswg-drafts#7696)">[CSSWG-7696]</a>. Does a closed list of device classes answer that objection, or should this proposal become the
+capability features that issue and <a data-link-type="biblio" href="#biblio-csswg-13398" title="Need for detecting the typical viewing distance in media queries (w3c/csswg-drafts#13398)">[CSSWG-13398]</a> point toward?
+
+ <a class="issue-return" href="#issue-7ff62251" title="Jump to section">↵</a></div>
    <div class="issue">Should <a class="css" data-link-type="maybe" href="#valdef-media-form-factor-eink">eink</a> exist when <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-update">update</a> already reports <span class="css">slow</span>? They aren’t
 the same thing, since a slow-updating LCD isn’t e-ink, but they overlap more than the other values do.
 
@@ -3132,31 +3243,31 @@ function parseHTML(markup) {
 {
 let dfnPanelData = {
 "2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
-"3610bd67": {"dfnID":"3610bd67","dfnText":"allowed to use","external":true,"refSections":[{"refs":[{"id":"ref-for-allowed-to-use"}],"title":"2.4. Frames"}],"url":"https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use"},
+"3610bd67": {"dfnID":"3610bd67","dfnText":"allowed to use","external":true,"refSections":[{"refs":[{"id":"ref-for-allowed-to-use"}],"title":"2.5. Frames"}],"url":"https://html.spec.whatwg.org/multipage/iframe-embed-object.html#allowed-to-use"},
 "4dba9df7": {"dfnID":"4dba9df7","dfnText":"pointer","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-pointer"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
-"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.5. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
+"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.6. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
 "5c01eb94": {"dfnID":"5c01eb94","dfnText":"environment-blending","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-environment-blending"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-environment-blending"},
 "5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
 "6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"},{"id":"ref-for-comb-one\u2460"},{"id":"ref-for-comb-one\u2461"},{"id":"ref-for-comb-one\u2462"},{"id":"ref-for-comb-one\u2463"},{"id":"ref-for-comb-one\u2464"},{"id":"ref-for-comb-one\u2465"},{"id":"ref-for-comb-one\u2466"}],"title":"2. The form-factor feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
 "7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The form-factor feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
 "92c8a448": {"dfnID":"92c8a448","dfnText":"overflow-block","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-overflow-block"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-overflow-block"},
-"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.3. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
+"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.4. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
 "ba7479b5": {"dfnID":"ba7479b5","dfnText":"update","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-update"}],"title":"4.1. It is not feature detection"},{"refs":[{"id":"ref-for-descdef-media-update\u2460"}],"title":"6. Open issues"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-update"},
-"bf5567cf": {"dfnID":"bf5567cf","dfnText":"frame-scoped exposure","external":true,"refSections":[{"refs":[{"id":"ref-for-frame-scoped-exposure"}],"title":"2.4. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure"},
-"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
-"ce815f50": {"dfnID":"ce815f50","dfnText":"restricted value","external":true,"refSections":[{"refs":[{"id":"ref-for-restricted-value"}],"title":"2.4. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value"},
-"coarse-form-factor": {"dfnID":"coarse-form-factor","dfnText":"coarse form factor","external":false,"refSections":[{"refs":[{"id":"ref-for-coarse-form-factor"}],"title":"2.4. Frames"},{"refs":[{"id":"ref-for-coarse-form-factor\u2460"}],"title":"2.5. Reduced exposure"},{"refs":[{"id":"ref-for-coarse-form-factor\u2461"}],"title":"3.3. Embedded content"},{"refs":[{"id":"ref-for-coarse-form-factor\u2462"}],"title":"6. Open issues"}],"url":"#coarse-form-factor"},
+"bf5567cf": {"dfnID":"bf5567cf","dfnText":"frame-scoped exposure","external":true,"refSections":[{"refs":[{"id":"ref-for-frame-scoped-exposure"}],"title":"2.5. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure"},
+"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"2.1. Adding keywords"},{"refs":[{"id":"ref-for-at-ruledef-supports\u2460"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
+"ce815f50": {"dfnID":"ce815f50","dfnText":"restricted value","external":true,"refSections":[{"refs":[{"id":"ref-for-restricted-value"}],"title":"2.5. Frames"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#restricted-value"},
+"coarse-form-factor": {"dfnID":"coarse-form-factor","dfnText":"coarse form factor","external":false,"refSections":[{"refs":[{"id":"ref-for-coarse-form-factor"}],"title":"2.5. Frames"},{"refs":[{"id":"ref-for-coarse-form-factor\u2460"}],"title":"2.6. Reduced exposure"},{"refs":[{"id":"ref-for-coarse-form-factor\u2461"}],"title":"3.3. Embedded content"},{"refs":[{"id":"ref-for-coarse-form-factor\u2462"}],"title":"6. Open issues"}],"url":"#coarse-form-factor"},
 "d078c482": {"dfnID":"d078c482","dfnText":"hover","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-hover"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
-"dc285ef9": {"dfnID":"dc285ef9","dfnText":"under user control","external":true,"refSections":[{"refs":[{"id":"ref-for-under-user-control"}],"title":"2.5. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
-"descdef-media-form-factor": {"dfnID":"descdef-media-form-factor","dfnText":"form-factor","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-form-factor\u2460"},{"id":"ref-for-descdef-media-form-factor\u2461"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-descdef-media-form-factor\u2462"}],"title":"5.3. Physical screen size"}],"url":"#descdef-media-form-factor"},
+"dc285ef9": {"dfnID":"dc285ef9","dfnText":"under user control","external":true,"refSections":[{"refs":[{"id":"ref-for-under-user-control"}],"title":"2.6. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#under-user-control"},
+"descdef-media-form-factor": {"dfnID":"descdef-media-form-factor","dfnText":"form-factor","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-form-factor\u2460"},{"id":"ref-for-descdef-media-form-factor\u2461"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-descdef-media-form-factor\u2462"}],"title":"2.1. Adding keywords"},{"refs":[{"id":"ref-for-descdef-media-form-factor\u2463"}],"title":"5.3. Physical screen size"}],"url":"#descdef-media-form-factor"},
 "form-factors": {"dfnID":"form-factors","dfnText":"form factors","external":false,"refSections":[{"refs":[{"id":"ref-for-form-factors"}],"title":"2. The form-factor feature"}],"url":"#form-factors"},
 "valdef-media-form-factor-automotive": {"dfnID":"valdef-media-form-factor-automotive","dfnText":"automotive","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-automotive"}],"title":"4.3. Cars"}],"url":"#valdef-media-form-factor-automotive"},
-"valdef-media-form-factor-desktop": {"dfnID":"valdef-media-form-factor-desktop","dfnText":"desktop","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop"}],"title":"2.1. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop\u2460"},{"id":"ref-for-valdef-media-form-factor-desktop\u2461"}],"title":"2.5. Reduced exposure"}],"url":"#valdef-media-form-factor-desktop"},
+"valdef-media-form-factor-desktop": {"dfnID":"valdef-media-form-factor-desktop","dfnText":"desktop","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop"},{"id":"ref-for-valdef-media-form-factor-desktop\u2460"},{"id":"ref-for-valdef-media-form-factor-desktop\u2461"},{"id":"ref-for-valdef-media-form-factor-desktop\u2462"}],"title":"2.2. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-desktop\u2463"},{"id":"ref-for-valdef-media-form-factor-desktop\u2464"}],"title":"2.6. Reduced exposure"}],"url":"#valdef-media-form-factor-desktop"},
 "valdef-media-form-factor-eink": {"dfnID":"valdef-media-form-factor-eink","dfnText":"eink","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-eink"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-eink"},
-"valdef-media-form-factor-mobile": {"dfnID":"valdef-media-form-factor-mobile","dfnText":"mobile","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile"},{"id":"ref-for-valdef-media-form-factor-mobile\u2460"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile\u2461"},{"id":"ref-for-valdef-media-form-factor-mobile\u2462"}],"title":"2.5. Reduced exposure"}],"url":"#valdef-media-form-factor-mobile"},
+"valdef-media-form-factor-mobile": {"dfnID":"valdef-media-form-factor-mobile","dfnText":"mobile","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile"},{"id":"ref-for-valdef-media-form-factor-mobile\u2460"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile\u2461"}],"title":"2.2. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-mobile\u2462"},{"id":"ref-for-valdef-media-form-factor-mobile\u2463"}],"title":"2.6. Reduced exposure"}],"url":"#valdef-media-form-factor-mobile"},
 "valdef-media-form-factor-other": {"dfnID":"valdef-media-form-factor-other","dfnText":"other","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-other"},{"id":"ref-for-valdef-media-form-factor-other\u2460"}],"title":"2. The form-factor feature"},{"refs":[{"id":"ref-for-valdef-media-form-factor-other\u2461"}],"title":"3.2. Fingerprinting"}],"url":"#valdef-media-form-factor-other"},
-"valdef-media-form-factor-tablet": {"dfnID":"valdef-media-form-factor-tablet","dfnText":"tablet","external":false,"refSections":[],"url":"#valdef-media-form-factor-tablet"},
-"valdef-media-form-factor-tv": {"dfnID":"valdef-media-form-factor-tv","dfnText":"tv","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-tv"}],"title":"1. Introduction"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2460"}],"title":"2.1. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2461"}],"title":"2.2. Televisions"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2462"},{"id":"ref-for-valdef-media-form-factor-tv\u2463"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-tv"},
+"valdef-media-form-factor-tablet": {"dfnID":"valdef-media-form-factor-tablet","dfnText":"tablet","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-tablet"},{"id":"ref-for-valdef-media-form-factor-tablet\u2460"}],"title":"2.2. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tablet\u2461"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-tablet"},
+"valdef-media-form-factor-tv": {"dfnID":"valdef-media-form-factor-tv","dfnText":"tv","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-tv"}],"title":"1. Introduction"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2460"},{"id":"ref-for-valdef-media-form-factor-tv\u2461"}],"title":"2.2. Where the value comes from"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2462"}],"title":"2.3. Televisions"},{"refs":[{"id":"ref-for-valdef-media-form-factor-tv\u2463"},{"id":"ref-for-valdef-media-form-factor-tv\u2464"}],"title":"6. Open issues"}],"url":"#valdef-media-form-factor-tv"},
 "valdef-media-form-factor-watch": {"dfnID":"valdef-media-form-factor-watch","dfnText":"watch","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-form-factor-watch"}],"title":"2. The form-factor feature"}],"url":"#valdef-media-form-factor-watch"},
 "valdef-media-form-factor-xr": {"dfnID":"valdef-media-form-factor-xr","dfnText":"xr","external":false,"refSections":[],"url":"#valdef-media-form-factor-xr"},
 };
@@ -3555,6 +3666,7 @@ let refsData = {
 "#valdef-media-form-factor-eink": {"displayText":"eink","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"eink","type":"value","url":"#valdef-media-form-factor-eink"},
 "#valdef-media-form-factor-mobile": {"displayText":"mobile","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"mobile","type":"value","url":"#valdef-media-form-factor-mobile"},
 "#valdef-media-form-factor-other": {"displayText":"other","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"other","type":"value","url":"#valdef-media-form-factor-other"},
+"#valdef-media-form-factor-tablet": {"displayText":"tablet","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"tablet","type":"value","url":"#valdef-media-form-factor-tablet"},
 "#valdef-media-form-factor-tv": {"displayText":"tv","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"tv","type":"value","url":"#valdef-media-form-factor-tv"},
 "#valdef-media-form-factor-watch": {"displayText":"watch","export":true,"for_":["@media/form-factor","form-factor"],"level":"","normative":true,"shortname":"form-factor-media-query","spec":"form-factor-media-query","status":"local","text":"watch","type":"value","url":"#valdef-media-form-factor-watch"},
 "https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure": {"displayText":"frame-scoped exposure","export":true,"for_":[],"level":"","normative":true,"shortname":"media-feature-privacy","spec":"media-feature-privacy","status":"anchor-block","text":"frame-scoped exposure","type":"dfn","url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#frame-scoped-exposure"},

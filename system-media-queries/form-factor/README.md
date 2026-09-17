@@ -14,8 +14,10 @@ television read from across a room, a watch, a car, an e-ink reader.
   can have several, so a keyword matches when it is one of them: on a watch, both `(form-factor: watch)` and
   `(form-factor: mobile)` match. To exclude one, write `(form-factor: mobile) and (not (form-factor: watch))`.
 
-The values are the ones `Sec-CH-UA-Form-Factors` already defines, plus `tv`, which that client hint is missing. The
-spec flags that mismatch and asks for the hint to add it.
+The values are the ones `Sec-CH-UA-Form-Factors` already defines, plus `tv`, which that client hint had and dropped in
+2023. The spec flags that mismatch and asks for the hint to add it back. It also warns that browsers classify devices
+coarsely today: Chromium, the only engine with the hint, reports little beyond mobile and desktop, and Safari on an
+iPad presents itself as a Mac, so `tablet` matches almost nowhere yet.
 
 ## Privacy
 
@@ -25,7 +27,7 @@ delegates it. The spec keeps both limits.
 
 | Risk | Protection |
 | --- | --- |
-| Identifying users of rare devices, such as a watch or an e-ink reader | The closed list, plus the fact that those devices are already recognizable from viewport size, `update: slow`, and `environment-blending`. |
+| Identifying users of rare devices, such as a watch or an e-ink reader | The closed list, plus the fact that watches and e-ink readers are already recognizable from viewport size and `update: slow`. Cars and headsets have no such signal, so for them the spec says plainly that the feature reveals something new. |
 | Third-party tracking | The same `ch-ua-form-factors` permissions policy that delegates the client hint. Frames without it get only the coarse mobile or desktop value their own requests already carry. |
 | Fingerprinting protection modes | The feature falls back to that same coarse value, so a watch looks like a phone rather than a watch. |
 | Linking visits by a change | The value is fixed when the page loads. |

@@ -47,7 +47,8 @@ All 7 tests pass in Chrome 152.
 
 1. **User-Agent parsing.** Where the browser has no `navigator.userAgentData`, the polyfill reads the `User-Agent`
    string with a short list of patterns. A browser would know its own platform. The patterns follow the spec's rule
-   that the feature agrees with the string, so an iPad in desktop mode reports `macos`.
+   that the feature agrees with the string, so Safari on an iPad, which sends a Mac user-agent string by default,
+   reports `macos`.
 2. **No reduced exposure.** The polyfill can't tell whether it is in a private mode. It doesn't need to: the value
    already matches whatever the browser reports there.
 3. **Only `@media` rules.** Queries in `<link media>`, `<source media>`, `@import … media`, and `matchMedia()` aren't

@@ -1490,7 +1490,7 @@ Possible extra rowspan handling
 </style>
   <meta content="Bikeshed version ac92c2f0d, updated Fri Aug 21 16:01:29 2026 -0700" name="generator">
   <link href="https://arronei.github.io/CSS-Additions/system-media-queries/platform/spec/" rel="canonical">
-  <meta content="47c154e54698fec04cc9dc0067d33bbd7c156ff3" name="revision">
+  <meta content="b9f7f5ec8504f03022962b2ea07aac55b7116107" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2204,7 +2204,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="no-ref p-name" id="title">Platform Media Query</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Living Document,
-    <time class="dt-updated" datetime="2026-09-16">16 September 2026</time></span></h2>
+    <time class="dt-updated" datetime="2026-09-17">17 September 2026</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2220,7 +2220,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 16 September 2026,
+In addition, as of 17 September 2026,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2234,7 +2234,7 @@ Parts of this work may be from another specification document.  If so, those par
 operating system from a closed list of keywords, so that a style sheet can follow that platform’s
 conventions: writing a shortcut as ⌘K or Ctrl+K, ordering the buttons of a dialog, offering the right
 download, or showing the right app store badge. The value must be the same platform the user agent
-already reveals in its <code>User-Agent</code> string and <code>navigator.userAgentData</code>, including
+already reveals in its <code>User-Agent</code> header and, where it has them, its client hints, including
 when the user agent deliberately reports a platform it isn’t running on, so the feature adds no
 information to any context. It never reports the version of the operating system, the device model, the
 architecture, or the browser.</p>
@@ -2247,9 +2247,10 @@ architecture, or the browser.</p>
     <li>
      <a href="#feature"><span class="secno">2</span> <span class="content">The <span class="property">platform</span> feature</span></a>
      <ol class="toc">
-      <li><a href="#platform-source"><span class="secno">2.1</span> <span class="content">The reported platform</span></a>
-      <li><a href="#changes"><span class="secno">2.2</span> <span class="content">Changes</span></a>
-      <li><a href="#reduced-exposure"><span class="secno">2.3</span> <span class="content">Reduced exposure</span></a>
+      <li><a href="#new-keywords"><span class="secno">2.1</span> <span class="content">Adding keywords</span></a>
+      <li><a href="#platform-source"><span class="secno">2.2</span> <span class="content">The reported platform</span></a>
+      <li><a href="#changes"><span class="secno">2.3</span> <span class="content">Changes</span></a>
+      <li><a href="#reduced-exposure"><span class="secno">2.4</span> <span class="content">Reduced exposure</span></a>
      </ol>
     <li>
      <a href="#privacy"><span class="secno">3</span> <span class="content">Privacy considerations</span></a>
@@ -2315,10 +2316,10 @@ mean iOS: a Windows laptop with a touchscreen and an iPad both report it, and th
 and opposite shortcut labels. Feature queries can’t help either, because the question isn’t whether the engine
 supports something, it’s what the user’s platform calls it and expects it to look like.</p>
    <p>So pages work around it. They detect the platform once in script and write a class onto the root element, which is
-what Visual Studio Code does, and what the user agent parsing libraries exist to feed: in one week of September
-2026, <code>bowser</code> was downloaded about 42 million times and <code>ua-parser-js</code> about 23 million.
-Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature
-<a data-link-type="biblio" href="#biblio-moz-platform" title="Bug 1754547: Provide a @media query to target major platform/toolkits">[MOZ-PLATFORM]</a> that only its internal style sheets can use.</p>
+what Visual Studio Code does, and what user agent parsing libraries such as <code>bowser</code> and
+<code>ua-parser-js</code> exist to feed.
+Firefox needed the same thing for its own interface, and added a <code>-moz-platform</code> media feature in
+Firefox 99 <a data-link-type="biblio" href="#biblio-moz-platform" title="Bug 1754547: Provide a @media query to target major platform/toolkits">[MOZ-PLATFORM]</a> that only its own style sheets can use.</p>
    <p>This specification gives style sheets the same thing, in a form that reveals nothing that the user agent doesn’t
 already send to every server in its <code>User-Agent</code> header.</p>
    <div class="example" id="example-intro">
@@ -2340,7 +2341,8 @@ already send to every server in its <code>User-Agent</code> header.</p>
 .download-dmg<c- p>,</c-> .download-deb<c- p>,</c-> .badge-app-store<c- p>,</c-> .badge-play <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
 <c- n>@media</c-> <c- p>(</c->platform: macos<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .download-dmg <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
 <c- n>@media</c-> <c- p>(</c->platform: linux<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .download-deb <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
-<c- n>@media</c-> <c- p>(</c->platform: ios<c- p>)</c-> <c- p>{</c-> .badge-play <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .badge-app-store <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: ios<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .badge-app-store <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: android<c- p>)</c-> <c- p>{</c-> .download-exe <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c-> .badge-play <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c-> <c- p>}</c->
 </pre>
    </div>
    <p>The feature reports a family, never a version, and never a device. It is deliberately not a way to ask what the
@@ -2395,14 +2397,40 @@ and must not invent keywords. New keywords are added by revising this specificat
     keyword, the few users of one would be easy to recognize, while the feature is worth little to them, because
     an author can’t design for a platform they have never seen. See <a href="#privacy-closed-list">§ 3.4 The closed list</a>.
 </div>
-   <h3 class="heading settled" data-level="2.1" id="platform-source"><span class="secno">2.1. </span><span class="content">The reported platform</span><a class="self-link" href="#platform-source"></a></h3>
+   <h3 class="heading settled" data-level="2.1" id="new-keywords"><span class="secno">2.1. </span><span class="content">Adding keywords</span><a class="self-link" href="#new-keywords"></a></h3>
+   <p>A keyword added in a later revision is an unknown value to a user agent that implements an earlier one, and a media
+query that evaluates to unknown because of it is replaced with <span class="css">not all</span> <a data-link-type="biblio" href="#biblio-mediaqueries-4" title="Media Queries Level 4">[MEDIAQUERIES-4]</a>. The negation of an
+unknown value is also unknown, so both of these match nothing in such a user agent, on any platform:</p>
+<pre class="highlight"><c- n>@media</c-> <c- p>(</c->platform: harmonyos<c- p>)</c-> <c- p>{</c-> … <c- p>}</c->
+<c- n>@media</c-> not <c- p>(</c->platform: harmonyos<c- p>)</c-> <c- p>{</c-> … <c- p>}</c->
+</pre>
+   <div class="note" role="note">
+    A new keyword is safest in its own media query in a comma-separated list, because only the query that
+    evaluates to unknown is dropped, with the default styles outside any query.
+</div>
+   <div class="example" id="example-new-keyword">
+    <a class="self-link" href="#example-new-keyword"></a>
+    
+<pre class="highlight">.store-badge <c- p>{</c-> <c- k>display</c-><c- p>:</c-> none<c- p>;</c-> <c- p>}</c->
+<c- n>@media</c-> <c- p>(</c->platform: android<c- p>),</c-> <c- p>(</c->platform: harmonyos<c- p>)</c-> <c- p>{</c->
+  .store-badge <c- p>{</c-> <c- k>display</c-><c- p>:</c-> inline<c- p>;</c-> <c- p>}</c->
+<c- p>}</c->
+</pre>
+    <p>In a user agent that knows <a class="css" data-link-type="maybe" href="#valdef-media-platform-android" id="ref-for-valdef-media-platform-android">android</a> but not <code>harmonyos</code>, the rule still applies on
+    Android.</p>
+   </div>
+   <p>A page can’t test for a keyword with <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a>, which doesn’t accept media queries. Script can:
+<code>matchMedia("(platform: harmonyos), not all and (platform: harmonyos)").matches</code> is true when the user
+agent knows the keyword, and false when it doesn’t, including when it doesn’t support <a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform③">platform</a> at all.</p>
+   <h3 class="heading settled" data-level="2.2" id="platform-source"><span class="secno">2.2. </span><span class="content">The reported platform</span><a class="self-link" href="#platform-source"></a></h3>
    <p>The <dfn class="dfn-paneled" data-dfn-type="dfn" data-export id="reported-platform">reported platform</dfn> of a <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document">document</a> is the platform that the user agent presents to that
 document’s origin elsewhere. It is not necessarily the platform the user agent is running on.</p>
    <p>A user agent must determine the reported platform as follows:</p>
    <ol>
     <li data-md>
      <p>If the user agent implements <code>navigator.userAgentData</code> <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, the reported platform is
-the value of its <code>platform</code> property for the document, mapped with the table below.</p>
+the value its <code>platform</code> property has, or would have if the document were a secure context, mapped
+with the table below.</p>
     <li data-md>
      <p>Otherwise, the reported platform is the platform identified by the <code>User-Agent</code> header the user agent
 would send with a request for the document.</p>
@@ -2411,12 +2439,12 @@ would send with a request for the document.</p>
     <thead>
      <tr>
       <th><code>navigator.userAgentData.platform</code>
-      <th><a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform③">platform</a>
+      <th><a class="property" data-link-type="propdesc" href="#descdef-media-platform" id="ref-for-descdef-media-platform④">platform</a>
     
     <tbody>
      <tr>
       <td>"Android"
-      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-android" id="ref-for-valdef-media-platform-android">android</a>
+      <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-android" id="ref-for-valdef-media-platform-android①">android</a>
         
      <tr>
       <td>"Chrome OS", "Chromium OS"
@@ -2439,7 +2467,7 @@ would send with a request for the document.</p>
       <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-windows" id="ref-for-valdef-media-platform-windows">windows</a>
         
      <tr>
-      <td>Any other value, including "Unknown" and "Fuchsia"
+      <td>Any other value, including "Unknown", "Fuchsia", and "OpenHarmony"
       <td><a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other①">other</a>
 
    </table>
@@ -2447,27 +2475,61 @@ would send with a request for the document.</p>
 on. In particular:</p>
    <ul>
     <li data-md>
-     <p>If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode, the
-feature reports that other platform. On iPadOS, Safari’s desktop-class browsing presents itself as macOS, so
-the feature is <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos①">macos</a>. In Chrome on Android, desktop mode presents itself as Linux, so the feature
-is <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux①">linux</a>.</p>
+     <p>If the user agent presents itself as another platform, as browsers do in a "request desktop site" mode and some
+do by default, the feature reports that other platform.</p>
     <li data-md>
      <p>If the user agent normalizes or hides the platform to protect the user from fingerprinting, the feature reports
 the normalized platform, and reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other②">other</a> if the user agent identifies no platform.</p>
    </ul>
+   <div class="example" id="example-disguises">
+    <a class="self-link" href="#example-disguises"></a>
+    At the time of writing:
+
+
+    <ul>
+     <li data-md>
+      <p>Safari on iPad, other than iPad mini, sends the same <code>User-Agent</code> string as Safari on a Mac by
+default <a data-link-type="biblio" href="#biblio-webkit-safari-13" title="New WebKit Features in Safari 13">[WEBKIT-SAFARI-13]</a>, so the feature is <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos①">macos</a>. In 2019, WebKit said that a page loaded
+while Safari took up a third of the screen in multitasking got an iOS <code>User-Agent</code> string
+instead; a document loaded that way would report <a class="css" data-link-type="maybe" href="#valdef-media-platform-ios" id="ref-for-valdef-media-platform-ios①">ios</a>.</p>
+     <li data-md>
+      <p>Chrome on iPad presents itself as iOS, with an <code>iPad</code> token, unless the user requests the desktop
+site, when it presents itself as macOS <a data-link-type="biblio" href="#biblio-chromium-ios-ua" title="ios/web/common/user_agent.mm">[CHROMIUM-IOS-UA]</a>. The same iPad can therefore report
+<a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos②">macos</a> in Safari and <a class="css" data-link-type="maybe" href="#valdef-media-platform-ios" id="ref-for-valdef-media-platform-ios②">ios</a> in Chrome.</p>
+     <li data-md>
+      <p>Chrome on Android presents itself as Linux in desktop mode, which it turns on by default on premium tablets
+<a data-link-type="biblio" href="#biblio-chrome-desktop-mode" title="Chrome enables desktop mode by default on premium tablets">[CHROME-DESKTOP-MODE]</a>, so the feature is <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux①">linux</a> there.</p>
+    </ul>
+   </div>
    <div class="note" role="note">
-    This rule is what makes the feature safe: it can’t disagree with the <code>User-Agent</code> header, with
-    <code>navigator.userAgentData.platform</code>, or with the user’s choice of desktop mode, so it never tells
-    anyone anything they couldn’t already learn. It also means the feature is wrong exactly when the user agent is
-    already wrong, which authors can’t do anything about, and users have asked for.
-</div>
-   <h3 class="heading settled" data-level="2.2" id="changes"><span class="secno">2.2. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
+    
+    This rule is what makes the feature safe: it follows the platform that the user agent already reports in
+    <code>navigator.userAgentData.platform</code> or, without that, in its <code>User-Agent</code> header,
+    including the user’s choice of desktop mode, so it tells no one anything the user agent doesn’t already report.
+    A user agent that reports different platforms in different places exposes the one this rule selects.
+    <code>navigator.platform</code> is coarser than the feature, and reports Android and ChromeOS as Linux. The rule
+    also means the feature is wrong exactly when the user agent is already wrong, which authors can’t do anything
+    about, and which users and user agents have chosen.
+
+
+    <p>The web platform already allows this. <a data-link-type="biblio" href="#biblio-html" title="HTML Standard">[HTML]</a> lets <code>navigator.platform</code> return "a string that is
+    commonly returned on another platform" "for privacy and compatibility", and <a data-link-type="biblio" href="#biblio-mediaqueries-4" title="Media Queries Level 4">[MEDIAQUERIES-4]</a> records that for
+    the legacy device size features, "for the sake of privacy and security, UAs have been allowed to report
+    inaccurate information". The same section notes that "UA string spoofing does not affect Media Queries, making
+    this a somewhat more robust detection technique". This rule exists so that the platform feature is not that
+    technique.</p>
+   </div>
+   <h3 class="heading settled" data-level="2.3" id="changes"><span class="secno">2.3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h3>
    <p>The value is determined when the <a data-link-type="dfn" href="https://dom.spec.whatwg.org/#concept-document" id="ref-for-concept-document①">document</a> is created, and doesn’t change while the document exists.</p>
    <div class="note" role="note">
-    Turning "request desktop site" on or off reloads the page, so there is no need for the value to change, and
-    nothing that could link two documents by the moment it changed.
+    User agents choose the platform to present when they load a page. Turning "request desktop site" on or off in
+    Chrome requires reloading the page, and WebKit described Safari on iPad as choosing between macOS and iOS when a
+    page is loaded or reloaded, not when its window is resized <a data-link-type="biblio" href="#biblio-webkit-safari-13" title="New WebKit Features in Safari 13">[WEBKIT-SAFARI-13]</a>. So there is no need for the
+    value to change, and
+    nothing that could link two documents by the moment it changed. Two documents shown one after the other in the
+    same tab can have different values, just as their requests had different <code>User-Agent</code> headers.
 </div>
-   <h3 class="heading settled" data-level="2.3" id="reduced-exposure"><span class="secno">2.3. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
+   <h3 class="heading settled" data-level="2.4" id="reduced-exposure"><span class="secno">2.4. </span><span class="content">Reduced exposure</span><a class="self-link" href="#reduced-exposure"></a></h3>
    <p>In a <a data-link-type="dfn" href="https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context" id="ref-for-reduced-exposure-context">reduced-exposure context</a>, the feature follows the same rule: it reports the <a data-link-type="dfn" href="#reported-platform" id="ref-for-reported-platform①">reported platform</a>. A user
 agent that already normalizes the platform it presents, in that context or generally, gets the same normalization
 here for free.</p>
@@ -2498,21 +2560,30 @@ model, the header still identifies the family: <code>Windows NT 10.0; Win64; x64
 <code>Macintosh; Intel Mac OS X 10_15_7</code>, <code>X11; Linux x86_64</code>,
 <code>X11; CrOS x86_64 14541.0.0</code>, or <code>Linux; Android 10; K</code> <a data-link-type="biblio" href="#biblio-ua-reduction" title="User-Agent Reduction">[UA-REDUCTION]</a>.</p>
     <li data-md>
-     <p><code>Sec-CH-UA-Platform</code> is one of the three client hints that user agents implementing
-<a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a> send on every request by default, because the platform name on its own is low entropy.</p>
+     <p>User agents that implement <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a> send <code>Sec-CH-UA-Platform</code> by default on requests to
+secure origins, because it is in the low-entropy hint table <a data-link-type="biblio" href="#biblio-client-hints-infrastructure" title="Client Hints Infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]</a>. Safari implements
+neither the client hint headers nor, for web pages in general, <code>navigator.userAgentData</code>, so its
+<code>User-Agent</code> header is where it reports the platform.</p>
     <li data-md>
-     <p>Script can read <code>navigator.userAgentData.platform</code> and <code>navigator.platform</code>.</p>
+     <p>Script can read <code>navigator.userAgent</code>, and <code>navigator.userAgentData.platform</code> where it
+exists.</p>
    </ul>
-   <p>Because <a href="#platform-source">§ 2.1 The reported platform</a> requires the feature to agree with those, it reaches no context that they don’t.
-This includes documents where script is disabled, such as messages in an email client: the request that fetched the
-message, and the request a style sheet would make to report the value, both carry the same header.</p>
+   <p>Because <a href="#platform-source">§ 2.2 The reported platform</a> ties the feature to the platform the user agent reports in those, it reaches no
+context that they don’t. This includes documents where script is disabled, such as messages in an email client: the
+request that fetched the message, and the request a style sheet would make to report the value, both carry the same
+<code>User-Agent</code> header.</p>
+   <p>The rule also means the feature doesn’t make the platform harder to stop exposing. A user agent that stops
+revealing the platform in its header and client hints, or reveals a different one, changes this feature’s value with
+it.</p>
    <h3 class="heading settled" data-level="3.3" id="privacy-fingerprinting"><span class="secno">3.3. </span><span class="content">Fingerprinting</span><a class="self-link" href="#privacy-fingerprinting"></a></h3>
    <p>The platform family is one of the cheapest parts of the user agent string. Measured across large fingerprint
 collections, the whole <code>User-Agent</code> string carries about 10 bits of identifying information in
 Panopticlick’s 2010 data, 9.8 bits in AmIUnique’s 2016 data, and 7.2 bits in the 2018 "Hiding in the Crowd"
 data set of over two million fingerprints; <code>navigator.platform</code>, on its own, carries 2.3 bits and 1.2
-bits in the last two <a data-link-type="biblio" href="#biblio-fingerprint-survey" title="Browser Fingerprinting: A Survey">[FINGERPRINT-SURVEY]</a> <a data-link-type="biblio" href="#biblio-hiding-in-the-crowd" title="Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale">[HIDING-IN-THE-CROWD]</a>. Almost all of the entropy of a user agent
-string is in versions and device models, which this feature doesn’t report.</p>
+bits in the last two <a data-link-type="biblio" href="#biblio-fingerprint-survey" title="Browser Fingerprinting: A Survey">[FINGERPRINT-SURVEY]</a> <a data-link-type="biblio" href="#biblio-hiding-in-the-crowd" title="Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale">[HIDING-IN-THE-CROWD]</a>. Those studies don’t measure the operating
+system family separately, and <code>navigator.platform</code> is only a rough stand-in for it: it reports Android
+and ChromeOS as Linux, and on Unix-like systems it has at times included the processor architecture. Almost all of
+the entropy of a user agent string is in versions and device models, which this feature doesn’t report.</p>
    <p>The value is also stable, changes only when the user changes platforms, and is the same for large numbers of users.
 It adds nothing to a fingerprint that the same page’s requests didn’t already carry.</p>
    <h3 class="heading settled" data-level="3.4" id="privacy-closed-list"><span class="secno">3.4. </span><span class="content">The closed list</span><a class="self-link" href="#privacy-closed-list"></a></h3>
@@ -2521,11 +2592,20 @@ one that a thousandth of users run would reveal about 10 bits, while an author w
 can’t style for it anyway. Every such system reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other③">other</a>, which is also what a user agent reports
 when it doesn’t want to identify the platform at all.</p>
    <h3 class="heading settled" data-level="3.5" id="privacy-normalization"><span class="secno">3.5. </span><span class="content">User agents that normalize the platform</span><a class="self-link" href="#privacy-normalization"></a></h3>
-   <p>Tor Browser normalizes rather than randomizes: all Windows users appear as one Windows version, all macOS users as
-one macOS version, and all Linux and BSD systems as one. It used to disguise the family itself, and stopped,
-because the benefit was "a negligible amount of benefit to the user in terms of additional linkability
-protections" against real site breakage <a data-link-type="biblio" href="#biblio-tor-ua-spoofing" title="Stop spoofing the OS in the User-Agent header (tor-browser#42467)">[TOR-UA-SPOOFING]</a>. Firefox’s resist-fingerprinting mode likewise reports
-the latest release version but doesn’t spoof the operating system.</p>
+   <p>Firefox’s resist-fingerprinting mode, which Tor Browser uses, normalizes rather than hides. Its user agent string
+reports all Windows users as <code>Windows NT 10.0</code>, all macOS users as <code>Intel Mac OS X 10.15</code>, all
+Android users as <code>Android 10</code>, and Linux, the BSDs, and other Unix-like systems all as
+<code>X11; Linux x86_64</code>. Its source explains why script sees the family: "it is easy to detect the real
+platform. So there is no benefit for hiding the platform: it only brings breakages, like keyboard shortcuts won’t
+work in macOS if we spoof it as a Windows platform" <a data-link-type="biblio" href="#biblio-rfp-service" title="toolkit/components/resistfingerprinting/nsRFPService.h">[RFP-SERVICE]</a>.</p>
+   <p>The HTTP header used to go further. Until Firefox 136, the mode sent a Windows <code>User-Agent</code> header from
+macOS and Linux while script reported the real family <a data-link-type="biblio" href="#biblio-moz-1840385" title="Bug 1840385: kasada.io anti-bot protected sites (eg nike.com, twitch.tv) fail login with RFP due to UA missing oscpu token or reporting different OS">[MOZ-1840385]</a>. Tor Browser, which inherited this, stopped it
+in its 14.0 series, having concluded that the practice caused site breakage and gave "only a negligible amount of
+benefit to the user in terms of additional linkability (i.e. cross-site tracking, fingerprinting) protections, and
+only then when JavaScript is disabled" <a data-link-type="biblio" href="#biblio-tor-ua-spoofing" title="New Alpha Release: Tor Browser 14.0a4">[TOR-UA-SPOOFING]</a>. It removed the option entirely in Tor Browser 14.5,
+released in April 2025 <a data-link-type="biblio" href="#biblio-tor-43189" title="Remove privacy.resistFingerprinting.spoofOsInUserAgentHeader machinery entirely (tor-browser#43189)">[TOR-43189]</a>, and Firefox stopped in version 136. The case both gave up on, a document with
+script disabled, is the case this feature is most often questioned about, and both now send the normalized family
+in that case too.</p>
    <p>This feature inherits whatever the user agent decides, including a decision to report <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other④">other</a> everywhere.</p>
    <h3 class="heading settled" data-level="3.6" id="privacy-third-party"><span class="secno">3.6. </span><span class="content">Embedded content</span><a class="self-link" href="#privacy-third-party"></a></h3>
    <p>The feature has the same value in cross-origin frames as in the top-level document, because a frame’s own requests
@@ -2539,12 +2619,20 @@ outlive its reason. <a href="#security-not-detection">§ 4.1 It is not feature
      <p><strong>Style-only contexts.</strong> A style sheet can report the value without script. It reports a fact the same server
 already received in a header, but it does so without the page’s script being involved, which a site’s own
 content security policy might otherwise have limited.</p>
+    <li data-md>
+     <p><strong>Surface.</strong> "Already available" is not by itself a reason to expose something again. In the review of
+User-Agent Client Hints, Henri Sivonen wrote that exposing available information another way "adds more bytes
+on the wire / more API surface / more complexity to the Web Platform, in which case the harm is the data waste
+or increased platform complexity and not the identifying bits exposed" <a data-link-type="biblio" href="#biblio-tag-ua-ch-review" title="User-Agent Client Hints &amp; UA Reduction (w3ctag/design-reviews#640), comment by Henri Sivonen">[TAG-UA-CH-REVIEW]</a>. That cost applies
+here. This specification’s answer is that pages already get the same information by parsing the
+<code>User-Agent</code> string in script, as <a href="#intro">§ 1 Introduction</a> describes, and a single keyword supplied by the user
+agent is less complexity than a parser in every page.</p>
    </ul>
    <h2 class="heading settled" data-level="4" id="security"><span class="secno">4. </span><span class="content">Security considerations</span><a class="self-link" href="#security"></a></h2>
    <h3 class="heading settled" data-level="4.1" id="security-not-detection"><span class="secno">4.1. </span><span class="content">It is not feature detection</span><a class="self-link" href="#security-not-detection"></a></h3>
    <p>The platform doesn’t say which CSS or JavaScript features work. Sites that decide what to send from the platform
 break browsers that the site’s author didn’t test, which is the reason user agent strings are full of the names of
-other browsers. Authors should use <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports">@supports</a>, <code>@media</code> capability features such as
+other browsers. Authors should use <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports①">@supports</a>, <code>@media</code> capability features such as
 <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer" id="ref-for-descdef-media-pointer">pointer</a> and <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover" id="ref-for-descdef-media-hover">hover</a>, and script feature detection, and use this feature only for conventions:
 what to call a key, which order to put buttons in, which asset to show. <a data-link-type="biblio" href="#biblio-design-principles" title="Web Platform Design Principles">[DESIGN-PRINCIPLES]</a> says features should
 be detectable, and this one deliberately doesn’t help with that.</p>
@@ -2578,30 +2666,76 @@ that. These are not proposed: they are high-entropy hints that a site must reque
 report them as empty unless a binary download is likely <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>, and choosing a download link is
 something a page can do with script or on the server, where the hint already is.</p>
    <h3 class="heading settled" data-level="5.4" id="alt-browser"><span class="secno">5.4. </span><span class="content">The browser or its engine</span><a class="self-link" href="#alt-browser"></a></h3>
-   <p>A feature for the browser brand or engine is not proposed. Feature queries answer the question that browser
-sniffing is usually asking, sniffing entrenches the assumptions that break new browsers, and engines have been
-closing the CSS-only browser detection channels that exist rather than opening new ones. A page that needs to work
-around an engine bug can usually detect the bug.</p>
+   <p>A feature for the browser brand or engine is not proposed, though the case for it is real. <a class="css" data-link-type="maybe" href="https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports" id="ref-for-at-ruledef-supports②">@supports</a> tells a
+page whether the user agent parses something, not whether it works <a data-link-type="biblio" href="#biblio-css-conditional-3" title="CSS Conditional Rules Module Level 3">[CSS-CONDITIONAL-3]</a>, so it can’t see an engine
+that parses a feature and gets it wrong: iOS Safari once resolved <span class="css">svh</span> and <span class="css">dvh</span> to the same length when its tab bar was hidden,
+which no feature query could detect <a data-link-type="biblio" href="#biblio-webkit-261185" title="Bug 261185: [iOS] svh/dvh units are unexpectedly equal when Safari tab bar is not visible">[WEBKIT-261185]</a>.</p>
+   <p>It is not proposed because the web’s experience with engine detection in CSS is that it can’t be undone, and that
+the engines it targets end up lying:</p>
+   <ul>
+    <li data-md>
+     <p>Content written for WebKit’s prefixed features became so common that the Compatibility Standard now tells every
+engine to treat <code>-webkit-device-pixel-ratio</code> as an alias of <a class="property" data-link-type="propdesc" href="https://drafts.csswg.org/mediaqueries-5/#descdef-media-resolution" id="ref-for-descdef-media-resolution">resolution</a>, and defines
+<code>-webkit-transform-3d</code> for all of them <a data-link-type="biblio" href="#biblio-compatibility" title="Compatibility Standard">[COMPATIBILITY]</a>. An engine-named media feature has already
+had to be implemented by the engines it didn’t name.</p>
+    <li data-md>
+     <p>User-Agent Client Hints explains its brand lists with the observation that "History has shown us that there are real
+incentives for user agents to lie about their branding in order to thread the needle of sites' sniffing
+scripts", and responds by requiring that "User agents MUST include more than a single value in brands, where one
+of these values is an arbitrary value" <a data-link-type="biblio" href="#biblio-ua-client-hints" title="User-Agent Client Hints">[UA-CLIENT-HINTS]</a>.</p>
+    <li data-md>
+     <p>For a smaller browser, as Michael Catanzaro put it, "it is absolutely essential to send a user agent that matches
+a dominant browser as closely as possible. A small browser cannot be web compatible otherwise"
+<a data-link-type="biblio" href="#biblio-tag-ua-freeze-review" title="Partial freezing of the User-Agent string (w3ctag/design-reviews#467), comment by Michael Catanzaro">[TAG-UA-FREEZE-REVIEW]</a>.</p>
+   </ul>
+   <p>A browser media feature would therefore be answered the same way: the browsers it is meant to identify would report
+a dominant browser’s value, and it would stop meaning anything. The platform feature accepts that outcome by design,
+because it follows whatever platform the user agent chooses to present (<a href="#platform-source">§ 2.2 The reported platform</a>); it is useful only
+because most user agents present their real platform family, which is not true of their brand.</p>
+   <p>Engines have also been closing CSS detection channels rather than opening them: Firefox 58 hid its system-metric
+media features from web pages <a data-link-type="biblio" href="#biblio-moz-1396066" title="Bug 1396066: Avoid exposing :-moz-system-metric stuff in content pages">[MOZ-1396066]</a>, and Firefox never exposed its own platform media feature to them
+<a data-link-type="biblio" href="#biblio-moz-platform" title="Bug 1754547: Provide a @media query to target major platform/toolkits">[MOZ-PLATFORM]</a>, which is a precedent this specification has to answer (see <a href="#open-issues">§ 6 Open issues</a>). A page that needs
+to work around an engine bug should report the bug, and detect its symptom in script where it can.</p>
    <h3 class="heading settled" data-level="5.5" id="alt-media-type"><span class="secno">5.5. </span><span class="content">A media type</span><a class="self-link" href="#alt-media-type"></a></h3>
    <p>CSS once had media types for device classes, such as <code>@media tv</code> and <code>@media handheld</code>, and
-they were deprecated: they made one keyword stand for a whole bundle of assumptions. This feature deliberately
-stands for one thing, the platform’s conventions, and nothing else. Device classes are handled separately by
+they were deprecated because they "have proven insufficient as a way of discriminating between devices with
+different styling needs" <a data-link-type="biblio" href="#biblio-mediaqueries-4" title="Media Queries Level 4">[MEDIAQUERIES-4]</a>: they made one keyword stand for a whole bundle of assumptions. This
+feature deliberately stands for one thing, the platform’s conventions, and nothing else. Device classes are handled separately by
 <a data-link-type="biblio" href="#biblio-form-factor-media-query" title="Form Factor Media Query">[FORM-FACTOR-MEDIA-QUERY]</a>.</p>
    <h2 class="heading settled" data-level="6" id="open-issues"><span class="secno">6. </span><span class="content">Open issues</span><a class="self-link" href="#open-issues"></a></h2>
-   <p class="issue" id="issue-2678b4d0"><a class="self-link" href="#issue-2678b4d0"></a>On iPadOS, Safari presents itself as macOS, so an iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos②">macos</a> and gets macOS
-conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
-specification say anything, given that the alternative is disagreeing with the user agent string?
+   <p class="issue" id="issue-c8a0eb97"><a class="self-link" href="#issue-c8a0eb97"></a>Safari on iPad presents itself as macOS by default, so an iPad in Safari reports
+<a class="css" data-link-type="maybe" href="#valdef-media-platform-macos" id="ref-for-valdef-media-platform-macos③">macos</a> and gets macOS conventions, including a ⌘ label that matches an attached keyboard but not the
+on-screen one, and a Mac download where an App Store badge was wanted. Reporting the real platform is not an option:
+in 2022 WebKit accepted a fix that made the two user agent strings identical, because the one-digit difference
+"could make it easier for a website to detect whether the visitor is using Mac Safari or is using Mobile Safari,
+defeating the purpose of desktop mode" <a data-link-type="biblio" href="#biblio-webkit-241322" title="Bug 241322: Mobile Safari desktop mode user agent reports a different macOS version than Safari on Mac">[WEBKIT-241322]</a>. Should the specification say anything more to authors,
+given that the same iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-ios" id="ref-for-valdef-media-platform-ios③">ios</a> in Chrome?
 
 </p>
-   <p class="issue" id="issue-ef642f66"><a class="self-link" href="#issue-ef642f66"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos" id="ref-for-valdef-media-platform-chromeos①">chromeos</a> exist, or should ChromeOS report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux②">linux</a>? It has its own
+   <p class="issue" id="issue-4a1b63a8"><a class="self-link" href="#issue-4a1b63a8"></a>Chrome on Android requests desktop sites by default on premium tablets and reports Linux there
+<a data-link-type="biblio" href="#biblio-chrome-desktop-mode" title="Chrome enables desktop mode by default on premium tablets">[CHROME-DESKTOP-MODE]</a>, so those tablets report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux②">linux</a> and get a Linux download rather than a Google
+Play badge. Chromium has features, disabled by default, that report Android or ChromeOS instead on Android devices
+that run in desktop mode. This specification follows whichever Chromium ships; is that the right outcome for
+authors?
+
+</p>
+   <p class="issue" id="issue-8560db98"><a class="self-link" href="#issue-8560db98"></a>Should <a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos" id="ref-for-valdef-media-platform-chromeos①">chromeos</a> exist, or should ChromeOS report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux" id="ref-for-valdef-media-platform-linux③">linux</a>? It has its own
 conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
-with a single browser.
+with a single browser. ChromeOS also has a "request tablet site" mode that presents it as Android.
 
 </p>
-   <p class="issue" id="issue-e266a77e"><a class="self-link" href="#issue-e266a77e"></a>Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
-<a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, on the grounds that they expose system configuration without script. Does the argument in
-<a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given that those features exposed settings that
-the <code>User-Agent</code> header doesn’t carry?
+   <p class="issue" id="issue-c99c6adb"><a class="self-link" href="#issue-c99c6adb"></a>HarmonyOS NEXT’s web engine identifies itself by default in the <code>User-Agent</code> string as
+<code>OpenHarmony</code>, with no Android token, though some browsers built on it add other system names
+<a data-link-type="biblio" href="#biblio-harmonyos-ua" title="Developing User-Agent (ArkWeb)">[HARMONYOS-UA]</a>. It reports "OpenHarmony" as its client hint platform when the app showing the page turns client
+hints on <a data-link-type="biblio" href="#biblio-arkweb-webview-api" title="@ohos.web.webview API declarations (getPlatform, setUserAgentClientHintsEnabled)">[ARKWEB-WEBVIEW-API]</a>. Either way it reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other" id="ref-for-valdef-media-platform-other⑤">other</a>. Should HarmonyOS have a
+keyword? <a href="#new-keywords">§ 2.1 Adding keywords</a> describes what adding one would mean for existing user agents.
+
+</p>
+   <p class="issue" id="issue-92c8a9a0"><a class="self-link" href="#issue-92c8a9a0"></a>Firefox hid its theme-related media features from web pages in Firefox 58 <a data-link-type="biblio" href="#biblio-moz-1396066" title="Bug 1396066: Avoid exposing :-moz-system-metric stuff in content pages">[MOZ-1396066]</a> (the
+older bug that asked for it, <a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, was closed in Firefox 87). That older bug came from a 2012 report asking
+Firefox to stop exposing screen and theme information <a data-link-type="biblio" href="#biblio-moz-787296" title="Bug 787296: Kill all web access to screen/chrome metrics and theme information">[MOZ-787296]</a>, which singled out media queries because they
+work even with scripting disabled. Does the argument in <a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given
+that those features exposed settings that the <code>User-Agent</code> header doesn’t carry?
 
 
 </p>
@@ -2625,7 +2759,7 @@ the <code>User-Agent</code> header already carries.</p>
      <p>They expose none beyond what every request already carries.</p>
     <dt data-md>Does data exposed carry related but distinct information that may not be obvious to users?
     <dd data-md>
-     <p>Only weakly: that the user chose a desktop mode, since the reported platform then changes.</p>
+     <p>Only weakly: on a phone or tablet, a desktop platform can mean that the user or the browser chose a desktop mode.</p>
     <dt data-md>Do the features introduce state that persists across browsing sessions?
     <dd data-md>
      <p>No.</p>
@@ -2853,7 +2987,7 @@ that the author never tested.</p>
    <li><a href="#valdef-media-platform-macos">macos</a><span>, in § 2</span>
    <li><a href="#valdef-media-platform-other">other</a><span>, in § 2</span>
    <li><a href="#descdef-media-platform">platform</a><span>, in § 2</span>
-   <li><a href="#reported-platform">reported platform</a><span>, in § 2.1</span>
+   <li><a href="#reported-platform">reported platform</a><span>, in § 2.2</span>
    <li><a href="#valdef-media-platform-windows">windows</a><span>, in § 2</span>
   </ul>
   <h3 class="heading no-num no-ref settled" id="index-defined-elsewhere"><span class="content">Terms defined by reference</span><a class="self-link" href="#index-defined-elsewhere"></a></h3>
@@ -2889,6 +3023,7 @@ that the author never tested.</p>
      <li><span class="dfn-paneled" id="4dba9df7">pointer</span>
      <li><span class="dfn-paneled" id="9219048b">prefers-contrast</span>
      <li><span class="dfn-paneled" id="b672b3b4">prefers-reduced-transparency</span>
+     <li><span class="dfn-paneled" id="42abe04d">resolution</span>
     </ul>
   </ul>
   <h2 class="heading no-num no-ref settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
@@ -2909,26 +3044,62 @@ that the author never tested.</p>
   </dl>
   <h3 class="heading no-num no-ref settled" id="informative"><span class="content">Non-Normative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-arkweb-webview-api">[ARKWEB-WEBVIEW-API]
+   <dd><a href="https://github.com/openharmony/interface_sdk-js/blob/master/api/@ohos.web.webview.d.ts"><cite>@ohos.web.webview API declarations (getPlatform, setUserAgentClientHintsEnabled)</cite></a>. URL: <a href="https://github.com/openharmony/interface_sdk-js/blob/master/api/@ohos.web.webview.d.ts">https://github.com/openharmony/interface_sdk-js/blob/master/api/@ohos.web.webview.d.ts</a>
+   <dt id="biblio-chrome-desktop-mode">[CHROME-DESKTOP-MODE]
+   <dd><a href="https://developer.chrome.com/blog/desktop-mode"><cite>Chrome enables desktop mode by default on premium tablets</cite></a>. 2023. URL: <a href="https://developer.chrome.com/blog/desktop-mode">https://developer.chrome.com/blog/desktop-mode</a>
+   <dt id="biblio-chromium-ios-ua">[CHROMIUM-IOS-UA]
+   <dd><a href="https://source.chromium.org/chromium/chromium/src/+/main:ios/web/common/user_agent.mm"><cite>ios/web/common/user_agent.mm</cite></a>. URL: <a href="https://source.chromium.org/chromium/chromium/src/+/main:ios/web/common/user_agent.mm">https://source.chromium.org/chromium/chromium/src/+/main:ios/web/common/user_agent.mm</a>
+   <dt id="biblio-client-hints-infrastructure">[CLIENT-HINTS-INFRASTRUCTURE]
+   <dd><a href="https://wicg.github.io/client-hints-infrastructure/"><cite>Client Hints Infrastructure</cite></a>. URL: <a href="https://wicg.github.io/client-hints-infrastructure/">https://wicg.github.io/client-hints-infrastructure/</a>
+   <dt id="biblio-compatibility">[COMPATIBILITY]
+   <dd><a href="https://compat.spec.whatwg.org/"><cite>Compatibility Standard</cite></a>. URL: <a href="https://compat.spec.whatwg.org/">https://compat.spec.whatwg.org/</a>
    <dt id="biblio-design-principles">[DESIGN-PRINCIPLES]
    <dd><a href="https://www.w3.org/TR/design-principles/"><cite>Web Platform Design Principles</cite></a>. URL: <a href="https://www.w3.org/TR/design-principles/">https://www.w3.org/TR/design-principles/</a>
    <dt id="biblio-fingerprint-survey">[FINGERPRINT-SURVEY]
    <dd>Pierre Laperdrix; et al. <a href="https://arxiv.org/abs/1905.01051"><cite>Browser Fingerprinting: A Survey</cite></a>. 2019. URL: <a href="https://arxiv.org/abs/1905.01051">https://arxiv.org/abs/1905.01051</a>
    <dt id="biblio-form-factor-media-query">[FORM-FACTOR-MEDIA-QUERY]
    <dd><a href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/"><cite>Form Factor Media Query</cite></a>. URL: <a href="https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/">https://arronei.github.io/CSS-Additions/system-media-queries/form-factor/spec/</a>
+   <dt id="biblio-harmonyos-ua">[HARMONYOS-UA]
+   <dd><a href="https://github.com/openharmony/docs/blob/master/en/application-dev/web/web-default-userAgent.md"><cite>Developing User-Agent (ArkWeb)</cite></a>. URL: <a href="https://github.com/openharmony/docs/blob/master/en/application-dev/web/web-default-userAgent.md">https://github.com/openharmony/docs/blob/master/en/application-dev/web/web-default-userAgent.md</a>
    <dt id="biblio-hiding-in-the-crowd">[HIDING-IN-THE-CROWD]
    <dd>Alejandro Gómez-Boix; Pierre Laperdrix; Benoit Baudry. <a href="https://hal.inria.fr/hal-01718234/document"><cite>Hiding in the Crowd: an Analysis of the Effectiveness of Browser Fingerprinting at Large Scale</cite></a>. 2018. URL: <a href="https://hal.inria.fr/hal-01718234/document">https://hal.inria.fr/hal-01718234/document</a>
+   <dt id="biblio-html">[HTML]
+   <dd>Anne van Kesteren; et al. <a href="https://html.spec.whatwg.org/multipage/"><cite>HTML Standard</cite></a>. Living Standard. URL: <a href="https://html.spec.whatwg.org/multipage/">https://html.spec.whatwg.org/multipage/</a>
+   <dt id="biblio-mediaqueries-4">[MEDIAQUERIES-4]
+   <dd>Tab Atkins Jr.; Florian Rivoal. <a href="https://drafts.csswg.org/mediaqueries-4/"><cite>Media Queries Level 4</cite></a>. URL: <a href="https://drafts.csswg.org/mediaqueries-4/">https://drafts.csswg.org/mediaqueries-4/</a>
+   <dt id="biblio-moz-1396066">[MOZ-1396066]
+   <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1396066"><cite>Bug 1396066: Avoid exposing :-moz-system-metric stuff in content pages</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1396066">https://bugzilla.mozilla.org/show_bug.cgi?id=1396066</a>
+   <dt id="biblio-moz-1840385">[MOZ-1840385]
+   <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1840385"><cite>Bug 1840385: kasada.io anti-bot protected sites (eg nike.com, twitch.tv) fail login with RFP due to UA missing oscpu token or reporting different OS</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1840385">https://bugzilla.mozilla.org/show_bug.cgi?id=1840385</a>
+   <dt id="biblio-moz-787296">[MOZ-787296]
+   <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787296"><cite>Bug 787296: Kill all web access to screen/chrome metrics and theme information</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787296">https://bugzilla.mozilla.org/show_bug.cgi?id=787296</a>
    <dt id="biblio-moz-787521">[MOZ-787521]
    <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787521"><cite>Bug 787521: Disable theme-related CSS media queries features when not in chrome context</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=787521">https://bugzilla.mozilla.org/show_bug.cgi?id=787521</a>
    <dt id="biblio-moz-platform">[MOZ-PLATFORM]
    <dd><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1754547"><cite>Bug 1754547: Provide a @media query to target major platform/toolkits</cite></a>. URL: <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1754547">https://bugzilla.mozilla.org/show_bug.cgi?id=1754547</a>
+   <dt id="biblio-rfp-service">[RFP-SERVICE]
+   <dd><a href="https://searchfox.org/mozilla-central/source/toolkit/components/resistfingerprinting/nsRFPService.h"><cite>toolkit/components/resistfingerprinting/nsRFPService.h</cite></a>. URL: <a href="https://searchfox.org/mozilla-central/source/toolkit/components/resistfingerprinting/nsRFPService.h">https://searchfox.org/mozilla-central/source/toolkit/components/resistfingerprinting/nsRFPService.h</a>
    <dt id="biblio-security-privacy-questionnaire">[SECURITY-PRIVACY-QUESTIONNAIRE]
    <dd>Theresa O'Connor; Peter Snyder; Simone Onofri. <a href="https://w3c.github.io/security-questionnaire/"><cite>Self-Review Questionnaire: Security and Privacy</cite></a>. URL: <a href="https://w3c.github.io/security-questionnaire/">https://w3c.github.io/security-questionnaire/</a>
+   <dt id="biblio-tag-ua-ch-review">[TAG-UA-CH-REVIEW]
+   <dd><a href="https://github.com/w3ctag/design-reviews/issues/640#issuecomment-880496675"><cite>User-Agent Client Hints &amp; UA Reduction (w3ctag/design-reviews#640), comment by Henri Sivonen</cite></a>. 2021-07-15. URL: <a href="https://github.com/w3ctag/design-reviews/issues/640#issuecomment-880496675">https://github.com/w3ctag/design-reviews/issues/640#issuecomment-880496675</a>
+   <dt id="biblio-tag-ua-freeze-review">[TAG-UA-FREEZE-REVIEW]
+   <dd><a href="https://github.com/w3ctag/design-reviews/issues/467#issuecomment-583104002"><cite>Partial freezing of the User-Agent string (w3ctag/design-reviews#467), comment by Michael Catanzaro</cite></a>. 2020-02-06. URL: <a href="https://github.com/w3ctag/design-reviews/issues/467#issuecomment-583104002">https://github.com/w3ctag/design-reviews/issues/467#issuecomment-583104002</a>
+   <dt id="biblio-tor-43189">[TOR-43189]
+   <dd><a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/43189"><cite>Remove privacy.resistFingerprinting.spoofOsInUserAgentHeader machinery entirely (tor-browser#43189)</cite></a>. URL: <a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/43189">https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/43189</a>
    <dt id="biblio-tor-ua-spoofing">[TOR-UA-SPOOFING]
-   <dd><a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467"><cite>Stop spoofing the OS in the User-Agent header (tor-browser#42467)</cite></a>. URL: <a href="https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467">https://gitlab.torproject.org/tpo/applications/tor-browser/-/issues/42467</a>
+   <dd><a href="https://blog.torproject.org/new-alpha-release-tor-browser-140a4/"><cite>New Alpha Release: Tor Browser 14.0a4</cite></a>. 2024-09-06. URL: <a href="https://blog.torproject.org/new-alpha-release-tor-browser-140a4/">https://blog.torproject.org/new-alpha-release-tor-browser-140a4/</a>
    <dt id="biblio-ua-client-hints">[UA-CLIENT-HINTS]
    <dd><a href="https://wicg.github.io/ua-client-hints/"><cite>User-Agent Client Hints</cite></a>. URL: <a href="https://wicg.github.io/ua-client-hints/">https://wicg.github.io/ua-client-hints/</a>
    <dt id="biblio-ua-reduction">[UA-REDUCTION]
    <dd><a href="https://www.chromium.org/updates/ua-reduction/"><cite>User-Agent Reduction</cite></a>. URL: <a href="https://www.chromium.org/updates/ua-reduction/">https://www.chromium.org/updates/ua-reduction/</a>
+   <dt id="biblio-webkit-241322">[WEBKIT-241322]
+   <dd><a href="https://bugs.webkit.org/show_bug.cgi?id=241322"><cite>Bug 241322: Mobile Safari desktop mode user agent reports a different macOS version than Safari on Mac</cite></a>. URL: <a href="https://bugs.webkit.org/show_bug.cgi?id=241322">https://bugs.webkit.org/show_bug.cgi?id=241322</a>
+   <dt id="biblio-webkit-261185">[WEBKIT-261185]
+   <dd><a href="https://bugs.webkit.org/show_bug.cgi?id=261185"><cite>Bug 261185: [iOS] svh/dvh units are unexpectedly equal when Safari tab bar is not visible</cite></a>. URL: <a href="https://bugs.webkit.org/show_bug.cgi?id=261185">https://bugs.webkit.org/show_bug.cgi?id=261185</a>
+   <dt id="biblio-webkit-safari-13">[WEBKIT-SAFARI-13]
+   <dd><a href="https://webkit.org/blog/9674/new-webkit-features-in-safari-13/"><cite>New WebKit Features in Safari 13</cite></a>. 2019. URL: <a href="https://webkit.org/blog/9674/new-webkit-features-in-safari-13/">https://webkit.org/blog/9674/new-webkit-features-in-safari-13/</a>
   </dl>
   <h2 class="heading no-num no-ref settled" id="property-index"><span class="content">Property Index</span><a class="self-link" href="#property-index"></a></h2>
   <p>No properties defined.</p>
@@ -2943,7 +3114,7 @@ that the author never tested.</p>
       <th scope="col">Type
     <tbody>
      <tr>
-      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-platform" id="ref-for-descdef-media-platform④">platform</a>
+      <th scope="row"><a class="css" data-link-type="descriptor" href="#descdef-media-platform" id="ref-for-descdef-media-platform⑤">platform</a>
       <td>windows | macos | ios | android | linux | chromeos | other
       <td>
       <td>discrete
@@ -2951,23 +3122,42 @@ that the author never tested.</p>
   </div>
   <h2 class="heading no-num no-ref settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue">On iPadOS, Safari presents itself as macOS, so an iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-macos">macos</a> and gets macOS
-conventions, including a ⌘ label that matches an attached keyboard but not the on-screen one. Should the
-specification say anything, given that the alternative is disagreeing with the user agent string?
+   <div class="issue">Safari on iPad presents itself as macOS by default, so an iPad in Safari reports
+<a class="css" data-link-type="maybe" href="#valdef-media-platform-macos">macos</a> and gets macOS conventions, including a ⌘ label that matches an attached keyboard but not the
+on-screen one, and a Mac download where an App Store badge was wanted. Reporting the real platform is not an option:
+in 2022 WebKit accepted a fix that made the two user agent strings identical, because the one-digit difference
+"could make it easier for a website to detect whether the visitor is using Mac Safari or is using Mobile Safari,
+defeating the purpose of desktop mode" <a data-link-type="biblio" href="#biblio-webkit-241322" title="Bug 241322: Mobile Safari desktop mode user agent reports a different macOS version than Safari on Mac">[WEBKIT-241322]</a>. Should the specification say anything more to authors,
+given that the same iPad reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-ios">ios</a> in Chrome?
 
- <a class="issue-return" href="#issue-2678b4d0" title="Jump to section">↵</a></div>
+ <a class="issue-return" href="#issue-c8a0eb97" title="Jump to section">↵</a></div>
+   <div class="issue">Chrome on Android requests desktop sites by default on premium tablets and reports Linux there
+<a data-link-type="biblio" href="#biblio-chrome-desktop-mode" title="Chrome enables desktop mode by default on premium tablets">[CHROME-DESKTOP-MODE]</a>, so those tablets report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux">linux</a> and get a Linux download rather than a Google
+Play badge. Chromium has features, disabled by default, that report Android or ChromeOS instead on Android devices
+that run in desktop mode. This specification follows whichever Chromium ships; is that the right outcome for
+authors?
+
+ <a class="issue-return" href="#issue-4a1b63a8" title="Jump to section">↵</a></div>
    <div class="issue">Should <a class="css" data-link-type="maybe" href="#valdef-media-platform-chromeos">chromeos</a> exist, or should ChromeOS report <a class="css" data-link-type="maybe" href="#valdef-media-platform-linux">linux</a>? It has its own
 conventions, and <code>Sec-CH-UA-Platform</code> distinguishes it, but it is also the only desktop platform here
-with a single browser.
+with a single browser. ChromeOS also has a "request tablet site" mode that presents it as Android.
 
- <a class="issue-return" href="#issue-ef642f66" title="Jump to section">↵</a></div>
-   <div class="issue">Firefox restricted its own theme-related media features to internal style sheets in Firefox 87
-<a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, on the grounds that they expose system configuration without script. Does the argument in
-<a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given that those features exposed settings that
-the <code>User-Agent</code> header doesn’t carry?
+ <a class="issue-return" href="#issue-8560db98" title="Jump to section">↵</a></div>
+   <div class="issue">HarmonyOS NEXT’s web engine identifies itself by default in the <code>User-Agent</code> string as
+<code>OpenHarmony</code>, with no Android token, though some browsers built on it add other system names
+<a data-link-type="biblio" href="#biblio-harmonyos-ua" title="Developing User-Agent (ArkWeb)">[HARMONYOS-UA]</a>. It reports "OpenHarmony" as its client hint platform when the app showing the page turns client
+hints on <a data-link-type="biblio" href="#biblio-arkweb-webview-api" title="@ohos.web.webview API declarations (getPlatform, setUserAgentClientHintsEnabled)">[ARKWEB-WEBVIEW-API]</a>. Either way it reports <a class="css" data-link-type="maybe" href="#valdef-media-platform-other">other</a>. Should HarmonyOS have a
+keyword? <a href="#new-keywords">§ 2.1 Adding keywords</a> describes what adding one would mean for existing user agents.
+
+ <a class="issue-return" href="#issue-c99c6adb" title="Jump to section">↵</a></div>
+   <div class="issue">Firefox hid its theme-related media features from web pages in Firefox 58 <a data-link-type="biblio" href="#biblio-moz-1396066" title="Bug 1396066: Avoid exposing :-moz-system-metric stuff in content pages">[MOZ-1396066]</a> (the
+older bug that asked for it, <a data-link-type="biblio" href="#biblio-moz-787521" title="Bug 787521: Disable theme-related CSS media queries features when not in chrome context">[MOZ-787521]</a>, was closed in Firefox 87). That older bug came from a 2012 report asking
+Firefox to stop exposing screen and theme information <a data-link-type="biblio" href="#biblio-moz-787296" title="Bug 787296: Kill all web access to screen/chrome metrics and theme information">[MOZ-787296]</a>, which singled out media queries because they
+work even with scripting disabled. Does the argument in <a href="#privacy-nothing-new">§ 3.2 Why it adds nothing</a> answer that objection for this feature, given
+that those features exposed settings that the <code>User-Agent</code> header doesn’t carry?
 
 
- <a class="issue-return" href="#issue-e266a77e" title="Jump to section">↵</a></div>
+ <a class="issue-return" href="#issue-92c8a9a0" title="Jump to section">↵</a></div>
   </div>
 <script>/* Boilerplate: script-dom-helper */
 "use strict";
@@ -3170,26 +3360,27 @@ function parseHTML(markup) {
 {
 let dfnPanelData = {
 "2e6703e6": {"dfnID":"2e6703e6","dfnText":"boolean context","external":true,"refSections":[{"refs":[{"id":"ref-for-boolean-context"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/mediaqueries-5/#boolean-context"},
+"42abe04d": {"dfnID":"42abe04d","dfnText":"resolution","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-resolution"}],"title":"5.4. The browser or its engine"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-resolution"},
 "4dba9df7": {"dfnID":"4dba9df7","dfnText":"pointer","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-pointer"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
-"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.3. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
+"5527ea1d": {"dfnID":"5527ea1d","dfnText":"reduced-exposure context","external":true,"refSections":[{"refs":[{"id":"ref-for-reduced-exposure-context"}],"title":"2.4. Reduced exposure"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#reduced-exposure-context"},
 "5f1b7f60": {"dfnID":"5f1b7f60","dfnText":"@media","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-media"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-media"},
 "6ec67710": {"dfnID":"6ec67710","dfnText":"|","external":true,"refSections":[{"refs":[{"id":"ref-for-comb-one"},{"id":"ref-for-comb-one\u2460"},{"id":"ref-for-comb-one\u2461"},{"id":"ref-for-comb-one\u2462"},{"id":"ref-for-comb-one\u2463"},{"id":"ref-for-comb-one\u2464"}],"title":"2. The platform feature"}],"url":"https://drafts.csswg.org/css-values-4/#comb-one"},
 "7878bc99": {"dfnID":"7878bc99","dfnText":"system media feature","external":true,"refSections":[{"refs":[{"id":"ref-for-system-media-feature"}],"title":"2. The platform feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#system-media-feature"},
 "9219048b": {"dfnID":"9219048b","dfnText":"prefers-contrast","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-contrast"}],"title":"5.2. The operating system version"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast"},
-"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.2. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
+"a973e0fe": {"dfnID":"a973e0fe","dfnText":"document","external":true,"refSections":[{"refs":[{"id":"ref-for-concept-document"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-concept-document\u2460"}],"title":"2.3. Changes"}],"url":"https://dom.spec.whatwg.org/#concept-document"},
 "b672b3b4": {"dfnID":"b672b3b4","dfnText":"prefers-reduced-transparency","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-prefers-reduced-transparency"}],"title":"5.2. The operating system version"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency"},
-"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
+"c1ebc639": {"dfnID":"c1ebc639","dfnText":"@supports","external":true,"refSections":[{"refs":[{"id":"ref-for-at-ruledef-supports"}],"title":"2.1. Adding keywords"},{"refs":[{"id":"ref-for-at-ruledef-supports\u2460"}],"title":"4.1. It is not feature detection"},{"refs":[{"id":"ref-for-at-ruledef-supports\u2461"}],"title":"5.4. The browser or its engine"}],"url":"https://drafts.csswg.org/css-conditional-3/#at-ruledef-supports"},
 "d078c482": {"dfnID":"d078c482","dfnText":"hover","external":true,"refSections":[{"refs":[{"id":"ref-for-descdef-media-hover"}],"title":"4.1. It is not feature detection"}],"url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-hover"},
-"descdef-media-platform": {"dfnID":"descdef-media-platform","dfnText":"platform","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-platform\u2460"},{"id":"ref-for-descdef-media-platform\u2461"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-descdef-media-platform\u2462"}],"title":"2.1. The reported platform"}],"url":"#descdef-media-platform"},
+"descdef-media-platform": {"dfnID":"descdef-media-platform","dfnText":"platform","external":false,"refSections":[{"refs":[{"id":"ref-for-descdef-media-platform\u2460"},{"id":"ref-for-descdef-media-platform\u2461"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-descdef-media-platform\u2462"}],"title":"2.1. Adding keywords"},{"refs":[{"id":"ref-for-descdef-media-platform\u2463"}],"title":"2.2. The reported platform"}],"url":"#descdef-media-platform"},
 "fd6386ba": {"dfnID":"fd6386ba","dfnText":"actual value","external":true,"refSections":[{"refs":[{"id":"ref-for-actual-value"}],"title":"2. The platform feature"}],"url":"https://arronei.github.io/CSS-Additions/system-media-queries/privacy-protections/spec/#actual-value"},
-"reported-platform": {"dfnID":"reported-platform","dfnText":"reported platform","external":false,"refSections":[{"refs":[{"id":"ref-for-reported-platform"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-reported-platform\u2460"}],"title":"2.3. Reduced exposure"}],"url":"#reported-platform"},
-"valdef-media-platform-android": {"dfnID":"valdef-media-platform-android","dfnText":"android","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-android"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-android"},
-"valdef-media-platform-chromeos": {"dfnID":"valdef-media-platform-chromeos","dfnText":"chromeos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-chromeos"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-chromeos\u2460"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-chromeos"},
-"valdef-media-platform-ios": {"dfnID":"valdef-media-platform-ios","dfnText":"ios","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-ios"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-ios"},
-"valdef-media-platform-linux": {"dfnID":"valdef-media-platform-linux","dfnText":"linux","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-linux"},{"id":"ref-for-valdef-media-platform-linux\u2460"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-linux\u2461"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-linux"},
-"valdef-media-platform-macos": {"dfnID":"valdef-media-platform-macos","dfnText":"macos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-macos"},{"id":"ref-for-valdef-media-platform-macos\u2460"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-macos\u2461"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-macos"},
-"valdef-media-platform-other": {"dfnID":"valdef-media-platform-other","dfnText":"other","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-other"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2460"},{"id":"ref-for-valdef-media-platform-other\u2461"}],"title":"2.1. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2462"}],"title":"3.4. The closed list"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2463"}],"title":"3.5. User agents that normalize the platform"}],"url":"#valdef-media-platform-other"},
-"valdef-media-platform-windows": {"dfnID":"valdef-media-platform-windows","dfnText":"windows","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-windows"}],"title":"2.1. The reported platform"}],"url":"#valdef-media-platform-windows"},
+"reported-platform": {"dfnID":"reported-platform","dfnText":"reported platform","external":false,"refSections":[{"refs":[{"id":"ref-for-reported-platform"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-reported-platform\u2460"}],"title":"2.4. Reduced exposure"}],"url":"#reported-platform"},
+"valdef-media-platform-android": {"dfnID":"valdef-media-platform-android","dfnText":"android","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-android"}],"title":"2.1. Adding keywords"},{"refs":[{"id":"ref-for-valdef-media-platform-android\u2460"}],"title":"2.2. The reported platform"}],"url":"#valdef-media-platform-android"},
+"valdef-media-platform-chromeos": {"dfnID":"valdef-media-platform-chromeos","dfnText":"chromeos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-chromeos"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-chromeos\u2460"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-chromeos"},
+"valdef-media-platform-ios": {"dfnID":"valdef-media-platform-ios","dfnText":"ios","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-ios"},{"id":"ref-for-valdef-media-platform-ios\u2460"},{"id":"ref-for-valdef-media-platform-ios\u2461"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-ios\u2462"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-ios"},
+"valdef-media-platform-linux": {"dfnID":"valdef-media-platform-linux","dfnText":"linux","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-linux"},{"id":"ref-for-valdef-media-platform-linux\u2460"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-linux\u2461"},{"id":"ref-for-valdef-media-platform-linux\u2462"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-linux"},
+"valdef-media-platform-macos": {"dfnID":"valdef-media-platform-macos","dfnText":"macos","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-macos"},{"id":"ref-for-valdef-media-platform-macos\u2460"},{"id":"ref-for-valdef-media-platform-macos\u2461"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-macos\u2462"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-macos"},
+"valdef-media-platform-other": {"dfnID":"valdef-media-platform-other","dfnText":"other","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-other"}],"title":"2. The platform feature"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2460"},{"id":"ref-for-valdef-media-platform-other\u2461"}],"title":"2.2. The reported platform"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2462"}],"title":"3.4. The closed list"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2463"}],"title":"3.5. User agents that normalize the platform"},{"refs":[{"id":"ref-for-valdef-media-platform-other\u2464"}],"title":"6. Open issues"}],"url":"#valdef-media-platform-other"},
+"valdef-media-platform-windows": {"dfnID":"valdef-media-platform-windows","dfnText":"windows","external":false,"refSections":[{"refs":[{"id":"ref-for-valdef-media-platform-windows"}],"title":"2.2. The reported platform"}],"url":"#valdef-media-platform-windows"},
 };
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -3599,6 +3790,7 @@ let refsData = {
 "https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer": {"displayText":"pointer","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"pointer","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-pointer"},
 "https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast": {"displayText":"prefers-contrast","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-contrast","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-contrast"},
 "https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency": {"displayText":"prefers-reduced-transparency","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"prefers-reduced-transparency","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-prefers-reduced-transparency"},
+"https://drafts.csswg.org/mediaqueries-5/#descdef-media-resolution": {"displayText":"resolution","export":true,"for_":["@media"],"level":"5","normative":true,"shortname":"mediaqueries","spec":"mediaqueries-5","status":"current","text":"resolution","type":"descriptor","url":"https://drafts.csswg.org/mediaqueries-5/#descdef-media-resolution"},
 };
 
 function mkRefHint(link, ref) {

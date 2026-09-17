@@ -26,8 +26,8 @@
     'windows': 'windows',
   };
 
-  // The platform a User-Agent string reports. Order matters: "CrOS" and "Android" both also say Linux, and an iPad in
-  // desktop mode says Macintosh, which the spec wants reported as macos.
+  // The platform a User-Agent string reports. Order matters: "CrOS" and "Android" both also say Linux, and Safari on
+  // an iPad says Macintosh by default, which the spec wants reported as macos.
   function platformFor(ua) {
     if (/Windows/i.test(ua)) return 'windows';
     if (/CrOS/i.test(ua)) return 'chromeos';
