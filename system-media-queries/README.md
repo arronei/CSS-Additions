@@ -1,5 +1,12 @@
 # System media queries
 
+## Disclaimer
+
+These system media query proposals are exploratory ideas and are likely to be controversial. Several of them could
+expose new privacy and security risks. Some mitigations are described, but they are neither exhaustive nor complete.
+Treat these specifications as starting points to build on and refine if any of these features prove useful or
+necessary.
+
 Media features that describe the user's system rather than the viewport: power saving, the network, window focus, screen
 capture, keyboards, accessibility settings, regional preferences, the platform, and the kind of device. Each is its own
 proposal, in its own folder.
