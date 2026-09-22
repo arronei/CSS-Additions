@@ -16,6 +16,8 @@ the value to a server from an email, a page with script blocked, or a CSS inject
 detailed privacy analysis of its own features, security considerations, and answers to the W3C security and privacy
 questionnaire, built on a shared set of protections.
 
+---
+
 | Proposal | What it adds | Main protections |
 | --- | --- | --- |
 | [Privacy protections](privacy-protections/) | The shared threat model and mechanisms: protected evaluation, delayed change delivery, frame-scoped exposure, and reduced-exposure contexts | — |
