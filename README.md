@@ -7,6 +7,7 @@ material, such as a polyfill, alongside it.
 | --- | --- |
 | [Date and time media queries](date-media-queries/) | Media features and functions that test the current date and time: `(date >= "2026-09-09")`, `(time >= "18:00")`, `(weekday: saturday)`, `holiday(us, thanksgiving)`, `calendar(hebrew, (month: M07))`, `(moon-phase: full-moon)`, and `(season: winter)`. |
 | [System media queries](system-media-queries/) | Nine proposals for media features about the user's system, each with a detailed privacy analysis, built on a shared privacy protections spec: `(prefers-reduced-power: reduce)`, `(network: offline)`, `(connection: metered)`, `(window-focus: inactive)`, `(screen-capture: active)`, `(keyboard: physical)`, `(virtual-keyboard: visible)`, accessibility settings such as `(prefers-button-shapes: show)`, regional preferences such as `(hour-cycle: h23)`, `(platform: macos)`, and `(form-factor: tv)`. |
+| [External queries](external-queries/) | Style rules that ask a web API or a JavaScript module a yes-or-no question and style the page by the answer: `@api --moon-phase url("https://moon.example/phase");`, `@script --moon-calc url("/queries/moon.js");`, `@param(--moon-phase, "full") { … }`, `@error(--moon-phase, 404) { … }`, and `if(param(--store-open): …)`. |
 
 Specs are written in [Bikeshed](https://speced.github.io/bikeshed/). To build one:
 
